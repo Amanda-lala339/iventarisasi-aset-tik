@@ -4,7 +4,10 @@
 @section('page', 'Tambah Aset')
 
 @section('content')
-<div class="max-w-3xl mx-auto bg-white rounded-lg border border-gray-200 p-6">
+
+<a href="{{ route('assets.index') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Daftar Aset</a>
+<br><br>
+<div class="max-w-3xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md shadow-blue-300/5 hover:shadow-blue-300/5">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Tambah Aset Baru</h2>
     <form method="POST" action="{{ route('assets.store') }}">
         @csrf

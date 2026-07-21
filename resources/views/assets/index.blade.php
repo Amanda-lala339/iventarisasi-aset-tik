@@ -4,8 +4,9 @@
 @section('page', 'Kelola Aset')
 
 @section('content')
+<a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Dashboard</a>
+    <br><br>
 <div class="bg-white rounded-lg border border-gray-200 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-shadow duration-300">
-    
     <!-- Header & Filter -->
     <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-200 gap-3">
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Daftar Aset TIK</h2>
@@ -41,7 +42,7 @@
     <!-- Tabel Aset dengan Semua Kolom dari Excel -->
     <div class="overflow-x-auto">
         <table class="w-full text-xs whitespace-nowrap">
-            <thead class="bg-gray-50 text-gray-600 border-b border-gray-200">
+            <thead class="bg-blue-50 text-gray-600">
                 <tr>
                     <th class="px-3 py-2 text-left font-medium">Kode</th>
                     <th class="px-3 py-2 text-left font-medium">Kategori</th>

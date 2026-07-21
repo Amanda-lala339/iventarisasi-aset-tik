@@ -5,19 +5,19 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto">
-    <!-- Header -->
+    <a href="{{ route('assets.index') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Daftar Aset</a>
+ <br><br>   <!-- Header -->
     <div class="flex items-center justify-between mb-4">
         <div>
             <h1 class="text-xl font-semibold text-gray-900">Detail Aset: {{ $asset->asset_code }}</h1>
             <p class="text-xs text-gray-500 mt-1">
-                <a href="{{ route('assets.index') }}" class="text-blue-600 hover:text-blue-800">← Kembali ke Daftar Aset</a>
             </p>
         </div>
         <div class="flex items-center space-x-2">
-            <a href="{{ route('assets.edit', $asset) }}" class="bg-yellow-500 text-white px-3 py-1.5 rounded text-xs hover:bg-yellow-600">✏️ Edit</a>
+            <a href="{{ route('assets.edit', $asset) }}" class="bg-yellow-500 text-gray px-3 py-1.5 rounded text-xs hover:bg-yellow-500"> Edit</a>
             <form method="POST" action="{{ route('assets.destroy', $asset) }}" onsubmit="return confirm('Yakin hapus aset ini?')">
                 @csrf @method('DELETE')
-                <button type="submit" class="bg-red-500 text-white px-3 py-1.5 rounded text-xs hover:bg-red-600">🗑️ Hapus</button>
+                <button type="submit" class="bg-red-500 text-white px-3 py-1.5 rounded text-xs hover:bg-red-500"> Hapus</button>
             </form>
         </div>
     </div>
@@ -25,7 +25,7 @@
     <!-- Info Cards -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <!-- Info Utama -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-lg shadow-blue-500/10">
+        <div class="bg-white rounded-lg border border-blue-300 p-5 shadow-md shadow-blue-300/5 hover:shadow-blue-300/5">
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Informasi Utama</h3>
             <div class="space-y-2 text-xs">
                 <div class="flex justify-between border-b border-gray-100 pb-1">
@@ -33,9 +33,15 @@
                     <span class="font-mono font-medium text-gray-900">{{ $asset->asset_code }}</span>
                 </div>
                 <div class="flex justify-between border-b border-gray-100 pb-1">
-                    <span class="text-gray-500">Kategori</span>
-                    <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">{{ $asset->category->code }} - {{ $asset->category->name }}</span>
-                </div>
+    <span class="text-gray-500">Kategori</span>
+    <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+        @if($asset->category)
+            {{ $asset->category->code }} - {{ $asset->category->name }}
+        @else
+            <span class="text-red-500">-</span>
+        @endif
+    </span>
+</div>
                 <div class="flex justify-between border-b border-gray-100 pb-1">
                     <span class="text-gray-500">Sub Klasifikasi</span>
                     <span class="text-gray-900">{{ $asset->sub_classification ?? '-' }}</span>
@@ -58,7 +64,7 @@
         </div>
 
         <!-- Kritikalitas -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-lg shadow-blue-500/10">
+        <div class="bg-white rounded-lg border border-blue-300 p-5 shadow-md shadow-blue-300/5 hover:shadow-blue-300/5">
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Kritikalitas Aset</h3>
             <div class="space-y-2 text-xs">
                 <div class="flex justify-between border-b border-gray-100 pb-1">
@@ -84,14 +90,14 @@
                     <span class="text-gray-900">{{ $asset->se_category ?? '-' }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-500">Kategori Aset</span>
-                    <span class="text-gray-900">{{ $asset->category ?? '-' }}</span>
-                </div>
+    <span class="text-gray-500">Kategori Aset</span>
+    <span class="text-gray-900">{{ $asset->category->name ?? '-' }}</span>
+</div>  
             </div>
         </div>
 
         <!-- Lokasi & Pemilik -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-lg shadow-blue-500/10">
+        <div class="bg-white rounded-lg border border-blue-300 p-4 shadow-md shadow-blue-300/5 hover:shadow-blue-300/5">
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Lokasi & Pemilik</h3>
             <div class="space-y-2 text-xs">
                 <div class="flex justify-between border-b border-gray-100 pb-1">
@@ -192,4 +198,5 @@
     </div>
     @endif
 </div>
+
 @endsection

@@ -4,7 +4,9 @@
 @section('page', 'Edit Server')
 
 @section('content')
-<div class="max-w-2xl mx-auto bg-white rounded-lg border border-gray-200 p-6">
+<a href="{{ route('servers.index') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Server List</a>
+<br><br>
+<div class="max-w-2xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md shadow-blue-300/5 hover:shadow-blue-300/5">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Server: {{ $server->name }}</h2>
     <form method="POST" action="{{ route('servers.update', $server) }}">
         @csrf @method('PUT')

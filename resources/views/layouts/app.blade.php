@@ -72,7 +72,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Navbar -->
-    <nav class="bg-white border-b border-gray-200 border-l-2 border-l-blue-400 px-6 py-4 shadow-sm animate-fade-in">
+    <nav class="bg-white border-b border-blue-200 border-l-2 border-l-blue-400 px-6 py-4 shadow-sm animate-fade-in">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2 text-sm text-gray-600">
                 <a href="{{ route('dashboard') }}" class="breadcrumb-link flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-medium">

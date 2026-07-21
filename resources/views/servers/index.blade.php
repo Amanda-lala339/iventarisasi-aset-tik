@@ -4,6 +4,8 @@
 @section('page', 'Server List')
 
 @section('content')
+<a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Dashboard</a>
+    <br><br>
 <div class="bg-white rounded-lg border border-gray-200">
     <!-- Filters -->
     <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-200 gap-3">
@@ -44,7 +46,7 @@
     <!-- Table -->
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-500">
+            <thead class="bg-blue-50 text-gray-600">
                 <tr>
                     <th class="px-4 py-3 text-left font-medium">Server name</th>
                     <th class="px-4 py-3 text-left font-medium">IP address</th>
