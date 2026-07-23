@@ -13,11 +13,22 @@ class Asset extends Model
         'owner', 'retention', 'confidentiality', 'integrity', 'availability',
         'criticality', 'category', 'se_category', 'description', 'specification',
         'ip_address', 'platform', 'os_server', 'contact_pic', 'function',
-        'unit', 'position', 'nip', 'personnel_category'
+        'unit', 'position', 'nip', 'personnel_category',
+        'app_description', 'app_url', 'ip_public_internal',
+        'data_center', 'asset_type_category', 'condition'
+    ];
+
+    protected $casts = [
+        'year' => 'integer',
     ];
 
     public function category(): BelongsTo
     {
         return $this->belongsTo(AssetCategory::class, 'asset_category_id');
+    }
+
+    public function assetCategory(): BelongsTo
+    {
+        return $this->category();
     }
 }

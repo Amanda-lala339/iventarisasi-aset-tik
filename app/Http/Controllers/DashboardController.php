@@ -51,6 +51,8 @@ class DashboardController extends Controller
 
         $totalOs = array_sum($osDistribution);
         $osPercentages = array_map(fn($count) => round(($count / $totalOs) * 100), $osDistribution);
+        // di method index() DashboardController, kalau kamu query subdomain di controller (bukan langsung di blade)
+$recentSubdomains = \App\Models\Subdomain::with('server')->take(8)->get();
 
         return view('dashboard', compact(
             'totalAssets',
@@ -60,5 +62,6 @@ class DashboardController extends Controller
             'supportCount', 'personnelCount',
             'serverTypes', 'osDistribution', 'osPercentages'
         ));
+        
     }
 }

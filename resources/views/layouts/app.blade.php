@@ -8,69 +8,66 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
-        [x-cloak] { display: none !important; }
-        .status-active { @apply bg-green-100 text-green-700; }
-        .status-expiring { @apply bg-yellow-100 text-yellow-700; }
-        .status-expired { @apply bg-red-100 text-red-700; }
-        .status-online { @apply bg-green-100 text-green-700; }
-        .status-offline { @apply bg-red-100 text-red-700; }
-        .status-warning { @apply bg-yellow-100 text-yellow-700; }
-        .badge-physical { @apply bg-blue-100 text-blue-700; }
-        .badge-virtual { @apply bg-purple-100 text-purple-700; }
-        
+        [x-cloak]{ display: none!important;}
+        .status-active{@apply bg-green-100 text-green-700;}
+        .status-expiring{@apply bg-yellow-100 text-yellow-700;}
+        .status-expired{@apply bg-red-100 text-red-700;}
+        .status-online{@apply bg-green-100 text-green-700;}
+        .status-offline{@apply bg-red-100 text-red-700;}
+        .status-warning{@apply bg-yellow-100 text-yellow-700;}
+        .badge-physical{@apply bg-blue-100 text-blue-700;}
+        .badge-virtual{@apply bg-purple-100 text-purple-700;}
+
         /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn{
+            from{ opacity: 0; transform: translateY(-10px);}
+            to{ opacity: 1; transform: translateY(0);}
         }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
+        @keyframes slideIn{
+            from{ opacity: 0; transform: translateX(-10px);}
+            to{ opacity: 1; transform: translateX(0);}
         }
-        
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-        
-        .animate-slide-in {
-            animation: slideIn 0.4s ease-out;
-        }
-        
-        .nav-link {
+        .animate-fade-in{ animation: fadeIn 0.5s ease-out; }
+        .animate-slide-in{ animation: slideIn 0.4s ease-out; }
+
+        .nav-link{
             position: relative;
             transition: all 0.3s ease;
         }
-        
-        .nav-link::after {
-            content: '';
+        .nav-link::after{
+            content:'';
             position: absolute;
-            bottom: -2px;
+            bottom:-2px;
             left: 0;
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, #3B82F6, #60A5FA);
+            background: linear-gradient(90deg,#3B82F6,#60A5FA);
             transition: width 0.3s ease;
         }
-        
-        .nav-link:hover::after {
-            width: 100%;
+        .nav-link:hover::after{ width: 100%; }
+        .nav-link:hover{ transform: translateY(-1px); }
+
+        /* Link Kelola Aset dibuat tidak bisa diklik (abu-abu) */
+        .nav-link.disabled{
+            color: #9CA3AF !important;
+            cursor: not-allowed;
+            pointer-events: none;
+            text-decoration: none;
         }
-        
-        .nav-link:hover {
-            transform: translateY(-1px);
+        .nav-link.disabled:hover{
+            transform: none;
+            color: #9CA3AF !important;
         }
-        
-        .breadcrumb-link {
-            transition: all 0.2s ease;
+        .nav-link.disabled::after{
+            display: none;
         }
-        
-        .breadcrumb-link:hover {
-            transform: scale(1.05);
-        }
+
+        .breadcrumb-link{ transition: all 0.2s ease; }
+        .breadcrumb-link:hover{ transform: scale(1.05); }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
+
     <!-- Navbar -->
     <nav class="bg-white border-b border-blue-200 border-l-2 border-l-blue-400 px-6 py-4 shadow-sm animate-fade-in">
         <div class="flex items-center justify-between">
@@ -85,7 +82,7 @@
                 <span class="text-gray-900 font-semibold">@yield('page', 'Dashboard')</span>
             </div>
             <div class="flex items-center space-x-6">
-                <a href="{{ route('assets.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium">Kelola Aset</a>
+                <!-- Kelola Aset - TIDAK BISA DIKLIK -->
                 <a href="{{ route('servers.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium">Server</a>
                 <a href="{{ route('subdomains.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium">Subdomain</a>
             </div>
