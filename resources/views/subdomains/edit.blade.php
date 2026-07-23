@@ -4,42 +4,68 @@
 @section('page', 'Edit Subdomain')
 
 @section('content')
-<a href="{{ route('subdomains.index') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Subdomain List</a>
-<br><br>
-<div class="max-w-2xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md shadow-blue-300/5 hover:shadow-blue-300/5">
-    <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Subdomain: {{ $subdomain->subdomain }}</h2>
-    <form method="POST" action="{{ route('subdomains.update', $subdomain) }}">
-        @csrf @method('PUT')
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Subdomain</label>
-                <input type="text" name="subdomain" value="{{ old('subdomain', $subdomain->subdomain) }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+<a href="{{ route('subdomains.index') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 mb-4 inline-block">← Kembali ke Subdomain List</a>
+
+<div class="flex justify-center">
+    <div class="bg-white rounded-lg border border-gray-200 shadow-lg shadow-blue-500/10 p-6 w-full max-w-2xl">
+        <h2 class="text-lg font-semibold text-gray-700 mb-6">Edit Subdomain</h2>
+        
+        <form action="{{ route('subdomains.update', $subdomain->id) }}" method="POST">
+            @csrf
+            @method('PUT')
+            
+            <div class="mb-4">
+                <label for="subdomain" class="block text-sm font-medium text-gray-700 mb-1">Subdomain</label>
+                <input type="text" name="subdomain" id="subdomain" value="{{ old('subdomain', $subdomain->subdomain) }}" required
+                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                @error('subdomain') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select name="status" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                    @foreach(['Active', 'Expiring', 'Expired'] as $status)
-                        <option value="{{ $status }}" {{ old('status', $subdomain->status) == $status ? 'selected' : '' }}>{{ $status }}</option>
+
+            <div class="mb-4">
+                <label for="domain" class="block text-sm font-medium text-gray-700 mb-1">Domain</label>
+                <input type="text" name="domain" id="domain" value="{{ old('domain', $subdomain->domain) }}" required
+                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                @error('domain') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label for="server_id" class="block text-sm font-medium text-gray-700 mb-1">Server</label>
+                <select name="server_id" id="server_id" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">-- Pilih Server --</option>
+                    @foreach($servers as $server)
+                        <option value="{{ $server->id }}" {{ old('server_id', $subdomain->server_id) == $server->id ? 'selected' : '' }}>
+                            {{ $server->name }}
+                        </option>
                     @endforeach
                 </select>
+                @error('server_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Domain</label>
-                <input type="text" name="domain" value="{{ old('domain', $subdomain->domain) }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+
+            <div class="mb-4">
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" id="status" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="Active" {{ old('status', $subdomain->status) == 'Active' ? 'selected' : '' }}>Active</option>
+                    <option value="Expiring" {{ old('status', $subdomain->status) == 'Expiring' ? 'selected' : '' }}>Expiring</option>
+                    <option value="Expired" {{ old('status', $subdomain->status) == 'Expired' ? 'selected' : '' }}>Expired</option>
+                </select>
+                @error('status') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
-                <input type="text" name="ip_address" value="{{ old('ip_address', $subdomain->ip_address) }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+
+            <div class="mb-6">
+                <label for="ssl_expiry" class="block text-sm font-medium text-gray-700 mb-1">SSL Expiry (Opsional)</label>
+                <input type="date" name="ssl_expiry" id="ssl_expiry" 
+                       value="{{ old('ssl_expiry', $subdomain->ssl_expiry ? \Carbon\Carbon::parse($subdomain->ssl_expiry)->format('Y-m-d') : '') }}"
+                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                @error('ssl_expiry') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">SSL Expiry</label>
-                <input type="date" name="ssl_expiry" value="{{ old('ssl_expiry', $subdomain->ssl_expiry?->format('Y-m-d')) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+
+            <div class="flex items-center gap-3">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors">Simpan Perubahan</button>
+                <a href="{{ route('subdomains.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition-colors">Batal</a>
             </div>
-        </div>
-        <div class="flex justify-end space-x-3 mt-6">
-            <a href="{{ route('subdomains.index') }}" class="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">Batal</a>
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Update</button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 @endsection

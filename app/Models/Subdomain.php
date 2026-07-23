@@ -7,14 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class Subdomain extends Model
 {
     protected $fillable = [
-        'subdomain', 'status', 'domain', 'ip_address', 'ssl_expiry'
+        'subdomain',
+        'domain',
+        'server_id',
+        'status',
+        'ssl_expiry',
     ];
 
-    protected $casts = [
-        'ssl_expiry' => 'date'
-    ];
     public function server()
-{
-    return $this->belongsTo(\App\Models\Server::class);
-}
+    {
+        return $this->belongsTo(Server::class);
+    }
 }

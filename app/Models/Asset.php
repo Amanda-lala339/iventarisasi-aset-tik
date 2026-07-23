@@ -22,10 +22,10 @@ class Asset extends Model
         'year' => 'integer',
     ];
 
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(AssetCategory::class, 'asset_category_id');
-    }
+    public function category()
+{
+    return $this->belongsTo(AssetCategory::class, 'asset_category_id');
+}
 
     public function assetCategory(): BelongsTo
     {

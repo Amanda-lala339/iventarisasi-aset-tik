@@ -87,11 +87,27 @@ class AssetController extends Controller
             ->with('success', 'Aset berhasil ditambahkan.');
     }
 
-    public function show(Asset $asset)
-    {
-        $asset->load('category');
-        return view('assets.show', compact('asset'));
+   public function show($id)
+{
+    // Load asset dengan relasi category secara eksplisit
+    $asset = Asset::with('category')->findOrFail($id);
+    
+    $code = null;
+
+    // PERBAIKAN: Cek apakah category benar-benar sebuah Object (Model), bukan String
+    if (is_object($asset->category)) {
+        $code = $asset->category->code;
     }
+
+    if (!$code && !empty($asset->asset_code)) {
+        // Fallback: extract kode dari asset_code (contoh: "DI-001" -> "DI")
+        $code = substr($asset->asset_code, 0, 2);
+    }
+    
+    $code = strtoupper(trim($code ?? ''));
+
+    return view('assets.show', compact('asset', 'code'));
+}
 
     public function edit(Asset $asset)
     {
