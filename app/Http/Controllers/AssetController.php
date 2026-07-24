@@ -87,27 +87,24 @@ class AssetController extends Controller
             ->with('success', 'Aset berhasil ditambahkan.');
     }
 
-   public function show($id)
-{
-    // Load asset dengan relasi category secara eksplisit
-    $asset = Asset::with('category')->findOrFail($id);
-    
-    $code = null;
+    public function show($id)
+    {
+        $asset = Asset::with('category')->findOrFail($id);
 
-    // PERBAIKAN: Cek apakah category benar-benar sebuah Object (Model), bukan String
-    if (is_object($asset->category)) {
-        $code = $asset->category->code;
+        $code = null;
+
+        if (is_object($asset->category)) {
+            $code = $asset->category->code;
+        }
+
+        if (!$code && !empty($asset->asset_code)) {
+            $code = substr($asset->asset_code, 0, 2);
+        }
+
+        $code = strtoupper(trim($code ?? ''));
+
+        return view('assets.show', compact('asset', 'code'));
     }
-
-    if (!$code && !empty($asset->asset_code)) {
-        // Fallback: extract kode dari asset_code (contoh: "DI-001" -> "DI")
-        $code = substr($asset->asset_code, 0, 2);
-    }
-    
-    $code = strtoupper(trim($code ?? ''));
-
-    return view('assets.show', compact('asset', 'code'));
-}
 
     public function edit(Asset $asset)
     {
@@ -160,11 +157,11 @@ class AssetController extends Controller
     }
 
     public function destroy(Asset $asset)
-{
-    $asset->delete();
+    {
+        $asset->delete();
 
-    return redirect()->back()->with('success', 'Aset berhasil dihapus.');
-}
+        return redirect()->back()->with('success', 'Aset berhasil dihapus.');
+    }
 
     public function import(Request $request)
     {
@@ -175,41 +172,83 @@ class AssetController extends Controller
         return back()->with('success', 'Data aset berhasil diimpor dari Excel.');
     }
 
-    private function getCategoryAssets($categoryCode, $pageTitle)
+    /**
+     * Ambil daftar aset per kategori, dengan dukungan pencarian (?search=...).
+     */
+    private function getCategoryAssets($categoryCode, $pageTitle, Request $request)
     {
         $category = AssetCategory::where('code', $categoryCode)->first();
-        $assets = Asset::with('category')
-            ->where('asset_category_id', $category?->id)
-            ->latest()
-            ->paginate(20);
+
+        $query = Asset::with('category')
+            ->where('asset_category_id', $category?->id);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search, $categoryCode) {
+                // Kolom umum yang ada di semua kategori
+                $q->where('asset_code', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhere('sub_classification', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('owner', 'like', "%{$search}%");
+
+                // Kolom tambahan spesifik per kategori
+                match ($categoryCode) {
+                    'DI' => $q->orWhere('document_number', 'like', "%{$search}%")
+                              ->orWhere('storage_format', 'like', "%{$search}%")
+                              ->orWhere('status', 'like', "%{$search}%"),
+                    'PL' => $q->orWhere('app_description', 'like', "%{$search}%")
+                              ->orWhere('app_url', 'like', "%{$search}%")
+                              ->orWhere('ip_address', 'like', "%{$search}%")
+                              ->orWhere('platform', 'like', "%{$search}%")
+                              ->orWhere('os_server', 'like', "%{$search}%")
+                              ->orWhere('contact_pic', 'like', "%{$search}%")
+                              ->orWhere('data_center', 'like', "%{$search}%")
+                              ->orWhere('status', 'like', "%{$search}%"),
+                    'PK', 'SP' => $q->orWhere('specification', 'like', "%{$search}%")
+                                    ->orWhere('asset_type_category', 'like', "%{$search}%")
+                                    ->orWhere('condition', 'like', "%{$search}%"),
+                    'PS' => $q->orWhere('nip', 'like', "%{$search}%")
+                              ->orWhere('function', 'like', "%{$search}%")
+                              ->orWhere('unit', 'like', "%{$search}%")
+                              ->orWhere('position', 'like', "%{$search}%")
+                              ->orWhere('personnel_category', 'like', "%{$search}%"),
+                    default => null,
+                };
+            });
+        }
+
+        $assets = $query->latest()->paginate(20);
         $categories = AssetCategory::all();
+
         return view('assets.category.' . strtolower($categoryCode), compact(
             'assets', 'categories', 'pageTitle', 'categoryCode', 'category'
         ));
     }
 
-    public function dataInformasi()
+    public function dataInformasi(Request $request)
     {
-        return $this->getCategoryAssets('DI', 'Data & Informasi');
+        return $this->getCategoryAssets('DI', 'Data & Informasi', $request);
     }
 
-    public function perangkatLunak()
+    public function perangkatLunak(Request $request)
     {
-        return $this->getCategoryAssets('PL', 'Perangkat Lunak');
+        return $this->getCategoryAssets('PL', 'Perangkat Lunak', $request);
     }
 
-    public function perangkatKeras()
+    public function perangkatKeras(Request $request)
     {
-        return $this->getCategoryAssets('PK', 'Perangkat Keras');
+        return $this->getCategoryAssets('PK', 'Perangkat Keras', $request);
     }
 
-    public function saranaPendukung()
+    public function saranaPendukung(Request $request)
     {
-        return $this->getCategoryAssets('SP', 'Sarana Pendukung');
+        return $this->getCategoryAssets('SP', 'Sarana Pendukung', $request);
     }
 
-    public function sdmPihakKetiga()
+    public function sdmPihakKetiga(Request $request)
     {
-        return $this->getCategoryAssets('PS', 'SDM & Pihak Ketiga');
+        return $this->getCategoryAssets('PS', 'SDM & Pihak Ketiga', $request);
     }
 }

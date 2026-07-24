@@ -14,6 +14,22 @@
         <span class="text-xs text-gray-500">Total: {{ $assets->total() }} aset</span>
     </div>
 
+    <div class="p-4 border-b border-gray-200 bg-gray-50">
+        <form method="GET" action="{{ url()->current() }}" class="flex items-center gap-2">
+            <input
+                type="text"
+                name="search"
+                value="{{ request('search') }}"
+                placeholder="Cari kode aset, nama, spesifikasi, lokasi, pemilik..."
+                class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+            <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs hover:bg-blue-700">Cari</button>
+            @if(request('search'))
+                <a href="{{ url()->current() }}" class="text-xs text-gray-500 hover:underline px-2">Reset</a>
+            @endif
+        </form>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="w-full text-xs whitespace-nowrap">
             <thead class="bg-blue-50 text-gray-600">
@@ -70,8 +86,12 @@
                 @empty
                 <tr>
                     <td colspan="11" class="px-4 py-8 text-center text-gray-500">
-                        Belum ada data Sarana Pendukung. 
-                        <a href="{{ route('assets.create', ['category' => 'SP']) }}" class="text-blue-600 hover:underline">Tambah sekarang</a>
+                        @if(request('search'))
+                            Tidak ada data yang cocok dengan pencarian "<strong>{{ request('search') }}</strong>".
+                        @else
+                            Belum ada data Sarana Pendukung.
+                            <a href="{{ route('assets.create', ['category' => 'SP']) }}" class="text-blue-600 hover:underline">Tambah sekarang</a>
+                        @endif
                     </td>
                 </tr>
                 @endforelse
@@ -79,6 +99,6 @@
         </table>
     </div>
 
-    <div class="p-4 border-t border-gray-200">{{ $assets->links() }}</div>
+    <div class="p-4 border-t border-gray-200">{{ $assets->appends(request()->query())->links() }}</div>
 </div>
 @endsection

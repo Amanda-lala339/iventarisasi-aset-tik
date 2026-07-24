@@ -14,6 +14,10 @@ class Subdomain extends Model
         'ssl_expiry',
     ];
 
+    protected $casts = [
+    'ssl_expiry' => 'date',
+];
+
     public function server()
     {
         return $this->belongsTo(Server::class);
