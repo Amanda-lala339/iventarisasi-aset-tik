@@ -51,7 +51,7 @@
             </div>
 
             <div class="mb-4">
-                <label for="kontak" class="block text-sm font-medium text-gray-700 mb-1">Kontak</label>
+                <label for="kontak" class="block text-sm font-medium text-gray-700 mb-1">Kontak/PIC</label>
                 <input type="text" name="kontak" id="kontak" value="{{ old('kontak', $subdomain->kontak) }}"
                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                        placeholder="contoh: 0812xxxxxxx / nama@diskominfo.go.id">

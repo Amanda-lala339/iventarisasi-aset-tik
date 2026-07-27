@@ -42,7 +42,7 @@
                     <th class="px-4 py-3 text-left font-medium">Domain</th>
                     <th class="px-4 py-3 text-left font-medium">Server</th>
                     <th class="px-4 py-3 text-left font-medium">OPD Pengelola</th>
-                    <th class="px-4 py-3 text-left font-medium">Kontak</th>
+                    <th class="px-4 py-3 text-left font-medium">Kontak/PIC</th>
                     <th class="px-4 py-3 text-left font-medium">SSL Expiry</th>
                     <th class="px-4 py-3 text-left font-medium">Actions</th>
                 </tr>
