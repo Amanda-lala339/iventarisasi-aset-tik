@@ -87,6 +87,15 @@
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors shadow-md">
                     Masuk
                 </button>
+
+                @if (Route::has('register'))
+                    <p class="text-center text-xs text-gray-500 pt-1">
+                        Belum punya akun?
+                        <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">
+                            Daftar di sini
+                        </a>
+                    </p>
+                @endif
             </form>
         </div>
 

@@ -45,6 +45,8 @@ class SubdomainController extends Controller
             'subdomain' => 'required|string|max:255',
             'domain' => 'required|string|max:255',
             'server_id' => 'required|exists:servers,id',
+            'opd_pengelola' => 'nullable|string|max:255',
+            'kontak' => 'nullable|string|max:255',
             'status' => 'required|in:Active,Expiring,Expired',
             'ssl_expiry' => 'nullable|date',
         ]);
@@ -67,6 +69,8 @@ class SubdomainController extends Controller
             'subdomain' => 'required|string|max:255',
             'domain' => 'required|string|max:255',
             'server_id' => 'required|exists:servers,id',
+            'opd_pengelola' => 'nullable|string|max:255',
+            'kontak' => 'nullable|string|max:255',
             'status' => 'required|in:Active,Expiring,Expired',
             'ssl_expiry' => 'nullable|date',
         ]);

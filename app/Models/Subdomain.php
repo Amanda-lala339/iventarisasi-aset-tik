@@ -10,6 +10,8 @@ class Subdomain extends Model
         'subdomain',
         'domain',
         'server_id',
+        'opd_pengelola',
+        'kontak',
         'status',
         'ssl_expiry',
     ];

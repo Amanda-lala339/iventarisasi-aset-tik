@@ -18,6 +18,7 @@
                 <input type="text" name="subdomain" id="subdomain" value="{{ old('subdomain') }}" required
                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                        placeholder="contoh: api">
+                @error('subdomain') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="mb-4">
@@ -25,7 +26,9 @@
                 <input type="text" name="domain" id="domain" value="{{ old('domain') }}" required
                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                        placeholder="contoh: smartcity.go.id">
-                                </div>
+                @error('domain') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
 
             <div class="mb-4">
                 <label for="server_id" class="block text-sm font-medium text-gray-700 mb-1">Server</label>
@@ -33,11 +36,28 @@
                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">-- Pilih Server --</option>
                     @foreach($servers as $server)
-                        <option value="{{ $server->id }}" {{ old('server_id') == $server->server_id ? 'selected' : '' }}>
+                        <option value="{{ $server->id }}" {{ old('server_id') == $server->id ? 'selected' : '' }}>
                             {{ $server->name }}
                         </option>
                     @endforeach
                 </select>
+                @error('server_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label for="opd_pengelola" class="block text-sm font-medium text-gray-700 mb-1">OPD Pengelola</label>
+                <input type="text" name="opd_pengelola" id="opd_pengelola" value="{{ old('opd_pengelola') }}"
+                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="contoh: Diskominfo Balikpapan">
+                @error('opd_pengelola') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label for="kontak" class="block text-sm font-medium text-gray-700 mb-1">Kontak</label>
+                <input type="text" name="kontak" id="kontak" value="{{ old('kontak') }}"
+                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="contoh: 0812xxxxxxx / nama@diskominfo.go.id">
+                @error('kontak') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="mb-4">
@@ -48,18 +68,20 @@
                     <option value="Expiring" {{ old('status') == 'Expiring' ? 'selected' : '' }}>Expiring</option>
                     <option value="Expired" {{ old('status') == 'Expired' ? 'selected' : '' }}>Expired</option>
                 </select>
+                @error('status') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="mb-6">
                 <label for="ssl_expiry" class="block text-sm font-medium text-gray-700 mb-1">SSL Expiry (Opsional)</label>
                 <input type="date" name="ssl_expiry" id="ssl_expiry" value="{{ old('ssl_expiry') }}"
                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                @error('ssl_expiry') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex items-center gap-3">
                 <a href="{{ route('subdomains.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition-colors">Batal</a>
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors">Simpan</button>
-</div>
+            </div>
         </form>
     </div>
 </div>

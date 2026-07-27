@@ -75,6 +75,13 @@
     </div>
 </div>
 
+    @php
+        // Total assets dihitung dari penjumlahan 5 kategori,
+        // bukan dari query terpisah, supaya angkanya selalu konsisten
+        // dengan kartu-kartu kategori di bawahnya.
+        $computedTotalAssets = $dataInfoCount + $softwareCount + $hardwareCount + $supportCount + $personnelCount;
+    @endphp
+
     <!-- ============================================= -->
     <!-- Summary Cards - Baris 1                       -->
     <!-- ============================================= -->
@@ -83,7 +90,7 @@
         <!-- Total Assets - TIDAK BISA DIKLIK (teks biasa) -->
         <div class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 overflow-hidden cursor-default">
             <div class="text-gray-500 text-xs font-medium mb-2">Total assets</div>
-            <div class="text-2xl font-bold text-gray-900">{{ $totalAssets }}</div>
+            <div class="text-2xl font-bold text-gray-900">{{ $computedTotalAssets }}</div>
             <div class="text-xs text-gray-400 mt-0.5">all categories</div>
             <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>

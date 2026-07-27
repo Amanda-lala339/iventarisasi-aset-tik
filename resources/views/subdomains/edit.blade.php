@@ -43,6 +43,22 @@
             </div>
 
             <div class="mb-4">
+                <label for="opd_pengelola" class="block text-sm font-medium text-gray-700 mb-1">OPD Pengelola</label>
+                <input type="text" name="opd_pengelola" id="opd_pengelola" value="{{ old('opd_pengelola', $subdomain->opd_pengelola) }}"
+                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="contoh: Diskominfo Balikpapan">
+                @error('opd_pengelola') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label for="kontak" class="block text-sm font-medium text-gray-700 mb-1">Kontak</label>
+                <input type="text" name="kontak" id="kontak" value="{{ old('kontak', $subdomain->kontak) }}"
+                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="contoh: 0812xxxxxxx / nama@diskominfo.go.id">
+                @error('kontak') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="mb-4">
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <select name="status" id="status" required
                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">

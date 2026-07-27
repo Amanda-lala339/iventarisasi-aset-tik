@@ -41,6 +41,8 @@
                     <th class="px-4 py-3 text-left font-medium">Status</th>
                     <th class="px-4 py-3 text-left font-medium">Domain</th>
                     <th class="px-4 py-3 text-left font-medium">Server</th>
+                    <th class="px-4 py-3 text-left font-medium">OPD Pengelola</th>
+                    <th class="px-4 py-3 text-left font-medium">Kontak</th>
                     <th class="px-4 py-3 text-left font-medium">SSL Expiry</th>
                     <th class="px-4 py-3 text-left font-medium">Actions</th>
                 </tr>
@@ -63,6 +65,16 @@
                         @else
                             <span class="text-gray-400">-</span>
                         @endif
+                    </td>
+
+                    <!-- KOLOM OPD PENGELOLA -->
+                    <td class="px-4 py-3 text-gray-600">
+                        {{ $subdomain->opd_pengelola ?: '-' }}
+                    </td>
+
+                    <!-- KOLOM KONTAK -->
+                    <td class="px-4 py-3 text-gray-600">
+                        {{ $subdomain->kontak ?: '-' }}
                     </td>
 
                     <td class="px-4 py-3 text-gray-600">{{ \Carbon\Carbon::parse($subdomain->ssl_expiry)->format('Y-m-d') }}</td>
@@ -89,7 +101,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                    <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                         Tidak ada data subdomain.
                     </td>
                 </tr>
