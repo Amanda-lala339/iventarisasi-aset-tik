@@ -336,44 +336,68 @@
 
             <div class="overflow-x-auto">
                 <table class="w-full text-xs">
-                    <thead class="bg-blue-50 text-gray-600">
-    <tr>
-        <th class="px-3 py-2 text-left font-medium">Subdomain</th>
-        <th class="px-3 py-2 text-left font-medium">Status</th>
-        <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Domain</th>
-        <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Server</th>
-        <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">SSL Expiry</th>
-    </tr>
-</thead>
-                    <tbody class="divide-y divide-gray-100">
-    @foreach(\App\Models\Subdomain::take(8)->get() as $subdomain)
-        <tr class="hover:bg-gray-50" x-data='{{ json_encode(["sub" => $subdomain->subdomain, "domain" => $subdomain->domain, "status" => $subdomain->status]) }}' x-show="matchesSubdomain(sub, domain, status)">
-            <td class="px-3 py-2">
-                <div class="flex items-center space-x-1.5">
-                    <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                    </svg>
-                    <span class="font-mono text-gray-900">{{ $subdomain->subdomain }}</span>
-                </div>
-            </td>
-            <td class="px-3 py-2">
-                <span class="px-1.5 py-0.5 rounded text-[10px] {{ $subdomain->status === 'Active' ? 'bg-green-100 text-green-700' : ($subdomain->status === 'Expiring' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
-                    {{ $subdomain->status }}
-                </span>
-            </td>
-            <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">{{ $subdomain->domain }}</td>
-            <td class="px-3 py-2 text-gray-700 font-medium" x-show="subdomainExpanded">
-                @if($subdomain->server)
-                    {{ $subdomain->server->name }}
-                @else
-                    <span class="text-gray-400">-</span>
-                @endif
-            </td>
-            <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">{{ $subdomain->ssl_expiry?->format('Y-m-d') }}</td>
+    <thead class="bg-blue-50 text-gray-600">
+        <tr>
+            <th class="px-3 py-2 text-left font-medium">Subdomain</th>
+            <th class="px-3 py-2 text-left font-medium">Status</th>
+            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Domain</th>
+            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Server</th>
+            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">OPD pengelola</th>
+            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Kontak/PIC</th>
+            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">SSL Expiry</th>
         </tr>
-    @endforeach
-</tbody>
-                </table>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+        @foreach(\App\Models\Subdomain::take(8)->get() as $subdomain)
+            <tr class="hover:bg-gray-50"
+                x-data='{{ json_encode(["sub" => $subdomain->subdomain, "domain" => $subdomain->domain, "status" => $subdomain->status]) }}'
+                x-show="matchesSubdomain(sub, domain, status)">
+ 
+                <td class="px-3 py-2">
+                    <div class="flex items-center space-x-1.5">
+                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                        </svg>
+                        <span class="font-mono text-gray-900">{{ $subdomain->subdomain }}</span>
+                    </div>
+                </td>
+ 
+                <td class="px-3 py-2">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] {{ $subdomain->status === 'Active' ? 'bg-green-100 text-green-700' : ($subdomain->status === 'Expiring' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
+                        {{ $subdomain->status }}
+                    </span>
+                </td>
+ 
+                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
+                    {{ $subdomain->domain }}
+                </td>
+ 
+                <td class="px-3 py-2 text-gray-700 font-medium" x-show="subdomainExpanded">
+                    @if($subdomain->server)
+                        {{ $subdomain->server->name }}
+                    @else
+                        <span class="text-gray-400">-</span>
+                    @endif
+                </td>
+ 
+                {{-- FIX: kolom yang sebelumnya hilang --}}
+                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
+                    {{ $subdomain->opd_pengelola ?? '-' }}
+                </td>
+ 
+                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
+                    {{ $subdomain->contact_pic ?? '-' }}
+                </td>
+                {{-- END FIX --}}
+ 
+                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
+                    {{ $subdomain->ssl_expiry?->format('Y-m-d') ?? '-' }}
+                </td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
             </div>
 
             <div class="flex items-center justify-between p-3 border-t border-gray-200">
