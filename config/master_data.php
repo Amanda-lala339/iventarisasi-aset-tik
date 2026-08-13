@@ -8,7 +8,7 @@ return [
         'group' => 'Umum',
         'fields' => [
             'asset_category_code' => [
-                'label' => 'Kategori Aset', 
+                'label' => 'Kategori Aset',
                 'type' => 'select',
                 'options' => [
                     'DI' => 'Data & Informasi',
@@ -27,32 +27,58 @@ return [
     ],
 
     'opd_owners' => [
-    'label' => 'OPD / Pemilik Aset',
-    'model' => \App\Models\OpdOwner::class,
-    'icon' => 'fas fa-building',
-    'group' => 'Umum',
-    'fields' => [
-        'name' => ['label' => 'Nama OPD', 'type' => 'text', 'required' => true],
-        'asset_category_code' => [
-            'label' => 'Kategori Aset (opsional)',
-            'type' => 'select',
-            'options' => [
-                '' => '- Semua Kategori -',
-                'DI' => 'Data & Informasi',
-                'PL' => 'Perangkat Lunak',
-                'PK' => 'Perangkat Keras',
-                'SP' => 'Sarana Pendukung',
-                'PS' => 'SDM & Pihak Ketiga',
+        'label' => 'OPD / Pemilik Aset',
+        'model' => \App\Models\OpdOwner::class,
+        'icon' => 'fas fa-building',
+        'group' => 'Umum',
+        'fields' => [
+            'name' => ['label' => 'Nama OPD', 'type' => 'text', 'required' => true],
+            'asset_category_code' => [
+                'label' => 'Kategori Aset (opsional)',
+                'type' => 'select',
+                'options' => [
+                    '' => '- Semua Kategori -',
+                    'DI' => 'Data & Informasi',
+                    'PL' => 'Perangkat Lunak',
+                    'PK' => 'Perangkat Keras',
+                    'SP' => 'Sarana Pendukung',
+                    'PS' => 'SDM & Pihak Ketiga',
+                ],
             ],
+            'code' => ['label' => 'Kode OPD', 'type' => 'text'],
+            'address' => ['label' => 'Alamat', 'type' => 'textarea'],
+            'phone' => ['label' => 'Telepon', 'type' => 'text'],
+            'email' => ['label' => 'Email', 'type' => 'email'],
+            'description' => ['label' => 'Deskripsi', 'type' => 'textarea'],
+            'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
         ],
-        'code' => ['label' => 'Kode OPD', 'type' => 'text'],
-        'address' => ['label' => 'Alamat', 'type' => 'textarea'],
-        'phone' => ['label' => 'Telepon', 'type' => 'text'],
-        'email' => ['label' => 'Email', 'type' => 'email'],
-        'description' => ['label' => 'Deskripsi', 'type' => 'textarea'],
-        'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
     ],
-],
+
+    // ✅ TAMBAHAN BARU: JENIS DOKUMEN
+    'document_types' => [
+        'label' => 'Jenis Dokumen',
+        'model' => \App\Models\DocumentType::class,
+        'icon' => 'fas fa-file-signature',
+        'group' => 'Aset',
+        'fields' => [
+            'name' => ['label' => 'Nama Jenis Dokumen', 'type' => 'text', 'required' => true],
+            'asset_category_code' => [
+                'label' => 'Kategori Aset (opsional)',
+                'type' => 'select',
+                'options' => [
+                    '' => '- Semua Kategori -',
+                    'DI' => 'Data & Informasi',
+                    'PL' => 'Perangkat Lunak',
+                    'PK' => 'Perangkat Keras',
+                    'SP' => 'Sarana Pendukung',
+                    'PS' => 'SDM & Pihak Ketiga',
+                ],
+            ],
+            'description' => ['label' => 'Deskripsi', 'type' => 'textarea'],
+            'order' => ['label' => 'Urutan', 'type' => 'number', 'default' => 0],
+            'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
+        ],
+    ],
 
     'asset_statuses' => [
         'label' => 'Status Aset',
@@ -329,6 +355,7 @@ return [
         ],
     ],
 
+    // ✅ DATA CENTER - TETAP ADA dengan asset_category_code
     'data_centers' => [
         'label' => 'Data Center',
         'model' => \App\Models\DataCenter::class,

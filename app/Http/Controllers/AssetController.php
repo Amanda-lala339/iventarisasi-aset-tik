@@ -20,6 +20,7 @@ use App\Models\PersonnelFunction;
 use App\Models\StorageFormat;
 use App\Models\OpdOwner;
 use App\Models\DataCenter;
+use App\Models\DocumentType;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -39,10 +40,20 @@ class AssetController extends Controller
 
         $byCategory = function (string $model) use ($codes) {
             try {
-                $items = $model::where('is_active', true)
-                    ->when(Schema::hasColumn((new $model)->getTable(), 'order'), fn($q) => $q->orderBy('order'))
-                    ->orderBy('name')
-                    ->get();
+                $tableName = (new $model)->getTable();
+
+                // Cek apakah tabel punya kolom 'order' sebelum pakai orderBy
+                if (Schema::hasColumn($tableName, 'order')) {
+                    $items = $model::where('is_active', true)
+                        ->orderBy('order')
+                        ->orderBy('name')
+                        ->get();
+                } else {
+                    $items = $model::where('is_active', true)
+                        ->orderBy('name')
+                        ->get();
+                }
+
                 $grouped = [];
                 foreach ($codes as $code) {
                     $grouped[$code] = $items->filter(
@@ -72,22 +83,8 @@ class AssetController extends Controller
             'criticalityLevels'     => $byCategory(CriticalityLevel::class),
             'opdOwners'             => $byCategory(OpdOwner::class),
             'dataCenters'           => $byCategory(DataCenter::class),
+            'documentTypes'         => $byCategory(DocumentType::class),
         ];
-    }
-
-    /**
-     * Helper untuk mengambil collection dengan error handling
-     */
-    private function getCollection(string $model): \Illuminate\Support\Collection
-    {
-        try {
-            return $model::where('is_active', true)
-                ->when(Schema::hasColumn((new $model)->getTable(), 'order'), fn($q) => $q->orderBy('order'))
-                ->orderBy('name')
-                ->get();
-        } catch (\Exception $e) {
-            return collect();
-        }
     }
 
     public function index(Request $request)

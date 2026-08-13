@@ -51,9 +51,15 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
                     <input type="text" name="name" value="{{ old('name') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
+                {{-- ✅ NOMOR DOKUMEN DIUBAH JADI DROPDOWN --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Dokumen</label>
-                    <input type="text" name="document_number" value="{{ old('document_number') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Dokumen</label>
+                    <select name="document_number" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" selected disabled>Pilih...</option>
+                        @foreach($documentTypes['DI'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('document_number') == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Penyusunan/Pengesahan</label>
@@ -188,6 +194,7 @@
                         @endforeach
                     </select>
                 </div>
+                {{-- ✅ DATA CENTER TETAP ADA --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Data Center</label>
                     <select name="data_center" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">

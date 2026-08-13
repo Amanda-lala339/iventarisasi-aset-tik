@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DataCenter extends Model
+class DocumentType extends Model
 {
     protected $fillable = [
-        'asset_category_code', 'name', 'code', 'address', 'city', 'provider', 'description', 'is_active'
+        'asset_category_code', 'name', 'description', 'order', 'is_active'
     ];
 
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = [
+        'is_active' => 'boolean',
+        'order' => 'integer',
+    ];
 
     public function scopeActive($query)
     {

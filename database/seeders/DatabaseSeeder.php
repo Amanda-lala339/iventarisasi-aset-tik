@@ -12,28 +12,39 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create Asset Categories
+        // ========================================
+        // 0. Jalankan MasterDataSeeder DULU
+        // ========================================
+        $this->call(MasterDataSeeder::class);
+
+        // ========================================
+        // 1. ASSET CATEGORIES
+        // ========================================
         $categories = [
-            ['name' => 'Data dan Informasi', 'code' => 'DI', 'total_count' => 500, 'high_count' => 1, 'medium_count' => 1, 'low_count' => 498],
-            ['name' => 'Perangkat Lunak', 'code' => 'PL', 'total_count' => 500, 'high_count' => 1, 'medium_count' => 1, 'low_count' => 498],
-            ['name' => 'Perangkat Keras', 'code' => 'PK', 'total_count' => 500, 'high_count' => 1, 'medium_count' => 1, 'low_count' => 498],
-            ['name' => 'Sarana Pendukung', 'code' => 'SP', 'total_count' => 500, 'high_count' => 1, 'medium_count' => 1, 'low_count' => 498],
-            ['name' => 'SDM & Pihak Ketiga', 'code' => 'PS', 'total_count' => 3, 'high_count' => 0, 'medium_count' => 0, 'low_count' => 0],
+            ['name' => 'Data dan Informasi', 'code' => 'DI'],
+            ['name' => 'Perangkat Lunak',    'code' => 'PL'],
+            ['name' => 'Perangkat Keras',    'code' => 'PK'],
+            ['name' => 'Sarana Pendukung',   'code' => 'SP'],
+            ['name' => 'SDM & Pihak Ketiga', 'code' => 'PS'],
         ];
 
         foreach ($categories as $cat) {
-            AssetCategory::create($cat);
+            AssetCategory::firstOrCreate(['code' => $cat['code']], $cat);
         }
+        $this->command->info('✓ Asset Categories: ' . count($categories) . ' records');
 
-        // Seed sample Data & Informasi assets
-        $diCategory = AssetCategory::where('code', 'DI')->first();
-        Asset::create([
-            'asset_category_id' => $diCategory->id,
+        // ========================================
+        // 2. DATA & INFORMASI (DI) — 3 record
+        // ========================================
+        $di = AssetCategory::where('code', 'DI')->first();
+
+        Asset::firstOrCreate(['asset_code' => 'DI-001'], [
+            'asset_category_id' => $di->id,
             'asset_code' => 'DI-001',
             'sub_classification' => 'Database dan data files',
             'name' => 'Data Pegawai Aktif',
             'document_number' => 'HR-001',
-            'year' => '2023',
+            'year' => 2023,
             'status' => 'Draft',
             'location' => 'Server Data Center',
             'storage_format' => 'Database (SQL)',
@@ -42,15 +53,15 @@ class DatabaseSeeder extends Seeder
             'confidentiality' => 'Informasi Terbuka / Publik',
             'integrity' => 'Data Penunjang Umum',
             'availability' => 'Akses Fleksibel / Non-Kritis',
-            'criticality' => 'Rendah',
         ]);
-        Asset::create([
-            'asset_category_id' => $diCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'DI-002'], [
+            'asset_category_id' => $di->id,
             'asset_code' => 'DI-002',
             'sub_classification' => 'Data Log dan Audit',
             'name' => 'Statistik Pengunjung Website',
             'document_number' => 'WEB-STAT-01',
-            'year' => '2024',
+            'year' => 2024,
             'status' => 'Sudah Disahkan',
             'location' => 'Server Aplikasi Web',
             'storage_format' => 'Database & CSV',
@@ -59,15 +70,15 @@ class DatabaseSeeder extends Seeder
             'confidentiality' => 'Informasi Terbatas',
             'integrity' => 'Data Proses Administrasi',
             'availability' => 'Akses Rutin Terjadwal',
-            'criticality' => 'Sedang',
         ]);
-        Asset::create([
-            'asset_category_id' => $diCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'DI-003'], [
+            'asset_category_id' => $di->id,
             'asset_code' => 'DI-003',
             'sub_classification' => 'Dokumen Kontrak dan Legal',
             'name' => 'Perjanjian Kerja Sama',
             'document_number' => 'PKS-022',
-            'year' => '2022',
+            'year' => 2022,
             'status' => 'Sudah Disahkan',
             'location' => 'Arsip Digital & Fisik',
             'storage_format' => 'PDF & Hardcopy',
@@ -76,148 +87,169 @@ class DatabaseSeeder extends Seeder
             'confidentiality' => 'Informasi Strategis / Rahasia',
             'integrity' => 'Data Vital Pengambilan Keputusan',
             'availability' => 'Akses Seketika (Real-time)',
-            'criticality' => 'Tinggi',
         ]);
+        $this->command->info('✓ Data & Informasi: 3 records');
 
-        // Seed Perangkat Lunak
-        $plCategory = AssetCategory::where('code', 'PL')->first();
-        Asset::create([
-            'asset_category_id' => $plCategory->id,
+        // ========================================
+        // 3. PERANGKAT LUNAK (PL) — 3 record
+        // ========================================
+        $pl = AssetCategory::where('code', 'PL')->first();
+
+        Asset::firstOrCreate(['asset_code' => 'PL-001'], [
+            'asset_category_id' => $pl->id,
             'asset_code' => 'PL-001',
             'sub_classification' => 'Aplikasi Berbasis Website',
             'name' => 'Sistem Informasi Layanan Online',
-            'year' => '2025',
-            'description' => 'Aplikasi pengajuan layanan publik secara daring',
+            'year' => 2025,
+            'app_description' => 'Aplikasi pengajuan layanan publik secara daring (perizinan & administrasi)',
+            'app_url' => 'https://silo.instansi.go.id',
             'ip_address' => '103.25.10.12',
+            'ip_public_internal' => 'Publik',
             'platform' => 'Web-Based',
             'os_server' => 'Ubuntu 24.04',
             'owner' => 'BKPSDM',
-            'contact_pic' => 'Bidang TIK BKPSDM',
+            'data_center' => 'Server BKPSDM',
+            'contact_pic' => 'Bidang TIK BKPSDM - it-support@instansi.go.id',
             'status' => 'Aktif',
             'se_category' => 'Rendah',
-            'criticality' => 'Rendah',
         ]);
-        Asset::create([
-            'asset_category_id' => $plCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'PL-002'], [
+            'asset_category_id' => $pl->id,
             'asset_code' => 'PL-002',
             'sub_classification' => 'Aplikasi Berbasis Website',
             'name' => 'Sistem Informasi Kepegawaian',
-            'year' => '2025',
-            'description' => 'Pengelolaan data pegawai, cuti, kenaikan pangkat',
+            'year' => 2025,
+            'app_description' => 'Pengelolaan data pegawai, cuti, kenaikan pangkat',
+            'app_url' => 'https://simpeg.internal.go.id',
             'ip_address' => '10.10.5.21',
+            'ip_public_internal' => 'Internal',
             'platform' => 'Web-Based',
             'os_server' => 'CentOS 9',
             'owner' => 'BKPSDM',
-            'contact_pic' => 'Bidang Aptika Diskominfo',
+            'data_center' => 'Server Diskominfo dan Server PDN',
+            'contact_pic' => 'Bidang Aptika Diskominfo - sdm@instansi.go.id',
             'status' => 'Aktif',
             'se_category' => 'Tinggi',
-            'criticality' => 'Sedang',
         ]);
-        Asset::create([
-            'asset_category_id' => $plCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'PL-003'], [
+            'asset_category_id' => $pl->id,
             'asset_code' => 'PL-003',
-            'sub_classification' => 'Aplikasi berbasis Website',
+            'sub_classification' => 'Aplikasi Berbasis Website',
             'name' => 'Website Profil Instansi',
-            'year' => '2022',
-            'description' => 'Portal informasi dan publikasi kegiatan instansi',
+            'year' => 2022,
+            'app_description' => 'Portal informasi dan publikasi kegiatan instansi',
+            'app_url' => 'https://instansi.go.id',
             'ip_address' => '103.25.10.5',
+            'ip_public_internal' => 'Publik',
             'platform' => 'Mobile-Based',
             'os_server' => 'Windows 11',
             'owner' => 'Diskominfo',
-            'contact_pic' => 'Bidang Aptika Diskominfo',
+            'data_center' => 'Cloud Hostinger',
+            'contact_pic' => 'Bidang Aptika Diskominfo - sdm@instansi.go.id',
             'status' => 'Aktif',
             'se_category' => 'Strategis',
-            'criticality' => 'Tinggi',
         ]);
+        $this->command->info('✓ Perangkat Lunak: 3 records');
 
-        // Seed Perangkat Keras
-        $pkCategory = AssetCategory::where('code', 'PK')->first();
-        Asset::create([
-            'asset_category_id' => $pkCategory->id,
+        // ========================================
+        // 4. PERANGKAT KERAS (PK) — 3 record
+        // ========================================
+        $pk = AssetCategory::where('code', 'PK')->first();
+
+        Asset::firstOrCreate(['asset_code' => 'PK-001'], [
+            'asset_category_id' => $pk->id,
             'asset_code' => 'PK-001',
             'sub_classification' => 'Server',
             'name' => 'Server Database Nasional',
-            'specification' => 'Merk: ABC, Tipe: AH123, Storage: 4TB SSD, Prosesor: 2x Xeon Gold, RAM: 128GB',
-            'year' => '2025',
+            'specification' => "Merk Dagang: ABC\nTipe: AH123\nStorage: 4TB SSD\nProsesor: 2x Xeon Gold\nRAM: 128GB",
+            'year' => 2025,
             'location' => 'Data Center Utama Diskominfo',
             'owner' => 'Diskominfo',
-            'status' => 'Layak',
-            'category' => 'Aset Umum',
-            'criticality' => 'Rendah',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Aset Umum',
         ]);
-        Asset::create([
-            'asset_category_id' => $pkCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'PK-002'], [
+            'asset_category_id' => $pk->id,
             'asset_code' => 'PK-002',
             'sub_classification' => 'Server',
             'name' => 'Server Backup',
-            'specification' => 'Merk: ABC, Tipe: AH123, Storage: 8TB HDD, Prosesor: 1x Xeon Silver, RAM: 64GB',
-            'year' => '2023',
+            'specification' => "Merk Dagang: ABC\nTipe: AH123\nStorage: 8TB HDD\nProsesor: 1x Xeon Silver\nRAM: 64GB\nSistem Operasi: Windows/Linux/Mac OS xx",
+            'year' => 2023,
             'location' => 'Data Center Cadangan Diskominfo',
             'owner' => 'Diskominfo',
-            'status' => 'Layak',
-            'category' => 'Aset Operasional Utama',
-            'criticality' => 'Sedang',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Aset Operasional Utama',
         ]);
-        Asset::create([
-            'asset_category_id' => $pkCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'PK-003'], [
+            'asset_category_id' => $pk->id,
             'asset_code' => 'PK-003',
             'sub_classification' => 'Perangkat Jaringan (Network Device)',
             'name' => 'Firewall Appliance',
             'specification' => 'Fortigate 200E',
-            'year' => '2023',
+            'year' => 2023,
             'location' => 'Data Center Utama Diskominfo',
             'owner' => 'Diskominfo',
-            'status' => 'Layak',
-            'category' => 'Aset Strategis',
-            'criticality' => 'Tinggi',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Aset Strategis',
         ]);
+        $this->command->info('✓ Perangkat Keras: 3 records');
 
-        // Seed Sarana Pendukung
-        $spCategory = AssetCategory::where('code', 'SP')->first();
-        Asset::create([
-            'asset_category_id' => $spCategory->id,
+        // ========================================
+        // 5. SARANA PENDUKUNG (SP) — 3 record
+        // ========================================
+        $sp = AssetCategory::where('code', 'SP')->first();
+
+        Asset::firstOrCreate(['asset_code' => 'SP-001'], [
+            'asset_category_id' => $sp->id,
             'asset_code' => 'SP-001',
-            'sub_classification' => 'Support Appliances',
+            'sub_classification' => 'Support Appliance',
             'name' => 'UPS 10 kVA',
             'specification' => 'Online UPS 10 kVA + Battery Backup 30 menit',
-            'year' => '2023',
+            'year' => 2023,
             'location' => 'Data Center Utama Diskominfo',
             'owner' => 'Diskominfo',
-            'status' => 'Layak',
-            'category' => 'Fasilitas Operasional Utama',
-            'criticality' => 'Sedang',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Fasilitas Operasional Utama',
         ]);
-        Asset::create([
-            'asset_category_id' => $spCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'SP-002'], [
+            'asset_category_id' => $sp->id,
             'asset_code' => 'SP-002',
             'sub_classification' => 'Support Facility',
             'name' => 'Rak Server (Server Rack)',
             'specification' => '42U Enclosed Rack + Cooling Fan',
-            'year' => '2022',
+            'year' => 2022,
             'location' => 'Data Center Utama Diskominfo',
             'owner' => 'Diskominfo',
-            'status' => 'Layak',
-            'category' => 'Fasilitas Pendukung Non-Esensial',
-            'criticality' => 'Rendah',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Fasilitas Pendukung Non-Esensial',
         ]);
-        Asset::create([
-            'asset_category_id' => $spCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'SP-003'], [
+            'asset_category_id' => $sp->id,
             'asset_code' => 'SP-003',
             'sub_classification' => 'Support Appliance',
             'name' => 'CCTV Ruang Server',
             'specification' => 'IP Camera 4MP + NVR',
-            'year' => '2023',
+            'year' => 2023,
             'location' => 'Ruang Server',
             'owner' => 'Diskominfo',
-            'status' => 'Layak',
-            'category' => 'Fasilitas Strategis',
-            'criticality' => 'Tinggi',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Fasilitas Strategis',
         ]);
+        $this->command->info('✓ Sarana Pendukung: 3 records');
 
-        // Seed SDM & Pihak Ketiga
-        $psCategory = AssetCategory::where('code', 'PS')->first();
-        Asset::create([
-            'asset_category_id' => $psCategory->id,
+        // ========================================
+        // 6. SDM & PIHAK KETIGA (PS) — 3 record
+        // ========================================
+        $ps = AssetCategory::where('code', 'PS')->first();
+
+        Asset::firstOrCreate(['asset_code' => 'PS-001'], [
+            'asset_category_id' => $ps->id,
             'asset_code' => 'PS-001',
             'sub_classification' => 'Technical',
             'name' => 'Andi Pratama',
@@ -227,19 +259,21 @@ class DatabaseSeeder extends Seeder
             'unit' => 'Bidang Persandian Diskominfo',
             'position' => 'Sandiman Ahli Muda',
         ]);
-        Asset::create([
-            'asset_category_id' => $psCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'PS-002'], [
+            'asset_category_id' => $ps->id,
             'asset_code' => 'PS-002',
             'sub_classification' => 'Management',
             'name' => 'PT Teknologi Nusantara',
-            'personnel_category' => 'PIHAK KETIGA',
+            'personnel_category' => 'Pihak Ketiga',
             'nip' => '8123456789012',
             'function' => 'Pengembangan & maintenance aplikasi SILO',
             'unit' => 'Bidang APTIKA Diskominfo',
             'position' => 'Project Manager',
         ]);
-        Asset::create([
-            'asset_category_id' => $psCategory->id,
+
+        Asset::firstOrCreate(['asset_code' => 'PS-003'], [
+            'asset_category_id' => $ps->id,
             'asset_code' => 'PS-003',
             'sub_classification' => 'Technical',
             'name' => 'Budi Santoso',
@@ -249,8 +283,11 @@ class DatabaseSeeder extends Seeder
             'unit' => 'Bidang APTIKA Diskominfo',
             'position' => 'Pranata Komputer Ahli Pertama',
         ]);
+        $this->command->info('✓ SDM & Pihak Ketiga: 3 records');
 
-        // Seed Servers
+        // ========================================
+        // 7. SERVERS
+        // ========================================
         $servers = [
             ['name' => 'srv-web-01', 'ip_address' => '10.0.0.1', 'os' => 'Ubuntu', 'type' => 'Web server', 'kind' => 'Physical', 'os_version' => '22.04 LTS', 'status' => 'Online'],
             ['name' => 'srv-web-02', 'ip_address' => '10.0.0.2', 'os' => 'Ubuntu', 'type' => 'Web server', 'kind' => 'Physical', 'os_version' => '20.04 LTS', 'status' => 'Online'],
@@ -265,12 +302,12 @@ class DatabaseSeeder extends Seeder
             ['name' => 'srv-file-02', 'ip_address' => '10.0.0.11', 'os' => 'Ubuntu', 'type' => 'File / storage', 'kind' => 'Physical', 'os_version' => '20.04 LTS', 'status' => 'Online'],
             ['name' => 'srv-backup-01', 'ip_address' => '10.0.0.12', 'os' => 'CentOS', 'type' => 'Backup', 'kind' => 'Physical', 'os_version' => '7.9', 'status' => 'Warning'],
         ];
+        foreach ($servers as $s) { Server::firstOrCreate(['name' => $s['name']], $s); }
+        $this->command->info('✓ Servers: ' . count($servers) . ' records');
 
-        foreach ($servers as $server) {
-            Server::create($server);
-        }
-
-        // Seed Subdomains
+        // ========================================
+        // 8. SUBDOMAINS
+        // ========================================
         $subdomains = [
             ['subdomain' => 'api.smartcity.go.id', 'status' => 'Active', 'domain' => 'smartcity.go.id', 'ip_address' => '10.0.0.11', 'ssl_expiry' => '2026-12-01'],
             ['subdomain' => 'mail.smartcity.go.id', 'status' => 'Expiring', 'domain' => 'smartcity.go.id', 'ip_address' => '10.0.0.12', 'ssl_expiry' => '2025-07-10'],
@@ -285,9 +322,14 @@ class DatabaseSeeder extends Seeder
             ['subdomain' => 'api.dinas.id', 'status' => 'Active', 'domain' => 'dinas.id', 'ip_address' => '10.0.3.11', 'ssl_expiry' => '2026-08-01'],
             ['subdomain' => 'mail.dinas.id', 'status' => 'Expired', 'domain' => 'dinas.id', 'ip_address' => '10.0.3.12', 'ssl_expiry' => '2024-05-20'],
         ];
+        foreach ($subdomains as $sd) { Subdomain::firstOrCreate(['subdomain' => $sd['subdomain']], $sd); }
+        $this->command->info('✓ Subdomains: ' . count($subdomains) . ' records');
 
-        foreach ($subdomains as $subdomain) {
-            Subdomain::create($subdomain);
-        }
+        $this->command->info('');
+        $this->command->info('========================================');
+        $this->command->info('✓ DATABASE SEEDING BERHASIL');
+        $this->command->info('  Total Aset TIK: 15 records');
+        $this->command->info('  (hanya data yang lengkap dari Excel)');
+        $this->command->info('========================================');
     }
 }
