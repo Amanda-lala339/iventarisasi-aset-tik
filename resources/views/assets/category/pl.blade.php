@@ -4,15 +4,18 @@
 @section('page', $pageTitle ?? 'Perangkat Lunak')
 
 @section('content')
-<a href="{{ route('assets.index') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Kelola Aset</a>
-<br><br>
+<div class="flex items-center justify-between mb-4">
+    <a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Dashboard</a>
+    <div class="flex gap-2">
+        <a href="{{ route('assets.create', ['category' => 'PL']) }}" class="bg-green-600 text-white px-3 py-1.5 rounded text-xs hover:bg-green-700">+ Tambah Perangkat Lunak</a>
+    </div>
+</div>
 
 <div class="bg-white rounded-lg border border-gray-200 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-shadow duration-300">
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-200 gap-3">
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Daftar Aset: {{ $pageTitle ?? 'Perangkat Lunak' }}</h2>
         <div class="flex items-center gap-2">
-            <a href="{{ route('assets.create', ['category' => 'PL']) }}" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700">+ Tambah</a>
             <span class="text-xs text-gray-500">Total: {{ $assets->total() }} aset</span>
         </div>
     </div>

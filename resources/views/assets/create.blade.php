@@ -85,7 +85,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset (OPD)</label>
                     <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
-                        @foreach($opdOwners as $opt)
+                        @foreach($opdOwners['DI'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>
@@ -183,7 +183,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset (OPD)</label>
                     <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
-                        @foreach($opdOwners as $opt)
+                        @foreach($opdOwners['PL'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>
@@ -192,7 +192,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Data Center</label>
                     <select name="data_center" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
-                        @foreach($dataCenters as $opt)
+                        @foreach($dataCenters['PL'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('data_center') == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>
@@ -260,7 +260,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset (OPD)</label>
                     <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
-                        @foreach($opdOwners as $opt)
+                        @foreach($opdOwners['PK'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>
@@ -319,7 +319,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset (OPD)</label>
                     <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
-                        @foreach($opdOwners as $opt)
+                        @foreach($opdOwners['SP'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>
@@ -403,7 +403,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kritikalitas</label>
                     <select name="criticality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
-                        @foreach($criticalityLevels as $opt)
+                        @foreach($criticalityLevels['DI'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>

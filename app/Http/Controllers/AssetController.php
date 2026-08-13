@@ -23,6 +23,7 @@ use App\Models\DataCenter;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\AssetsImport;
 
@@ -38,7 +39,10 @@ class AssetController extends Controller
 
         $byCategory = function (string $model) use ($codes) {
             try {
-                $items = $model::where('is_active', true)->orderBy('order')->get();
+                $items = $model::where('is_active', true)
+                    ->when(Schema::hasColumn((new $model)->getTable(), 'order'), fn($q) => $q->orderBy('order'))
+                    ->orderBy('name')
+                    ->get();
                 $grouped = [];
                 foreach ($codes as $code) {
                     $grouped[$code] = $items->filter(
@@ -65,9 +69,9 @@ class AssetController extends Controller
             'personnelCategories'   => $byCategory(PersonnelCategory::class),
             'storageFormats'        => $byCategory(StorageFormat::class),
             'personnelFunctions'    => $byCategory(PersonnelFunction::class),
-            'criticalityLevels'     => $this->getCollection(CriticalityLevel::class),
-            'opdOwners'             => $this->getCollection(OpdOwner::class),
-            'dataCenters'           => $this->getCollection(DataCenter::class),
+            'criticalityLevels'     => $byCategory(CriticalityLevel::class),
+            'opdOwners'             => $byCategory(OpdOwner::class),
+            'dataCenters'           => $byCategory(DataCenter::class),
         ];
     }
 
@@ -77,7 +81,10 @@ class AssetController extends Controller
     private function getCollection(string $model): \Illuminate\Support\Collection
     {
         try {
-            return $model::where('is_active', true)->orderBy('order')->get();
+            return $model::where('is_active', true)
+                ->when(Schema::hasColumn((new $model)->getTable(), 'order'), fn($q) => $q->orderBy('order'))
+                ->orderBy('name')
+                ->get();
         } catch (\Exception $e) {
             return collect();
         }

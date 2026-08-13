@@ -8,7 +8,7 @@ return [
         'group' => 'Umum',
         'fields' => [
             'asset_category_code' => [
-                'label' => 'Kategori Aset',
+                'label' => 'Kategori Aset', 
                 'type' => 'select',
                 'options' => [
                     'DI' => 'Data & Informasi',
@@ -27,20 +27,32 @@ return [
     ],
 
     'opd_owners' => [
-        'label' => 'OPD / Pemilik Aset',
-        'model' => \App\Models\OpdOwner::class,
-        'icon' => 'fas fa-building',
-        'group' => 'Umum',
-        'fields' => [
-            'name' => ['label' => 'Nama OPD', 'type' => 'text', 'required' => true],
-            'code' => ['label' => 'Kode OPD', 'type' => 'text'],
-            'address' => ['label' => 'Alamat', 'type' => 'textarea'],
-            'phone' => ['label' => 'Telepon', 'type' => 'text'],
-            'email' => ['label' => 'Email', 'type' => 'email'],
-            'description' => ['label' => 'Deskripsi', 'type' => 'textarea'],
-            'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
+    'label' => 'OPD / Pemilik Aset',
+    'model' => \App\Models\OpdOwner::class,
+    'icon' => 'fas fa-building',
+    'group' => 'Umum',
+    'fields' => [
+        'name' => ['label' => 'Nama OPD', 'type' => 'text', 'required' => true],
+        'asset_category_code' => [
+            'label' => 'Kategori Aset (opsional)',
+            'type' => 'select',
+            'options' => [
+                '' => '- Semua Kategori -',
+                'DI' => 'Data & Informasi',
+                'PL' => 'Perangkat Lunak',
+                'PK' => 'Perangkat Keras',
+                'SP' => 'Sarana Pendukung',
+                'PS' => 'SDM & Pihak Ketiga',
+            ],
         ],
+        'code' => ['label' => 'Kode OPD', 'type' => 'text'],
+        'address' => ['label' => 'Alamat', 'type' => 'textarea'],
+        'phone' => ['label' => 'Telepon', 'type' => 'text'],
+        'email' => ['label' => 'Email', 'type' => 'email'],
+        'description' => ['label' => 'Deskripsi', 'type' => 'textarea'],
+        'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
     ],
+],
 
     'asset_statuses' => [
         'label' => 'Status Aset',

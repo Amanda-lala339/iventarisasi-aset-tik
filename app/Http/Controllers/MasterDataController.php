@@ -61,40 +61,40 @@ class MasterDataController extends Controller
      * Index - list data per tipe
      */
     public function index(Request $request, $type)
-    {
-        $typeConfig = $this->validateType($type);
-        $model = $typeConfig['model'];
-        $tableName = (new $model)->getTable();
-        $query = $model::query();
+{
+    $typeConfig = $this->validateType($type);
+    $model = $typeConfig['model'];
+    $tableName = (new $model)->getTable();
+    
+    $query = $model::query();
 
-        // Filter berdasarkan kategori aset
-        if (Schema::hasColumn($tableName, 'asset_category_code')) {
-            if ($request->filled('asset_category_code')) {
-                $query->where('asset_category_code', $request->asset_category_code);
+    // Pencarian
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search, $model, $tableName) {
+            $q->where('name', 'like', "%{$search}%");
+            if (Schema::hasColumn($tableName, 'code')) {
+                $q->orWhere('code', 'like', "%{$search}%");
             }
-        }
-
-        // Pencarian
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search, $tableName) {
-                $q->where('name', 'like', "%{$search}%");
-                if (Schema::hasColumn($tableName, 'code')) {
-                    $q->orWhere('code', 'like', "%{$search}%");
-                }
-            });
-        }
-
-        // Filter status aktif/nonaktif
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status === 'active');
-        }
-
-        $items = $query->orderBy('order')->orderBy('name')->paginate(15)->withQueryString();
-        $config = $this->getConfig();
-
-        return view('master-data.index', compact('type', 'typeConfig', 'items', 'config'));
+        });
     }
+
+    // Filter status aktif/nonaktif
+    if ($request->filled('status')) {
+        $query->where('is_active', $request->status === 'active');
+    }
+
+    // ✅ FIX: Cek kolom order sebelum digunakan
+    if (Schema::hasColumn($tableName, 'order')) {
+        $query->orderBy('order');
+    }
+    $query->orderBy('name');
+
+    $items = $query->paginate(15)->withQueryString();
+    $config = $this->getConfig();
+
+    return view('master-data.index', compact('type', 'typeConfig', 'items', 'config'));
+}
 
     /**
      * Form create

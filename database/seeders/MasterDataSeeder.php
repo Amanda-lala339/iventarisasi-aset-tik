@@ -288,16 +288,17 @@ class MasterDataSeeder extends Seeder
         // ========================================
         // 15. OPD OWNERS (umum - untuk semua kategori)
         // ========================================
-        $opdOwners = [
-            ['name' => 'Dinas Komunikasi dan Informatika', 'code' => 'DISKOMINFO'],
-            ['name' => 'Dinas Pendidikan', 'code' => 'DISDIK'],
-            ['name' => 'Dinas Kesehatan', 'code' => 'DINKES'],
-            ['name' => 'Badan Perencanaan Pembangunan Daerah', 'code' => 'BAPPEDA'],
-            ['name' => 'Badan Keuangan Daerah', 'code' => 'BKD'],
-            ['name' => 'Sekretariat Daerah', 'code' => 'SETDA'],
-            ['name' => 'Dinas Perhubungan', 'code' => 'DISHUB'],
-            ['name' => 'Dinas Pekerjaan Umum', 'code' => 'DPU'],
-        ];
+        // 2. OPD Owners
+$opdOwners = [
+    ['asset_category_code' => null, 'name' => 'Dinas Komunikasi dan Informatika', 'code' => 'DISKOMINFO'],
+    ['asset_category_code' => null, 'name' => 'Dinas Pendidikan', 'code' => 'DISDIK'],
+    ['asset_category_code' => null, 'name' => 'Dinas Kesehatan', 'code' => 'DINKES'],
+    ['asset_category_code' => null, 'name' => 'Badan Perencanaan Pembangunan Daerah', 'code' => 'BAPPEDA'],
+    ['asset_category_code' => null, 'name' => 'Badan Keuangan Daerah', 'code' => 'BKD'],
+    ['asset_category_code' => null, 'name' => 'Sekretariat Daerah', 'code' => 'SETDA'],
+    ['asset_category_code' => null, 'name' => 'Dinas Perhubungan', 'code' => 'DISHUB'],
+    ['asset_category_code' => null, 'name' => 'Dinas Pekerjaan Umum', 'code' => 'DPU'],
+];
 
         foreach ($opdOwners as &$item) {
             $item['is_active'] = true;
