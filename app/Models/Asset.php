@@ -15,7 +15,7 @@ class Asset extends Model
         'ip_address', 'platform', 'os_server', 'contact_pic', 'function',
         'unit', 'position', 'nip', 'personnel_category',
         'app_description', 'app_url', 'ip_public_internal',
-        'data_center', 'asset_type_category', 'condition'
+        'data_center', 'asset_type_category', 'condition','document_file'
     ];
 
     protected $casts = [

@@ -272,6 +272,22 @@
                 <dt class="sm:w-56 shrink-0 text-gray-500">Kategori SE</dt>
                 <dd class="text-gray-900">{{ $asset->se_category ?? '-' }}</dd>
             </div>
+            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
+                <dt class="sm:w-56 shrink-0 text-gray-500">Dokumen Pendukung</dt>
+                <dd class="text-gray-900">
+                    @if($asset->document_file)
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <a href="{{ asset('storage/' . $asset->document_file) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-medium transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                                Download Dokumen
+                            </a>
+                            <span class="text-xs text-gray-500 truncate max-w-xs" title="{{ basename($asset->document_file) }}">{{ basename($asset->document_file) }}</span>
+                        </div>
+                    @else
+                        <span class="text-gray-400">-</span>
+                    @endif
+                </dd>
+            </div>
         </dl>
     </div>
     @endif

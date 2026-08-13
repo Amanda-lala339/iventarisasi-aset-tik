@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         [x-cloak]{ display: none!important;}
         .status-active{@apply bg-green-100 text-green-700;}
@@ -47,7 +48,6 @@
         .nav-link:hover::after{ width: 100%; }
         .nav-link:hover{ transform: translateY(-1px); }
 
-        /* Link Kelola Aset dibuat tidak bisa diklik (abu-abu) */
         .nav-link.disabled{
             color: #9CA3AF !important;
             cursor: not-allowed;
@@ -82,9 +82,24 @@
                 <span class="text-gray-900 font-semibold">@yield('page', 'Dashboard')</span>
             </div>
             <div class="flex items-center space-x-6">
-                <!-- Kelola Aset - TIDAK BISA DIKLIK -->
-                <a href="{{ route('servers.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium">Server</a>
-                <a href="{{ route('subdomains.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium">Subdomain</a>
+                <!-- Server -->
+                <a href="{{ route('servers.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('servers.*') ? 'text-blue-600' : '' }}">
+                    <i class="fas fa-server mr-1"></i> Server
+                </a>
+                
+                <!-- Subdomain -->
+                <a href="{{ route('subdomains.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('subdomains.*') ? 'text-blue-600' : '' }}">
+                    <i class="fas fa-globe mr-1"></i> Subdomain
+                </a>
+
+                {{-- ============================================ --}}
+                {{-- MASTER DATA - LANGSUNG KE DASHBOARD --}}
+                {{-- ============================================ --}}
+                <a href="{{ route('master-data.dashboard') }}" 
+                   class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('master-data.*') ? 'text-blue-600' : '' }}">
+                    <i class="fas fa-database mr-1"></i> Master Data
+                </a>
+                {{-- ============================================ --}}
             </div>
         </div>
     </nav>
@@ -97,6 +112,17 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
                     {{ session('success') }}
+                </div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-4 bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded shadow-md animate-fade-in" x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    {{ session('error') }}
                 </div>
             </div>
         @endif

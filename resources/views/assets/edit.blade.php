@@ -1,20 +1,16 @@
 @extends('layouts.app')
 @section('title', 'Edit Aset')
 @section('page', 'Edit Aset')
-
 @section('content')
 @php
     $code = old('category_code', $asset->category->code ?? 'DI');
 @endphp
-
 <a href="{{ url()->previous() }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali</a>
 <br><br>
-
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Aset: {{ $asset->asset_code }}</h2>
-    <form method="POST" action="{{ route('assets.update', $asset) }}">
+    <form method="POST" action="{{ route('assets.update', $asset) }}" enctype="multipart/form-data">
         @csrf @method('PUT')
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500">*</span></label>
@@ -32,19 +28,18 @@
             </div>
         </div>
 
-        {{-- DATA & INFORMASI --}}
+        {{-- ============ DATA & INFORMASI (DI) ============ --}}
         <div id="fields-DI" class="category-fields hidden">
             <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">Data & Informasi</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
                     <select name="sub_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Business Process/Prosedur" {{ old('sub_classification', $asset->sub_classification) == 'Business Process/Prosedur' ? 'selected' : '' }}>Business Process/Prosedur</option>
-                        <option value="Formulir" {{ old('sub_classification', $asset->sub_classification) == 'Formulir' ? 'selected' : '' }}>Formulir</option>
-                        <option value="Data Log dan Audit" {{ old('sub_classification', $asset->sub_classification) == 'Data Log dan Audit' ? 'selected' : '' }}>Data Log dan Audit</option>
-                        <option value="Database dan data files" {{ old('sub_classification', $asset->sub_classification) == 'Database dan data files' ? 'selected' : '' }}>Database dan data files</option>
-                        <option value="Dokumen Kontrak dan Legal" {{ old('sub_classification', $asset->sub_classification) == 'Dokumen Kontrak dan Legal' ? 'selected' : '' }}>Dokumen Kontrak dan Legal</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($subClassifications['DI'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('sub_classification', $asset->sub_classification) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
@@ -59,11 +54,13 @@
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Aset</label>
                     <select name="status" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Draft" {{ old('status', $asset->status) == 'Draft' ? 'selected' : ''}}>Draft</option>
-                        <option value="Sudah Disahkan" {{ old('status', $asset->status) == 'Sudah Disahkan' ? 'selected' : ''}}>Sudah Disahkan</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($assetStatuses['DI'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('status', $asset->status) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
@@ -71,11 +68,21 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Format Penyimpanan</label>
-                    <input type="text" name="storage_format" value="{{ old('storage_format', $asset->storage_format) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <select name="storage_format" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($storageFormats['DI'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('storage_format', $asset->storage_format) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik</label>
-                    <input type="text" name="owner" value="{{ old('owner', $asset->owner) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset (OPD)</label>
+                    <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($opdOwners as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('owner', $asset->owner) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Retensi</label>
@@ -84,52 +91,46 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kerahasiaan</label>
                     <select name="confidentiality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Informasi Terbuka / Publik" {{ old('confidentiality', $asset->confidentiality) == 'Informasi Terbuka / Publik' ? 'selected' : '' }}>Informasi Terbuka / Publik</option>
-                        <option value="Informasi Terbatas" {{ old('confidentiality', $asset->confidentiality) == 'Informasi Terbatas' ? 'selected' : '' }}>Informasi Terbatas</option>
-                        <option value="Informasi Strategis / Rahasia" {{ old('confidentiality', $asset->confidentiality) == 'Informasi Strategis / Rahasia' ? 'selected' : '' }}>Informasi Strategis / Rahasia</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($confidentialityLevels['DI'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('confidentiality', $asset->confidentiality) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Integritas</label>
                     <select name="integrity" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Data Penunjang Umum" {{ old('integrity', $asset->integrity) == 'Data Penunjang Umum' ? 'selected' : '' }}>Data Penunjang Umum</option>
-                        <option value="Data Proses Administrasi" {{ old('integrity', $asset->integrity) == 'Data Proses Administrasi' ? 'selected' : '' }}>Data Proses Administrasi</option>
-                        <option value="Data Vital Pengambilan Keputusan" {{ old('integrity', $asset->integrity) == 'Data Vital Pengambilan Keputusan' ? 'selected' : '' }}>Data Vital Pengambilan Keputusan</option>
-</select>
-
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($integrityLevels['DI'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('integrity', $asset->integrity) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Ketersediaan</label>
                     <select name="availability" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Akses Fleksibel / Non-Kritis" {{ old('availability', $asset->availability) == 'Akses Fleksibel / Non-Kritis' ? 'selected' : '' }}>Akses Fleksibel / Non-Kritis</option>
-                        <option value="Akses Rutin Terjadwal" {{ old('availability', $asset->availability) == 'Akses Rutin Terjadwal' ? 'selected' : '' }}>AAkses Rutin Terjadwal</option>
-                        <option value="Akses Seketika (Real-time)" {{ old('availability', $asset->availability) == 'Akses Seketika (Real-time)' ? 'selected' : '' }}>Akses Seketika (Real-time)</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($availabilityLevels['DI'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('availability', $asset->availability) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
         </div>
 
-        {{-- PERANGKAT LUNAK --}}
+        {{-- ============ PERANGKAT LUNAK (PL) ============ --}}
         <div id="fields-PL" class="category-fields hidden">
             <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">Perangkat Lunak</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
-    <select name="sub_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-        <option value="Sistem Operasi" {{ old('sub_classification', $asset->sub_classification) == 'Sistem Operasi' ? 'selected' : '' }}>
-            Sistem Operasi
-        </option>
-        <option value="Sistem Utility" {{ old('sub_classification', $asset->sub_classification) == 'Sistem Utility' ? 'selected' : '' }}>
-            Sistem Utility
-        </option>
-        <option value="Aplikasi Berbasis Website" {{ old('sub_classification', $asset->sub_classification) == 'Aplikasi Berbasis Website' ? 'selected' : '' }}>
-            Aplikasi Berbasis Website
-        </option>
-        <option value="Aplikasi Berbasis Mobile" {{ old('sub_classification', $asset->sub_classification) == 'Aplikasi Berbasis Mobile' ? 'selected' : '' }}>
-            Aplikasi Berbasis Mobile
-        </option>
-    </select>
-</div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
+                    <select name="sub_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($subClassifications['PL'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('sub_classification', $asset->sub_classification) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
                     <input type="text" name="name" value="{{ old('name', $asset->name) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -141,10 +142,11 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
                     <select name="platform" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Web-Based" {{ old('platform', $asset->platform) == 'Web-Based' ? 'selected' : '' }}>Web-Based</option>
-                        <option value="Mobile-Based" {{ old('platform', $asset->platform) == 'Mobile-Based' ? 'selected' : '' }}>Mobile-Based</option>
-                        <option value="Desktop" {{ old('platform', $asset->platform) == 'Desktop' ? 'selected' : '' }}>Desktop</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($platforms['PL'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('platform', $asset->platform) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Uraian Singkat</label>
@@ -159,23 +161,35 @@
                     <input type="text" name="ip_address" value="{{ old('ip_address', $asset->ip_address) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Publik/Internal</label>
-    <select name="ip_public_internal" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-        <option value="Publik" {{ old('ip_public_internal', $asset->ip_public_internal) == 'Publik' ? 'selected' : '' }}>Publik</option>
-        <option value="Internal" {{ old('ip_public_internal', $asset->ip_public_internal) == 'Internal' ? 'selected' : '' }}>Internal</option>
-    </select>
-</div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">IP Publik/Internal</label>
+                    <select name="ip_public_internal" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($ipTypes['PL'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('ip_public_internal', $asset->ip_public_internal) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">OS Server</label>
                     <input type="text" name="os_server" value="{{ old('os_server', $asset->os_server) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik (OPD)</label>
-                    <input type="text" name="owner" value="{{ old('owner', $asset->owner) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($opdOwners as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('owner', $asset->owner) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Data Center</label>
-                    <input type="text" name="data_center" value="{{ old('data_center', $asset->data_center) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <select name="data_center" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($dataCenters as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('data_center', $asset->data_center) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kontak PIC</label>
@@ -184,42 +198,49 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select name="status" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Aktif" {{ old('status', $asset->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="Tidak Aktif" {{ old('status', $asset->status) == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif</option>
-                        <option value="Dalam Pemeliharaan" {{ old('status', $asset->status) == 'Dalam Pemeliharaan' ? 'selected' : '' }}>Dalam Pemeliharaan</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($assetStatuses['PL'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('status', $asset->status) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori SE</label>
                     <select name="se_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Rendah" {{ old('se_category', $asset->se_category) == 'Rendah' ? 'selected' : '' }}>Rendah</option>
-                        <option value="Tinggi" {{ old('se_category', $asset->se_category) == 'Tinggi' ? 'selected' : '' }}>Tinggi</option>
-                        <option value="Strategis" {{ old('se_category', $asset->se_category) == 'Strategis' ? 'selected' : '' }}> Strategis</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($seCategories['PL'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('se_category', $asset->se_category) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumen Pendukung</label>
+                    @if($asset->document_file)
+                        <div class="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                            <div class="flex items-center gap-2 truncate">
+                                <a href="{{ asset('storage/' . $asset->document_file) }}" target="_blank" class="text-sm text-blue-700 hover:underline truncate">{{ basename($asset->document_file) }}</a>
+                            </div>
+                            <a href="{{ asset('storage/' . $asset->document_file) }}" download class="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Download</a>
+                        </div>
+                    @endif
+                    <input type="file" name="document_file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin mengubah dokumen.</p>
                 </div>
             </div>
         </div>
 
-        {{-- PERANGKAT KERAS --}}
+        {{-- ============ PERANGKAT KERAS (PK) ============ --}}
         <div id="fields-PK" class="category-fields hidden">
             <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">Perangkat Keras</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
-                    <select name="sub_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"> 
-        <option value="PC/Laptop/Smartphone" {{ old('sub_classification', $asset->sub_classification) == 'PC/Laptop/Smartphone' ? 'selected' : '' }}> 
-            PC/Laptop/Smartphone
-        </option> 
-        <option value="Server" {{ old('sub_classification', $asset->sub_classification) == 'Server' ? 'selected' : '' }}> 
-           Server
-        </option> 
-        <option value="Perangkat Jaringan (Network Device)" {{ old('sub_classification', $asset->sub_classification) == 'Perangkat Jaringan (Network Device)' ? 'selected' : '' }}> 
-            Perangkat Jaringan (Network Device)
-        </option> 
-        <option value="Perangkat Penyimpanan (Storage Device)" {{ old('sub_classification', $asset->sub_classification) == 'Perangkat Penyimpanan (Storage Device)' ? 'selected' : '' }}> 
-            Perangkat Penyimpanan (Storage Device)
-        </option> 
-</select>
+                    <select name="sub_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($subClassifications['PK'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('sub_classification', $asset->sub_classification) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
@@ -238,42 +259,47 @@
                     <input type="text" name="location" value="{{ old('location', $asset->location) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik</label>
-                    <input type="text" name="owner" value="{{ old('owner', $asset->owner) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik (OPD)</label>
+                    <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($opdOwners as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('owner', $asset->owner) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi Aset</label>
                     <select name="condition" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Layak" {{ old('condition', $asset->condition) == 'Layak' ? 'selected' : '' }}>Layak</option>
-                        <option value="Perlu Perbaikan" {{ old('condition', $asset->condition) == 'Perlu Perbaikan' ? 'selected' : '' }}>Perlu Perbaikan</option>
-                        <option value="Rusak" {{ old('condition', $asset->condition) == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($assetConditions['PK'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('condition', $asset->condition) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                     <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Aset Umum" {{ old('asset_type_category', $asset->asset_type_category) == 'Aset Umum' ? 'selected' : '' }}>Aset Umum</option>
-                        <option value="Aset Operasional Utama" {{ old('asset_type_category', $asset->asset_type_category) == 'Aset Operasional Utama' ? 'selected' : '' }}>Aset Operasional Utama</option>
-                        <option value="Aset Strategis" {{ old('asset_type_category', $asset->asset_type_category) == 'Aset Strategis' ? 'selected' : '' }}>Aset Strategis</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($assetTypeCategories['PK'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('asset_type_category', $asset->asset_type_category) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
         </div>
 
-        {{-- SARANA PENDUKUNG --}}
+        {{-- ============ SARANA PENDUKUNG (SP) ============ --}}
         <div id="fields-SP" class="category-fields hidden">
             <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">Sarana Pendukung</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
-                    <select name="sub_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"> 
-                        <option value="Support Appliance" {{ old('sub_classification', $asset->sub_classification) == 'Support Appliance' ? 'selected' : '' }}> 
-                        Support Appliance 
-                        </option> 
-                        <option value="Support Facility" {{ old('sub_classification', $asset->sub_classification) == 'Support Facility' ? 'selected' : '' }}> 
-                        Support Facility
-                        </option>
-</select>
+                    <select name="sub_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($subClassifications['SP'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('sub_classification', $asset->sub_classification) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
@@ -292,38 +318,47 @@
                     <input type="text" name="location" value="{{ old('location', $asset->location) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik</label>
-                    <input type="text" name="owner" value="{{ old('owner', $asset->owner) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik (OPD)</label>
+                    <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($opdOwners as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('owner', $asset->owner) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi Aset</label>
                     <select name="condition" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Layak" {{ old('condition', $asset->condition) == 'Layak' ? 'selected' : '' }}>Layak</option>
-                        <option value="Perlu Perbaikan" {{ old('condition', $asset->condition) == 'Perlu Perbaikan' ? 'selected' : '' }}>Dalam Perbaikan</option>
-                        <option value="Rusak" {{ old('condition', $asset->condition) == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($assetConditions['SP'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('condition', $asset->condition) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                     <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Fasilitas Pendukung Non-Esensial" {{ old('asset_type_category', $asset->asset_type_category) == 'Fasilitas Pendukung Non-Esensial' ? 'selected' : '' }}>Fasilitas Pendukung Non-Esensial</option>
-                        <option value="Fasilitas Operasional Utama" {{ old('asset_type_category', $asset->asset_type_category) == 'Fasilitas Operasional Utama' ? 'selected' : '' }}>Fasilitas Operasional Utama</option>
-                        <option value="Fasilitas Strategis" {{ old('asset_type_category', $asset->asset_type_category) == 'Fasilitas Strategis' ? 'selected' : '' }}>Fasilitas Strategis</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($assetTypeCategories['SP'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('asset_type_category', $asset->asset_type_category) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
         </div>
 
-        {{-- SDM & PIHAK KETIGA --}}
+        {{-- ============ SDM & PIHAK KETIGA (PS) ============ --}}
         <div id="fields-PS" class="category-fields hidden">
             <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">SDM & Pihak Ketiga</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
                     <select name="sub_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="Management" {{ old('sub_classification', $asset->sub_classification) == 'Management' ? 'slected' : '' }}>Management</option>
-                        <option value"Technical" {{ old('sub_classification', $asset->sub_classification) == 'Technical' ? 'selected' : '' }}>Technical</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($subClassifications['PS'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('sub_classification', $asset->sub_classification) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Personil</label>
@@ -332,9 +367,11 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset</label>
                     <select name="personnel_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="ASN" {{ old('personnel_category', $asset->personnel_category) == 'ASN' ? 'selected' : '' }}>ASN</option>
-                        <option value="Pihak Ketiga" {{ old('personnel_category', $asset->personnel_category) == 'Pihak Ketiga' ? 'selected' : ''}}>Pihak Ketiga</option>
-</select>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($personnelCategories['PS'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('personnel_category', $asset->personnel_category) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">NIP/NIK</label>
@@ -342,7 +379,12 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Fungsi</label>
-                    <input type="text" name="function" value="{{ old('function', $asset->function) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <select name="function" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($personnelFunctions['PS'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('function', $asset->function) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
@@ -355,15 +397,16 @@
             </div>
         </div>
 
+        {{-- KRITIKALITAS (Semua Kategori) --}}
         <div class="mt-6 border-t pt-4">
             <h3 class="text-sm font-semibold text-gray-700 mb-3">Kritikalitas Aset</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kritikalitas</label>
                     <select name="criticality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="">Pilih...</option>
-                        @foreach(['Tinggi','Sedang','Rendah'] as $c)
-                            <option {{ old('criticality', $asset->criticality) == $c ? 'selected' : '' }}>{{ $c }}</option>
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($criticalityLevels as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('criticality', $asset->criticality) == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -376,34 +419,25 @@
         </div>
     </form>
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const select = document.getElementById('asset_category_id');
     const fields = document.querySelectorAll('.category-fields');
-
     function showFields() {
         const selected = select.options[select.selectedIndex];
         const code = selected.getAttribute('data-code');
-        
-        // 1. Sembunyikan semua dan DISABLE inputnya agar tidak ikut terkirim
         fields.forEach(f => {
             f.classList.add('hidden');
             f.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
         });
-        
-        // 2. Tampilkan kategori yang dipilih dan ENABLE inputnya
         const target = document.getElementById('fields-' + code);
         if (target) {
             target.classList.remove('hidden');
             target.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
         }
     }
-
     select.addEventListener('change', showFields);
-    
-    // Jalankan fungsi saat pertama kali halaman dimuat
-    showFields(); 
+    showFields();
 });
 </script>
 @endsection
