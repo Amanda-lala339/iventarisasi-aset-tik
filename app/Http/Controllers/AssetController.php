@@ -166,6 +166,7 @@ class AssetController extends Controller
         Asset::create($validated);
 
         $category = AssetCategory::find($request->asset_category_id);
+        // Redirect ke route spesifik berdasarkan kode kategori (misal: assets.category.pl)
         return redirect()->route('assets.category.' . strtolower($category->code))
             ->with('success', 'Aset berhasil ditambahkan.');
     }
@@ -175,7 +176,6 @@ class AssetController extends Controller
         $asset = Asset::with('category')->findOrFail($id);
 
         $code = null;
-
         if (is_object($asset->category)) {
             $code = $asset->category->code;
         }
@@ -264,6 +264,10 @@ class AssetController extends Controller
         return back()->with('success', 'Data aset berhasil diimpor dari Excel.');
     }
 
+    /**
+     * Helper method untuk menampilkan aset berdasarkan kategori.
+     * Method ini akan secara otomatis me-render view: assets.category.{di|pl|pk|sp|ps}
+     */
     private function getCategoryAssets($categoryCode, $pageTitle, Request $request)
     {
         $category = AssetCategory::where('code', $categoryCode)->first();
@@ -309,11 +313,39 @@ class AssetController extends Controller
         $assets = $query->latest()->paginate(20);
         $categories = AssetCategory::all();
 
+        // INI KUNCINYA: Secara dinamis memanggil file di.blade.php, pl.blade.php, dst.
         return view('assets.category.' . strtolower($categoryCode), compact(
             'assets', 'categories', 'pageTitle', 'categoryCode', 'category'
         ));
     }
 
+    /**
+     * Fallback route untuk menangani URL seperti /assets/category/pl atau /assets/category/perangkat-lunak
+     */
+    public function category($slug)
+    {
+        $map = [
+            'di'                 => ['code' => 'DI', 'title' => 'Data & Informasi'],
+            'pl'                 => ['code' => 'PL', 'title' => 'Perangkat Lunak'],
+            'pk'                 => ['code' => 'PK', 'title' => 'Perangkat Keras'],
+            'sp'                 => ['code' => 'SP', 'title' => 'Sarana Pendukung'],
+            'ps'                 => ['code' => 'PS', 'title' => 'SDM & Pihak Ketiga'],
+            'data-informasi'     => ['code' => 'DI', 'title' => 'Data & Informasi'],
+            'perangkat-lunak'    => ['code' => 'PL', 'title' => 'Perangkat Lunak'],
+            'perangkat-keras'    => ['code' => 'PK', 'title' => 'Perangkat Keras'],
+            'sarana-pendukung'   => ['code' => 'SP', 'title' => 'Sarana Pendukung'],
+            'sdm-pihak-ketiga'   => ['code' => 'PS', 'title' => 'SDM & Pihak Ketiga'],
+        ];
+
+        if (!isset($map[$slug])) {
+            abort(404, 'Kategori aset tidak ditemukan.');
+        }
+
+        // Delegasikan ke helper method yang sudah Anda buat
+        return $this->getCategoryAssets($map[$slug]['code'], $map[$slug]['title'], request());
+    }
+
+    // --- Route Spesifik (Named Routes) ---
     public function dataInformasi(Request $request)
     {
         return $this->getCategoryAssets('DI', 'Data & Informasi', $request);

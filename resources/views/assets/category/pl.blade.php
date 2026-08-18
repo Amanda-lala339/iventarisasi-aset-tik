@@ -1,35 +1,69 @@
 @extends('layouts.app')
+@section('title', 'Kelola Aset - ' . $pageTitle)
+@section('page', $pageTitle)
 
-@section('title', $pageTitle ?? 'Perangkat Lunak')
-@section('page', $pageTitle ?? 'Perangkat Lunak')
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .category-nav-item { transition: all 0.3s ease; }
+    .category-nav-item:hover { background-color: #3b82f6; color: white !important; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
+    .category-nav-item.active { background-color: #2563eb; color: white !important; font-weight: 600; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4); transform: scale(1.05); }
+    .category-nav-item i { transition: transform 0.3s ease; }
+    .category-nav-item:hover i, .category-nav-item.active i { transform: scale(1.1); }
+</style>
+
+@php
+    $assetCategories = [
+        'DI' => ['label' => 'Data & Informasi', 'icon' => 'fas fa-database', 'route' => 'assets.category.di'],
+        'PL' => ['label' => 'Perangkat Lunak', 'icon' => 'fas fa-laptop-code', 'route' => 'assets.category.pl'],
+        'PK' => ['label' => 'Perangkat Keras', 'icon' => 'fas fa-server', 'route' => 'assets.category.pk'],
+        'SP' => ['label' => 'Sarana Pendukung', 'icon' => 'fas fa-plug', 'route' => 'assets.category.sp'],
+        'PS' => ['label' => 'SDM & Pihak Ketiga', 'icon' => 'fas fa-users', 'route' => 'assets.category.ps'],
+    ];
+    $currentRoute = request()->route()->getName();
+    $currentUrl = request()->url();
+    $getActiveCategory = function($key) use ($currentRoute, $currentUrl) {
+        $routeName = 'assets.category.' . strtolower($key);
+        if (request()->routeIs($routeName)) return true;
+        $slugs = ['DI' => ['data-informasi', 'di'], 'PL' => ['perangkat-lunak', 'pl'], 'PK' => ['perangkat-keras', 'pk'], 'SP' => ['sarana-pendukung', 'sp'], 'PS' => ['sdm-pihak-ketiga', 'ps']];
+        foreach ($slugs[$key] as $slug) { if (str_contains($currentUrl, $slug)) return true; }
+        return false;
+    };
+@endphp
 
 @section('content')
 <div class="flex items-center justify-between mb-4">
     <a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali ke Dashboard</a>
-    <div class="flex gap-2">
-        <a href="{{ route('assets.create', ['category' => 'PL']) }}" class="bg-green-600 text-white px-3 py-1.5 rounded text-xs hover:bg-green-700">+ Tambah Perangkat Lunak</a>
+    <a href="{{ route('assets.create', ['category' => 'PL']) }}" class="bg-green-600 text-white px-3 py-1.5 rounded text-xs hover:bg-green-700">+ Tambah {{ $pageTitle }}</a>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-100 shadow-md shadow-blue-500/10 p-2 mb-4">
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 shrink-0">Kategori Aset:</span>
+        @foreach($assetCategories as $key => $cfg)
+            @php $isActive = $getActiveCategory($key); @endphp
+            <a href="{{ route($cfg['route']) }}"
+               class="category-nav-item shrink-0 inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium {{ $isActive ? 'active bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:bg-blue-500 hover:text-white' }}">
+                <i class="{{ $cfg['icon'] }} mr-2 text-sm"></i> {{ $cfg['label'] }}
+            </a>
+        @endforeach
     </div>
 </div>
 
-<div class="bg-white rounded-lg border border-gray-200 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-shadow duration-300">
-    <!-- Header -->
-    <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-200 gap-3">
-        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Daftar Aset: {{ $pageTitle ?? 'Perangkat Lunak' }}</h2>
-        <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-500">Total: {{ $assets->total() }} aset</span>
-        </div>
+<div class="bg-white rounded-lg border border-gray-200 shadow-lg shadow-blue-500/10">
+    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Daftar Aset: {{ $pageTitle }}</h2>
+        <span class="text-xs text-gray-500">Total: {{ $assets->count() }} aset</span>
     </div>
 
-    <!-- Search -->
-    <div class="p-4 border-b border-gray-200">
+    <div class="p-4 border-b border-gray-200 bg-gray-50">
         <form method="GET" action="{{ route('assets.category.pl') }}" class="flex items-center gap-2">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode aset, nama, URL, IP, platform, PIC..."
-                   class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Cari</button>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode aset, nama, URL, IP, platform..." class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs hover:bg-blue-700">Cari</button>
+            @if(request('search')) <a href="{{ route('assets.category.pl') }}" class="text-xs text-gray-500 hover:underline px-2">Reset</a> @endif
         </form>
     </div>
 
-    <!-- Tabel -->
     <div class="overflow-x-auto">
         <table class="w-full text-xs whitespace-nowrap">
             <thead class="bg-blue-50 text-gray-600">
@@ -62,13 +96,7 @@
                     <td class="px-3 py-2 text-gray-900 font-medium">{{ $asset->name ?? '-' }}</td>
                     <td class="px-3 py-2 text-gray-600">{{ $asset->year ?? '-' }}</td>
                     <td class="px-3 py-2 text-gray-600 max-w-xs truncate" title="{{ $asset->app_description }}">{{ $asset->app_description ?? '-' }}</td>
-                    <td class="px-3 py-2">
-                        @if($asset->app_url)
-                            <a href="{{ $asset->app_url }}" target="_blank" class="text-blue-600 hover:underline">{{ $asset->app_url }}</a>
-                        @else
-                            -
-                        @endif
-                    </td>
+                    <td class="px-3 py-2">@if($asset->app_url) <a href="{{ $asset->app_url }}" target="_blank" class="text-blue-600 hover:underline">{{ $asset->app_url }}</a> @else - @endif</td>
                     <td class="px-3 py-2 font-mono text-gray-600">{{ $asset->ip_address ?? '-' }}</td>
                     <td class="px-3 py-2 text-gray-600">{{ $asset->ip_public_internal ?? '-' }}</td>
                     <td class="px-3 py-2 text-gray-600">{{ $asset->platform ?? '-' }}</td>
@@ -76,67 +104,24 @@
                     <td class="px-3 py-2 text-gray-600">{{ $asset->owner ?? '-' }}</td>
                     <td class="px-3 py-2 text-gray-600">{{ $asset->data_center ?? '-' }}</td>
                     <td class="px-3 py-2 text-gray-600">{{ $asset->contact_pic ?? '-' }}</td>
-                    <td class="px-3 py-2">
-                        <span class="px-1.5 py-0.5 rounded text-[10px] {{ $asset->status === 'Aktif' ? 'bg-green-100 text-green-700' : ($asset->status === 'Dalam Pemeliharaan' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700') }}">
-                            {{ $asset->status ?? '-' }}
-                        </span>
-                    </td>
-                    <td class="px-3 py-2">
-                        @if($asset->se_category)
-                            <span class="px-1.5 py-0.5 rounded text-[10px] {{ $asset->se_category === 'Strategis' ? 'bg-red-100 text-red-700' : ($asset->se_category === 'Tinggi' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
-                                {{ $asset->se_category }}
-                            </span>
-                        @else
-                            -
-                        @endif
-                    </td>
-                    <td class="px-3 py-2">
-                        @if($asset->criticality === 'Tinggi' || $asset->se_category === 'Strategis')
-                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-700 font-medium">Tinggi</span>
-                        @elseif($asset->criticality === 'Sedang' || $asset->se_category === 'Tinggi')
-                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-yellow-100 text-yellow-700 font-medium">Sedang</span>
-                        @else
-                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-green-100 text-green-700 font-medium">Rendah</span>
-                        @endif
-                    </td>
-                    {{-- === KOLOM DOKUMEN (BARU) === --}}
-                    <td class="px-3 py-2">
-                        @if($asset->document_file)
-                            <a href="{{ asset('storage/' . $asset->document_file) }}" target="_blank"
-                               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-medium"
-                               title="Download {{ basename($asset->document_file) }}">
-                                📎 Unduh
-                            </a>
-                        @else
-                            <span class="text-gray-400 text-[10px]">-</span>
-                        @endif
-                    </td>
-                    {{-- ============================ --}}
+                    <td class="px-3 py-2"><span class="px-1.5 py-0.5 rounded text-[10px] {{ $asset->status === 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700' }}">{{ $asset->status ?? '-' }}</span></td>
+                    <td class="px-3 py-2">@if($asset->se_category) <span class="px-1.5 py-0.5 rounded text-[10px] {{ $asset->se_category === 'Strategis' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">{{ $asset->se_category }}</span> @else - @endif</td>
+                    <td class="px-3 py-2">@if($asset->criticality === 'Tinggi' || $asset->se_category === 'Strategis') <span class="px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-700 font-medium">Tinggi</span> @else <span class="px-1.5 py-0.5 rounded text-[10px] bg-green-100 text-green-700 font-medium">Rendah</span> @endif</td>
+                    <td class="px-3 py-2">@if($asset->document_file) <a href="{{ asset('storage/' . $asset->document_file) }}" target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-medium">📎 Unduh</a> @else <span class="text-gray-400 text-[10px]">-</span> @endif</td>
                     <td class="px-3 py-2">
                         <div class="flex items-center space-x-2">
-                            <a href="{{ route('assets.show', $asset) }}" class="text-blue-600 hover:text-blue-800 text-[10px]" title="Detail">👁️</a>
-                            <a href="{{ route('assets.edit', $asset) }}" class="text-yellow-600 hover:text-yellow-800 text-[10px]" title="Edit">✏️</a>
-                            <form method="POST" action="{{ route('assets.destroy', $asset) }}" class="inline" onsubmit="return confirm('Yakin hapus?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-800 text-[10px]" title="Hapus">🗑️</button>
-                            </form>
+                            <a href="{{ route('assets.show', $asset) }}" class="text-blue-600 hover:text-blue-800 text-[10px]">👁️</a>
+                            <a href="{{ route('assets.edit', $asset) }}" class="text-yellow-600 hover:text-yellow-800 text-[10px]">✏️</a>
+                            <form method="POST" action="{{ route('assets.destroy', $asset) }}" class="inline" onsubmit="return confirm('Yakin hapus?')">@csrf @method('DELETE')<button type="submit" class="text-red-600 hover:text-red-800 text-[10px]">🗑️</button></form>
                         </div>
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="18" class="px-4 py-8 text-center text-gray-500">
-                        Tidak ada data aset Perangkat Lunak.
-                    </td>
-                </tr>
+                <tr><td colspan="18" class="px-4 py-8 text-center text-gray-500">Belum ada data {{ $pageTitle }}. <a href="{{ route('assets.create', ['category' => 'PL']) }}" class="text-blue-600 hover:underline">Tambah sekarang</a></td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-
-    <!-- Pagination -->
-    <div class="p-4 border-t border-gray-200">
-        {{ $assets->links() }}
-    </div>
+    <div class="p-4 border-t border-gray-200">{{ $assets->appends(request()->query())->links() }}</div>
 </div>
 @endsection
