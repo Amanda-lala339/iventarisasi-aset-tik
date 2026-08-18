@@ -33,7 +33,7 @@ class MasterDataController extends Controller
      */
     private function hiddenFields(): array
     {
-        return ['description', 'color', 'icon', 'order', 'code'];
+        return ['description', 'color', 'icon', 'order', 'code',];
     }
 
     /**

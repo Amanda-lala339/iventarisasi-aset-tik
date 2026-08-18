@@ -82,22 +82,22 @@
                 <span class="text-gray-900 font-semibold">@yield('page', 'Dashboard')</span>
             </div>
             <div class="flex items-center space-x-6">
-                <!-- Server -->
+                <!-- Server (tanpa icon) -->
                 <a href="{{ route('servers.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('servers.*') ? 'text-blue-600' : '' }}">
-                    <i class="fas fa-server mr-1"></i> Server
+                    Server
                 </a>
-                
-                <!-- Subdomain -->
+
+                <!-- Subdomain (tanpa icon) -->
                 <a href="{{ route('subdomains.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('subdomains.*') ? 'text-blue-600' : '' }}">
-                    <i class="fas fa-globe mr-1"></i> Subdomain
+                    Subdomain
                 </a>
 
                 {{-- ============================================ --}}
-                {{-- MASTER DATA - LANGSUNG KE DASHBOARD --}}
+                {{-- MASTER DATA - LANGSUNG KE DASHBOARD (tanpa icon) --}}
                 {{-- ============================================ --}}
-                <a href="{{ route('master-data.dashboard') }}" 
+                <a href="{{ route('master-data.dashboard') }}"
                    class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('master-data.*') ? 'text-blue-600' : '' }}">
-                    <i class="fas fa-database mr-1"></i> Master Data
+                    Master Data
                 </a>
                 {{-- ============================================ --}}
             </div>
