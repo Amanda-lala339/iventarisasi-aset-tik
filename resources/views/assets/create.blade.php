@@ -13,6 +13,26 @@
 
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Tambah Aset Baru</h2>
+    
+    {{-- Tampilkan Error Validasi --}}
+@if ($errors->any())
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <p class="font-semibold">Terjadi kesalahan:</p>
+        <ul class="list-disc list-inside text-sm mt-2">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+{{-- Tampilkan Pesan Success --}}
+@if (session('success'))
+    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
+        {{ session('success') }}
+    </div>
+@endif
+
     <form method="POST" action="{{ route('assets.store') }}" enctype="multipart/form-data">
         @csrf
 

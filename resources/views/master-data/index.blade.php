@@ -18,6 +18,15 @@
         'SDM'       => 'bg-cyan-50 text-cyan-600',
         'Lainnya'   => 'bg-gray-100 text-gray-500',
     ];
+    $groupIconColor = [
+        'Umum'      => 'text-blue-600',
+        'Aset'      => 'text-emerald-600',
+        'Keamanan'  => 'text-red-600',
+        'Teknologi' => 'text-purple-600',
+        'Kategori'  => 'text-amber-600',
+        'SDM'       => 'text-cyan-600',
+        'Lainnya'   => 'text-gray-500',
+    ];
     $currentGroup = $typeConfig['group'] ?? 'Lainnya';
 @endphp
 
@@ -30,8 +39,8 @@
             </svg>
             Master Data
         </a>
-        <h1 class="text-2xl font-bold text-blue-600 tracking-tight flex items-center gap-2.5">
-            <i class="{{ $typeConfig['icon'] }} text-xl"></i>
+        <h1 class="text-2xl font-bold text-gray-600 tracking-tight flex items-center gap-2.5">
+            <i class="{{ $typeConfig['icon'] }} text-xl {{ $groupIconColor[$currentGroup] ?? $groupIconColor['Lainnya'] }}"></i>
             {{ $typeConfig['label'] }}
             <span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded {{ $groupBadge[$currentGroup] ?? $groupBadge['Lainnya'] }}">
                 {{ $currentGroup }}
@@ -82,11 +91,11 @@
             </select>
         </div>
         <div class="md:col-span-3 flex gap-2">
-            <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 shadow-md transition-colors">
+            <button type="submit" class="flex-1 basis-1/2 inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 shadow-md transition-colors">
                 <i class="fas fa-filter mr-2"></i> Filter
             </button>
             <a href="{{ route('master-data.index', $type) }}"
-               class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+               class="flex-1 basis-1/2 inline-flex items-center justify-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors">
                 Reset
             </a>
         </div>

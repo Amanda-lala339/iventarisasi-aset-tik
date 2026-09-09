@@ -9,30 +9,82 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        [x-cloak]{ display: none!important;}
-        .status-active{@apply bg-green-100 text-green-700;}
-        .status-expiring{@apply bg-yellow-100 text-yellow-700;}
-        .status-expired{@apply bg-red-100 text-red-700;}
-        .status-online{@apply bg-green-100 text-green-700;}
-        .status-offline{@apply bg-red-100 text-red-700;}
-        .status-warning{@apply bg-yellow-100 text-yellow-700;}
-        .badge-physical{@apply bg-blue-100 text-blue-700;}
-        .badge-virtual{@apply bg-purple-100 text-purple-700;}
+        [x-cloak]{ display: none!important; }
 
-        /* Animations */
+        /* ============================================
+           Badges (CSS manual — Tailwind CDN tidak support @apply)
+           ============================================ */
+        .badge{
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        .badge::before{
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            background: currentColor;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        .status-active,
+        .status-online{ background: #dcfce7; color: #15803d; }
+
+        .status-expiring,
+        .status-warning{ background: #fef9c3; color: #a16207; }
+
+        .status-expired,
+        .status-offline{ background: #fee2e2; color: #b91c1c; }
+
+        .badge-physical{ background: #dbeafe; color: #1d4ed8; }
+        .badge-physical::before{ display: none; }
+
+        .badge-virtual{ background: #f3e8ff; color: #7e22ce; }
+        .badge-virtual::before{ display: none; }
+
+        /* ============================================
+           Row action icon buttons
+           ============================================ */
+        .action-btn{
+            padding: 0.375rem;
+            border-radius: 0.375rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s ease;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        /* ============================================
+           Animations
+           ============================================ */
         @keyframes fadeIn{
-            from{ opacity: 0; transform: translateY(-10px);}
-            to{ opacity: 1; transform: translateY(0);}
+            from{ opacity: 0; transform: translateY(-10px); }
+            to{ opacity: 1; transform: translateY(0); }
         }
         @keyframes slideIn{
-            from{ opacity: 0; transform: translateX(-10px);}
-            to{ opacity: 1; transform: translateX(0);}
+            from{ opacity: 0; transform: translateX(-10px); }
+            to{ opacity: 1; transform: translateX(0); }
         }
         .animate-fade-in{ animation: fadeIn 0.5s ease-out; }
         .animate-slide-in{ animation: slideIn 0.4s ease-out; }
 
+        /* ============================================
+           Nav links
+           ============================================ */
         .nav-link{
             position: relative;
+            padding-bottom: 4px;
             transition: all 0.3s ease;
         }
         .nav-link::after{
@@ -42,11 +94,21 @@
             left: 0;
             width: 0;
             height: 2px;
+            border-radius: 9999px;
             background: linear-gradient(90deg,#3B82F6,#60A5FA);
             transition: width 0.3s ease;
         }
         .nav-link:hover::after{ width: 100%; }
         .nav-link:hover{ transform: translateY(-1px); }
+
+        /* Menu yang sedang aktif: garis bawah biru permanen, tidak perlu hover */
+        .nav-link.active{
+            color: #2563EB;
+            font-weight: 600;
+        }
+        .nav-link.active::after{
+            width: 100%;
+        }
 
         .nav-link.disabled{
             color: #9CA3AF !important;
@@ -82,24 +144,21 @@
                 <span class="text-gray-900 font-semibold">@yield('page', 'Dashboard')</span>
             </div>
             <div class="flex items-center space-x-6">
-                <!-- Server (tanpa icon) -->
-                <a href="{{ route('servers.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('servers.*') ? 'text-blue-600' : '' }}">
+                <!-- Server -->
+                <a href="{{ route('servers.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('servers.*') ? 'active' : '' }}">
                     Server
                 </a>
 
-                <!-- Subdomain (tanpa icon) -->
-                <a href="{{ route('subdomains.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('subdomains.*') ? 'text-blue-600' : '' }}">
+                <!-- Subdomain -->
+                <a href="{{ route('subdomains.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('subdomains.*') ? 'active' : '' }}">
                     Subdomain
                 </a>
 
-                {{-- ============================================ --}}
-                {{-- MASTER DATA - LANGSUNG KE DASHBOARD (tanpa icon) --}}
-                {{-- ============================================ --}}
+                <!-- Master Data -->
                 <a href="{{ route('master-data.dashboard') }}"
-                   class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('master-data.*') ? 'text-blue-600' : '' }}">
+                   class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('master-data.*') ? 'active' : '' }}">
                     Master Data
                 </a>
-                {{-- ============================================ --}}
             </div>
         </div>
     </nav>
