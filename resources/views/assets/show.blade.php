@@ -7,36 +7,45 @@
 <div class="max-w-6xl mx-auto pb-10">
 
     {{-- ============================================= --}}
-    {{-- HELPERS: badge color mapping (menghindari ternary berulang) --}}
+    {{-- HELPERS: badge status mapping (pakai class global .badge dari app.blade.php) --}}
     {{-- ============================================= --}}
     @php
-        $badge = function ($value, array $map, $default = 'bg-gray-100 text-gray-600') {
+        $badgeStatus = function ($value, array $map, $default = 'status-warning') {
             return $map[$value] ?? $default;
         };
 
-        $criticalityColor = $badge($asset->criticality ?? null, [
-            'Tinggi' => 'bg-rose-100 text-rose-700',
-            'Sedang' => 'bg-amber-100 text-amber-700',
-            'Rendah' => 'bg-emerald-100 text-emerald-700',
+        $criticalityStatus = $badgeStatus($asset->criticality ?? null, [
+            'Tinggi' => 'status-offline',
+            'Sedang' => 'status-warning',
+            'Rendah' => 'status-active',
         ]);
 
-        $statusColorDI = $badge($asset->status ?? null, [
-            'Sudah Disahkan' => 'bg-emerald-100 text-emerald-700',
-            'Draft'          => 'bg-amber-100 text-amber-700',
+        $statusDI = $badgeStatus($asset->status ?? null, [
+            'Sudah Disahkan' => 'status-active',
+            'Draft'          => 'status-warning',
         ]);
 
-        $statusColorPL = $badge($asset->status ?? null, [
-            'Aktif'              => 'bg-emerald-100 text-emerald-700',
-            'Dalam Pemeliharaan' => 'bg-amber-100 text-amber-700',
-        ], 'bg-rose-100 text-rose-700');
+        $statusPL = $badgeStatus($asset->status ?? null, [
+            'Aktif'              => 'status-active',
+            'Dalam Pemeliharaan' => 'status-warning',
+        ], 'status-offline');
 
-        $conditionColor = $badge($asset->condition ?? null, [
-            'Layak'            => 'bg-emerald-100 text-emerald-700',
-            'Perlu Perbaikan'  => 'bg-amber-100 text-amber-700',
-        ], 'bg-rose-100 text-rose-700');
+        $conditionStatus = $badgeStatus($asset->condition ?? null, [
+            'Layak'           => 'status-active',
+            'Perlu Perbaikan' => 'status-warning',
+        ], 'status-offline');
+
+        // DRY: badge kategori dipakai di dua tempat (header & Informasi Umum),
+        // jadi dibuat satu closure supaya tidak ditulis dobel
+        $categoryBadge = function () use ($asset, $code) {
+            if (is_object($asset->category)) {
+                return '<span class="badge badge-physical">' . e($asset->category->code) . ' &middot; ' . e($asset->category->name) . '</span>';
+            }
+            return '<span class="badge bg-gray-100 text-gray-500">' . e($code ?? 'Tidak Dikenali') . '</span>';
+        };
     @endphp
 
-        {{-- ============================================= --}}
+    {{-- ============================================= --}}
     {{-- BACK LINK (DINAMIS SESUAI KATEGORI) --}}
     {{-- ============================================= --}}
     @php
@@ -47,12 +56,11 @@
             'SP' => 'Sarana Pendukung',
             'PS' => 'SDM & Pihak Ketiga',
         ];
-        
+
         $displayName = $categoryNames[$code] ?? 'Aset';
-        
-        // Tentukan route: jika kode valid, arahkan ke route kategori, jika tidak ke index umum
-        $backRoute = in_array(strtolower($code), ['di', 'pl', 'pk', 'sp', 'ps']) 
-            ? route('assets.category.' . strtolower($code)) 
+
+        $backRoute = in_array(strtolower($code), ['di', 'pl', 'pk', 'sp', 'ps'])
+            ? route('assets.category.' . strtolower($code))
             : route('assets.index');
     @endphp
 
@@ -70,16 +78,8 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
             <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $asset->asset_code }}</h1>
-                 @if(is_object($asset->category))
-        <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium ring-1 ring-inset ring-blue-200">
-            {{ $asset->category->code }} · {{ $asset->category->name }}
-        </span>
-    @else
-        <span class="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-xs font-medium ring-1 ring-inset ring-gray-200">
-            {{ $code ?? 'Tidak Dikenali' }}
-        </span>
-    @endif
+                <h1 class="text-2xl font-bold text-blue-600 tracking-tight">{{ $asset->asset_code }}</h1>
+                {!! $categoryBadge() !!}
             </div>
             <p class="text-sm text-gray-500 mt-1">Detail lengkap informasi aset</p>
         </div>
@@ -95,7 +95,7 @@
             <form method="POST" action="{{ route('assets.destroy', $asset) }}" onsubmit="return confirm('Yakin hapus aset ini?')">
                 @csrf @method('DELETE')
                 <button type="submit"
-                        class="inline-flex items-center gap-1.5 bg-rose-600 text-white px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-rose-700 transition-colors">
+                        class="inline-flex items-center gap-1.5 bg-red-600 text-white px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
@@ -118,15 +118,7 @@
                 </div>
                 <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                     <dt class="sm:w-56 shrink-0 text-gray-500">Kategori</dt>
-                    <dd>
-                        <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium ring-1 ring-inset ring-blue-200">
-                             @if(is_object($asset->category))
-                {{ $asset->category->code }} - {{ $asset->category->name }}
-            @else
-                {{ $code ?? '-' }}
-            @endif
-                        </span>
-                    </dd>
+                    <dd>{!! $categoryBadge() !!}</dd>
                 </div>
                 <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                     <dt class="sm:w-56 shrink-0 text-gray-500">Sub Klasifikasi</dt>
@@ -142,7 +134,7 @@
         <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col">
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Kritikalitas Aset</h3>
             <div class="flex-1 flex flex-col items-center justify-center text-center gap-2">
-                <span class="px-3 py-1 rounded-md text-sm font-medium {{ $criticalityColor }}">
+                <span class="badge {{ $criticalityStatus }} text-sm px-3 py-1">
                     {{ $asset->criticality ?? '-' }}
                 </span>
                 <p class="text-xs text-gray-400">Tingkat kepentingan aset ini bagi operasional</p>
@@ -172,7 +164,7 @@
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Status Aset</dt>
-                <dd><span class="px-2 py-0.5 rounded-md text-xs font-medium {{ $statusColorDI }}">{{ $asset->status ?? '-' }}</span></dd>
+                <dd><span class="badge {{ $statusDI }}">{{ $asset->status ?? '-' }}</span></dd>
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Lokasi Keberadaan</dt>
@@ -266,7 +258,7 @@
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Status</dt>
-                <dd><span class="px-2 py-0.5 rounded-md text-xs font-medium {{ $statusColorPL }}">{{ $asset->status ?? '-' }}</span></dd>
+                <dd><span class="badge {{ $statusPL }}">{{ $asset->status ?? '-' }}</span></dd>
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Kategori SE</dt>
@@ -322,7 +314,7 @@
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Kondisi Aset</dt>
-                <dd><span class="px-2 py-0.5 rounded-md text-xs font-medium {{ $conditionColor }}">{{ $asset->condition ?? '-' }}</span></dd>
+                <dd><span class="badge {{ $conditionStatus }}">{{ $asset->condition ?? '-' }}</span></dd>
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Kategori Tipe</dt>
@@ -362,7 +354,7 @@
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Kondisi Aset</dt>
-                <dd><span class="px-2 py-0.5 rounded-md text-xs font-medium {{ $conditionColor }}">{{ $asset->condition ?? '-' }}</span></dd>
+                <dd><span class="badge {{ $conditionStatus }}">{{ $asset->condition ?? '-' }}</span></dd>
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Kategori Tipe</dt>
