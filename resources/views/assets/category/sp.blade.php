@@ -10,7 +10,6 @@
     .category-nav-item.active { background-color: #2563eb; color: white !important; font-weight: 600; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4); transform: scale(1.05); }
     .category-nav-item i { transition: transform 0.3s ease; }
     .category-nav-item:hover i, .category-nav-item.active i { transform: scale(1.1); }
-
     .sticky-col { position: sticky; right: 0; background: white; box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.05); }
     thead .sticky-col { background: #eff6ff; }
     tbody tr:hover .sticky-col { background: #f9fafb; }
@@ -59,6 +58,18 @@
     </div>
 </div>
 
+<div x-data="{
+    search: '{{ request('search', '') }}',
+    matches(code, name, spec, loc) {
+        const q = (this.search || '').trim().toLowerCase();
+        if (q === '') return true;
+        return (code || '').toString().toLowerCase().includes(q)
+            || (name || '').toString().toLowerCase().includes(q)
+            || (spec || '').toString().toLowerCase().includes(q)
+            || (loc || '').toString().toLowerCase().includes(q);
+    },
+    resetFilters() { this.search = ''; }
+}">
 <div class="bg-white rounded-lg border border-gray-200 shadow-lg shadow-blue-500/10">
     <div class="flex items-center justify-between p-4 border-b border-gray-200">
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Daftar Aset: {{ $pageTitle }}</h2>
@@ -66,11 +77,17 @@
     </div>
 
     <div class="p-4 border-b border-gray-200 bg-gray-50">
-        <form method="GET" action="{{ route('assets.category.sp') }}" class="flex items-center gap-2">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode aset, nama, spesifikasi, lokasi..." class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs hover:bg-blue-700 transition-colors">Cari</button>
-            @if(request('search')) <a href="{{ route('assets.category.sp') }}" class="text-xs text-gray-500 hover:underline px-2">Reset</a> @endif
-        </form>
+        <div class="flex items-center gap-2">
+            <input type="text" x-model="search" placeholder="Cari kode aset, nama, spesifikasi, lokasi..."
+                   class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <button type="button"
+                    x-show="search !== ''"
+                    @click="resetFilters()"
+                    x-transition
+                    class="text-xs text-gray-500 hover:text-blue-600 px-2 hover:underline">
+                Reset
+            </button>
+        </div>
     </div>
 
     <div class="overflow-x-auto">
@@ -92,7 +109,8 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($assets as $asset)
-                <tr class="hover:bg-gray-50 transition-colors">
+                <tr class="hover:bg-gray-50 transition-colors"
+                    x-show="matches(@js($asset->asset_code), @js($asset->name), @js($asset->specification), @js($asset->location))">
                     <td class="px-3 py-2.5 font-mono text-gray-900 font-medium">{{ $asset->asset_code }}</td>
                     <td class="px-3 py-2.5 text-gray-700">{{ $asset->sub_classification ?? '-' }}</td>
                     <td class="px-3 py-2.5 text-gray-900 font-medium">{{ $asset->name ?? '-' }}</td>
@@ -146,5 +164,6 @@
         </table>
     </div>
     <div class="p-4 border-t border-gray-200">{{ $assets->appends(request()->query())->links() }}</div>
+</div>
 </div>
 @endsection

@@ -4,8 +4,11 @@
 @section('page', 'Server List')
 
 @section('content')
+<style>[x-cloak] { display: none !important; }</style>
+
 <a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition-colors">← Kembali ke Dashboard</a>
 <br><br>
+
 <div class="flex items-center justify-between gap-4 flex-wrap">
     <div>
         <h1 class="text-3xl font-bold text-blue-600 tracking-tight">
@@ -22,49 +25,65 @@
     </a>
 </div>
 <br>
-<div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+
+<!-- Tambahkan x-data di container utama untuk state management -->
+<div class="bg-white rounded-lg border border-gray-200 shadow-sm" x-data="{
+    search: '',
+    typeFilter: '{{ request('type', 'All types') }}' === '' ? 'All types' : '{{ request('type', 'All types') }}',
+    osFilter: '{{ request('os', 'All OS') }}' === '' ? 'All OS' : '{{ request('os', 'All OS') }}',
+    kindFilter: '{{ request('kind', 'All kinds') }}' === '' ? 'All kinds' : '{{ request('kind', 'All kinds') }}',
+    matches(name, ip, os, type, kind) {
+        const q = this.search.trim().toLowerCase();
+        const matchSearch = !q || name.toLowerCase().includes(q) || ip.toLowerCase().includes(q);
+        const matchType = this.typeFilter === 'All types' || type === this.typeFilter;
+        const matchOs = this.osFilter === 'All OS' || os === this.osFilter;
+        const matchKind = this.kindFilter === 'All kinds' || kind === this.kindFilter;
+        return matchSearch && matchType && matchOs && matchKind;
+    },
+    resetFilters() {
+        this.search = '';
+        this.typeFilter = 'All types';
+        this.osFilter = 'All OS';
+        this.kindFilter = 'All kinds';
+    }
+}">
     <!-- Filters -->
     <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-200 gap-3">
         <h2 class="text-lg font-semibold text-gray-800">Server List</h2>
         <div class="flex flex-wrap items-center gap-2">
-            <form method="GET" action="{{ route('servers.index') }}" id="server-filter-form" class="flex flex-wrap items-center gap-2">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search..."
-                       class="border border-gray-300 rounded px-3 h-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <!-- Input Search tanpa form, langsung pakai x-model -->
+            <input type="text" x-model="search" placeholder="Cari nama atau IP..."
+                   class="border border-gray-300 rounded px-3 h-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48">
 
-                {{-- Dropdown langsung submit form saat dipilih, tidak perlu klik Filter --}}
-                <select name="type" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
-                    <option>All types</option>
-                    @foreach($types as $type)
-                        <option {{ request('type') == $type ? 'selected' : '' }}>{{ $type }}</option>
-                    @endforeach
-                </select>
-                <select name="os" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
-                    <option>All OS</option>
-                    @foreach($oses as $os)
-                        <option {{ request('os') == $os ? 'selected' : '' }}>{{ $os }}</option>
-                    @endforeach
-                </select>
-                <select name="kind" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
-                    <option>All kinds</option>
-                    @foreach($kinds as $kind)
-                        <option {{ request('kind') == $kind ? 'selected' : '' }}>{{ $kind }}</option>
-                    @endforeach
-                </select>
-                <select name="per_page" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
-                    <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 / page</option>
-                    <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 / page</option>
-                    <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 / page</option>
-                </select>
+            <!-- Dropdown langsung pakai x-model, tanpa onchange submit -->
+            <select x-model="typeFilter" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
+                <option value="All types">All types</option>
+                @foreach($types as $type)
+                    <option value="{{ $type }}">{{ $type }}</option>
+                @endforeach
+            </select>
 
-                {{-- Tombol Filter tetap ada, untuk submit search teks (Enter juga jalan otomatis) --}}
-                <button type="submit" class="bg-blue-600 text-white px-4 h-9 rounded text-sm hover:bg-blue-700 transition-colors">Filter</button>
+            <select x-model="osFilter" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
+                <option value="All OS">All OS</option>
+                @foreach($oses as $os)
+                    <option value="{{ $os }}">{{ $os }}</option>
+                @endforeach
+            </select>
 
-                @if(request()->anyFilled(['search', 'type', 'os', 'kind']))
-                    <a href="{{ route('servers.index') }}" class="flex items-center gap-1.5 border border-blue-200 text-blue-600 px-4 h-9 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
-                        Reset
-                    </a>
-                @endif
-            </form>
+            <select x-model="kindFilter" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
+                <option value="All kinds">All kinds</option>
+                @foreach($kinds as $kind)
+                    <option value="{{ $kind }}">{{ $kind }}</option>
+                @endforeach
+            </select>
+
+            <!-- Tombol Reset menggunakan Alpine -->
+            <button x-show="search !== '' || typeFilter !== 'All types' || osFilter !== 'All OS' || kindFilter !== 'All kinds'" 
+                    @click="resetFilters()" 
+                    x-transition
+                    class="flex items-center gap-1.5 border border-blue-200 text-blue-600 px-4 h-9 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
+                Reset
+            </button>
         </div>
     </div>
 
@@ -85,7 +104,11 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($servers as $server)
-                <tr class="hover:bg-gray-50 transition-colors">
+                <!-- Tambahkan x-data dan x-show di setiap baris -->
+                <tr class="hover:bg-gray-50 transition-colors" 
+                    x-data='{{ json_encode(["name" => $server->name, "ip" => $server->ip_address, "os" => $server->os, "type" => $server->type, "kind" => $server->kind]) }}'
+                    x-show="matches(name, ip, os, type, kind)"
+                    x-cloak>
                     <td class="px-4 py-3.5">
                         <div class="flex items-center space-x-2">
                             <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,8 +174,17 @@
                     </td>
                 </tr>
                 @endforelse
+                
+                <!-- Pesan jika hasil filter kosong -->
+                <tr x-show="!$el.previousElementSibling.matches(name, ip, os, type, kind) && false" class="hidden">
+                   <!-- Fallback handled by Alpine naturally hiding all rows -->
+                </tr>
             </tbody>
         </table>
+        
+        <!-- Pesan jika tidak ada hasil setelah difilter -->
+        <div x-show="!$el.parentElement.querySelector('tr[x-show]')" class="hidden"></div> 
+        <!-- Catatan: Alpine akan menyembunyikan semua baris jika tidak cocok, Anda bisa menambahkan div "Tidak ada hasil pencarian" di luar tabel jika diinginkan, tapi secara default tabel akan terlihat kosong yang sudah cukup jelas -->
     </div>
 
     <!-- Pagination -->

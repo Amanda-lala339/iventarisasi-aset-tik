@@ -5,44 +5,14 @@
 <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* Styling untuk navigasi kategori */
-    .category-nav-item {
-        transition: all 0.3s ease;
-    }
-    .category-nav-item:hover {
-        background-color: #3b82f6;
-        color: white !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
-    }
-    .category-nav-item.active {
-        background-color: #2563eb;
-        color: white !important;
-        font-weight: 600;
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
-        transform: scale(1.05);
-    }
-    .category-nav-item i {
-        transition: transform 0.3s ease;
-    }
-    .category-nav-item:hover i, .category-nav-item.active i {
-        transform: scale(1.1);
-    }
-
-    /* Kolom Aksi sticky di kanan supaya tetap terlihat saat scroll horizontal */
-    .sticky-col {
-        position: sticky;
-        right: 0;
-        background: white;
-        box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.05);
-    }
-    thead .sticky-col {
-        background: #eff6ff; /* samakan dengan bg-blue-50 di header */
-    }
-    tbody tr:hover .sticky-col {
-        background: #f9fafb; /* samakan dengan hover:bg-gray-50 di baris */
-    }
+    .category-nav-item { transition: all 0.3s ease; }
+    .category-nav-item:hover { background-color: #3b82f6; color: white !important; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
+    .category-nav-item.active { background-color: #2563eb; color: white !important; font-weight: 600; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4); transform: scale(1.05); }
+    .category-nav-item i { transition: transform 0.3s ease; }
+    .category-nav-item:hover i, .category-nav-item.active i { transform: scale(1.1); }
+    .sticky-col { position: sticky; right: 0; background: white; box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.05); }
+    thead .sticky-col { background: #eff6ff; }
+    tbody tr:hover .sticky-col { background: #f9fafb; }
 </style>
 
 @php
@@ -53,12 +23,7 @@
         'SP' => ['label' => 'Sarana Pendukung', 'icon' => 'fas fa-plug', 'route' => 'assets.category.sp'],
         'PS' => ['label' => 'SDM & Pihak Ketiga', 'icon' => 'fas fa-users', 'route' => 'assets.category.ps'],
     ];
-
-    // Gunakan $categoryCode dari controller, fallback ke 'DI' jika tidak ada
     $activeCode = $categoryCode ?? 'DI';
-
-    // Route kategori yang sedang aktif — dipakai untuk form search & tombol Reset
-    // supaya tidak hardcode ke assets.category.di seperti sebelumnya
     $activeRoute = $assetCategories[$activeCode]['route'] ?? 'assets.category.di';
 @endphp
 
@@ -73,20 +38,15 @@
     </a>
 </div>
 
-{{-- ===== NAVBAR KATEGORI ASET ===== --}}
+{{-- NAVBAR KATEGORI ASET --}}
 <div class="bg-white rounded-xl border border-gray-100 shadow-md shadow-blue-500/10 p-2 mb-4">
     <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
         <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 shrink-0">Kategori Aset:</span>
         @foreach($assetCategories as $key => $cfg)
-            @php
-                $isActive = ($activeCode === $key);
-            @endphp
-
+            @php $isActive = ($activeCode === $key); @endphp
             <a href="{{ route($cfg['route']) }}"
                class="category-nav-item shrink-0 inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium {{
-                   $isActive
-                       ? 'active bg-blue-600 text-white shadow-md'
-                       : 'text-gray-600 hover:bg-blue-500 hover:text-white'
+                   $isActive ? 'active bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:bg-blue-500 hover:text-white'
                }}">
                 <i class="{{ $cfg['icon'] }} mr-2 text-sm"></i>
                 {{ $cfg['label'] }}
@@ -95,22 +55,38 @@
     </div>
 </div>
 
+{{-- WRAPPER ALPINE.JS (Hanya membungkus Filter & Tabel) --}}
+<div x-data="{
+    search: '{{ request('search', '') }}',
+    matches(code, name, doc) {
+        const q = (this.search || '').trim().toLowerCase();
+        if (q === '') return true;
+        return (code || '').toString().toLowerCase().includes(q)
+            || (name || '').toString().toLowerCase().includes(q)
+            || (doc || '').toString().toLowerCase().includes(q);
+    },
+    resetFilters() { this.search = ''; }
+}">
+
 <div class="bg-white rounded-lg border border-gray-200 shadow-lg shadow-blue-500/10">
     <div class="flex items-center justify-between p-4 border-b border-gray-200">
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Daftar Aset: {{ $pageTitle }}</h2>
         <span class="text-xs text-gray-500">Total: {{ $assets->count() }} aset</span>
     </div>
 
+    {{-- FILTER BAR (Real-time, tanpa form submit) --}}
     <div class="p-4 border-b border-gray-200 bg-gray-50">
-        {{-- Form search sekarang mengarah ke route kategori yang SEDANG AKTIF,
-             bukan hardcode ke assets.category.di seperti sebelumnya --}}
-        <form method="GET" action="{{ route($activeRoute) }}" class="flex items-center gap-2">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode aset, nama, no. dokumen..." class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs hover:bg-blue-700 transition-colors">Cari</button>
-            @if(request('search'))
-                <a href="{{ route($activeRoute) }}" class="text-xs text-gray-500 hover:underline px-2">Reset</a>
-            @endif
-        </form>
+        <div class="flex items-center gap-2">
+            <input type="text" x-model="search" placeholder="Cari kode aset, nama, no. dokumen..."
+                   class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <button type="button"
+                    x-show="search !== ''"
+                    @click="resetFilters()"
+                    x-transition
+                    class="text-xs text-gray-500 hover:text-blue-600 px-2 hover:underline">
+                Reset
+            </button>
+        </div>
     </div>
 
     <div class="overflow-x-auto">
@@ -136,7 +112,8 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($assets as $asset)
-                <tr class="hover:bg-gray-50 transition-colors">
+                <tr class="hover:bg-gray-50 transition-colors"
+                    x-show="matches(@js($asset->asset_code), @js($asset->name), @js($asset->document_number))">
                     <td class="px-3 py-2.5 font-mono text-gray-900 font-medium">{{ $asset->asset_code }}</td>
                     <td class="px-3 py-2.5 text-gray-700">{{ $asset->sub_classification ?? '-' }}</td>
                     <td class="px-3 py-2.5 text-gray-900 font-medium">{{ $asset->name ?? '-' }}</td>
@@ -199,4 +176,5 @@
     </div>
     <div class="p-4 border-t border-gray-200">{{ $assets->appends(request()->query())->links() }}</div>
 </div>
+</div> {{-- Akhir Wrapper Alpine.js --}}
 @endsection

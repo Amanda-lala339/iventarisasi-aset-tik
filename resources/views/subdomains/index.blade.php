@@ -4,8 +4,11 @@
 @section('page', 'Subdomain List')
 
 @section('content')
+<style>[x-cloak] { display: none !important; }</style>
+
 <a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition-colors">← Kembali ke Dashboard</a>
 <br><br>
+
 <div class="flex items-center justify-between gap-4 flex-wrap">
     <div>
         <h1 class="text-3xl font-bold text-blue-600 tracking-tight">
@@ -23,38 +26,54 @@
 </div>
 <br>
 
-<div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+<!-- Tambahkan x-data di container utama -->
+<div class="bg-white rounded-lg border border-gray-200 shadow-sm" x-data="{
+    search: '',
+    domainFilter: '{{ request('domain', 'All domains') }}' === '' ? 'All domains' : '{{ request('domain', 'All domains') }}',
+    statusFilter: '{{ request('status', 'All status') }}' === '' ? 'All status' : '{{ request('status', 'All status') }}',
+    matches(sub, domain, status) {
+        const q = this.search.trim().toLowerCase();
+        const matchSearch = !q || sub.toLowerCase().includes(q) || domain.toLowerCase().includes(q);
+        const matchDomain = this.domainFilter === 'All domains' || domain === this.domainFilter;
+        const matchStatus = this.statusFilter === 'All status' || status === this.statusFilter;
+        return matchSearch && matchDomain && matchStatus;
+    },
+    resetFilters() {
+        this.search = '';
+        this.domainFilter = 'All domains';
+        this.statusFilter = 'All status';
+    }
+}">
     <!-- Header & Filter -->
     <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-200 gap-3">
         <h2 class="text-lg font-semibold text-gray-800">Subdomain List</h2>
         <div class="flex flex-wrap items-center gap-2">
-            <form method="GET" action="{{ route('subdomains.index') }}" id="subdomain-filter-form" class="flex flex-wrap items-center gap-2">
-                <input type="text" x-model="subdomainSearch"name="search" value="{{ request('search') }}" placeholder="Search..."
-                       class="border border-gray-300 rounded px-3 h-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <!-- Input Search tanpa form -->
+            <input type="text" x-model="search" placeholder="Cari subdomain..."
+                   class="border border-gray-300 rounded px-3 h-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48">
 
-                {{-- Dropdown langsung submit form saat dipilih, tidak perlu klik Filter --}}
-                <select name="domain" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
-                    <option value="">All domains</option>
-                    @foreach($domains as $domain)
-                        <option value="{{ $domain }}" {{ request('domain') == $domain ? 'selected' : '' }}>{{ $domain }}</option>
-                    @endforeach
-                </select>
-                <select name="status" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
-                    <option value="">All status</option>
-                    @foreach($statuses as $status)
-                        <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>{{ $status }}</option>
-                    @endforeach
-                </select>
+            <!-- Dropdown langsung pakai x-model -->
+            <select x-model="domainFilter" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
+                <option value="All domains">All domains</option>
+                @foreach($domains as $domain)
+                    <option value="{{ $domain }}">{{ $domain }}</option>
+                @endforeach
+            </select>
 
-                {{-- Tombol Filter tetap ada, untuk submit search teks (Enter juga jalan otomatis) --}}
-                <button type="submit" class="bg-blue-600 text-white px-4 h-9 rounded text-sm hover:bg-blue-700 transition-colors">Filter</button>
+            <select x-model="statusFilter" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
+                <option value="All status">All status</option>
+                @foreach($statuses as $status)
+                    <option value="{{ $status }}">{{ $status }}</option>
+                @endforeach
+            </select>
 
-                @if(request()->anyFilled(['search', 'domain', 'status']))
-                    <a href="{{ route('subdomains.index') }}" class="flex items-center gap-1.5 border border-blue-200 text-blue-600 px-4 h-9 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
-                        Reset
-                    </a>
-                @endif
-            </form>
+            <!-- Tombol Reset menggunakan Alpine -->
+            <button x-show="search !== '' || domainFilter !== 'All domains' || statusFilter !== 'All status'" 
+                    @click="resetFilters()" 
+                    x-transition
+                    class="flex items-center gap-1.5 border border-blue-200 text-blue-600 px-4 h-9 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
+                Reset
+            </button>
         </div>
     </div>
 
@@ -75,7 +94,11 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($subdomains as $subdomain)
-                <tr class="hover:bg-gray-50 transition-colors">
+                <!-- Tambahkan x-data dan x-show di setiap baris -->
+                <tr class="hover:bg-gray-50 transition-colors"
+                    x-data='{{ json_encode(["sub" => $subdomain->subdomain, "domain" => $subdomain->domain, "status" => $subdomain->status]) }}'
+                    x-show="matches(sub, domain, status)"
+                    x-cloak>
                     <td class="px-4 py-3.5 font-mono text-gray-900 font-medium">{{ $subdomain->subdomain }}</td>
                     <td class="px-4 py-3.5">
                         <span class="badge {{ $subdomain->status === 'Active' ? 'status-active' : ($subdomain->status === 'Expiring' ? 'status-expiring' : 'status-expired') }}">
