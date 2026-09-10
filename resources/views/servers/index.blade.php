@@ -27,33 +27,43 @@
     <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-200 gap-3">
         <h2 class="text-lg font-semibold text-gray-800">Server List</h2>
         <div class="flex flex-wrap items-center gap-2">
-            <form method="GET" action="{{ route('servers.index') }}" class="flex flex-wrap items-center gap-2">
+            <form method="GET" action="{{ route('servers.index') }}" id="server-filter-form" class="flex flex-wrap items-center gap-2">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search..."
                        class="border border-gray-300 rounded px-3 h-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <select name="type" class="border border-gray-300 rounded px-3 h-9 text-sm">
+
+                {{-- Dropdown langsung submit form saat dipilih, tidak perlu klik Filter --}}
+                <select name="type" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
                     <option>All types</option>
                     @foreach($types as $type)
                         <option {{ request('type') == $type ? 'selected' : '' }}>{{ $type }}</option>
                     @endforeach
                 </select>
-                <select name="os" class="border border-gray-300 rounded px-3 h-9 text-sm">
+                <select name="os" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
                     <option>All OS</option>
                     @foreach($oses as $os)
                         <option {{ request('os') == $os ? 'selected' : '' }}>{{ $os }}</option>
                     @endforeach
                 </select>
-                <select name="kind" class="border border-gray-300 rounded px-3 h-9 text-sm">
+                <select name="kind" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
                     <option>All kinds</option>
                     @foreach($kinds as $kind)
                         <option {{ request('kind') == $kind ? 'selected' : '' }}>{{ $kind }}</option>
                     @endforeach
                 </select>
-                <select name="per_page" class="border border-gray-300 rounded px-3 h-9 text-sm">
+                <select name="per_page" onchange="this.form.submit()" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
                     <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 / page</option>
                     <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 / page</option>
                     <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 / page</option>
                 </select>
+
+                {{-- Tombol Filter tetap ada, untuk submit search teks (Enter juga jalan otomatis) --}}
                 <button type="submit" class="bg-blue-600 text-white px-4 h-9 rounded text-sm hover:bg-blue-700 transition-colors">Filter</button>
+
+                @if(request()->anyFilled(['search', 'type', 'os', 'kind']))
+                    <a href="{{ route('servers.index') }}" class="flex items-center gap-1.5 border border-blue-200 text-blue-600 px-4 h-9 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
+                        Reset
+                    </a>
+                @endif
             </form>
         </div>
     </div>

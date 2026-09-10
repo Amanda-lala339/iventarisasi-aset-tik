@@ -39,48 +39,41 @@
         <div>
             <h1 class="text-3xl font-bold text-blue-600 tracking-tight">Arsitektur Aset<span class="text-gray-400 font-normal"> » </span><span class="text-lg font-semibold text-gray-500">Pengelolaan Aset</span></h1>
         </div>
-        
-        <div class="flex items-center space-x-2">
-        <a href="{{ route('assets.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-semibold transition-colors shadow-md">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-            </svg>
-            <span>Tambah Data Aset</span>
-        </a>
-        <div class="relative" x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false">
-            <button @click="userMenuOpen = !userMenuOpen"
-                    class="flex items-center space-x-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                <span>{{ auth()->user()->name ?? 'Akun' }}</span>
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div x-show="userMenuOpen" x-transition x-cloak
-                 class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                            class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                        <span>Keluar</span>
-                    </button>
-                </form>
-            </div>
-        </div> 
-    </div>
-</div>
 
-    @php
-        // Total assets dihitung dari penjumlahan 5 kategori,
-        // bukan dari query terpisah, supaya angkanya selalu konsisten
-        // dengan kartu-kartu kategori di bawahnya.
-        $computedTotalAssets = $dataInfoCount + $softwareCount + $hardwareCount + $supportCount + $personnelCount;
-    @endphp
+        <div class="flex items-center space-x-2">
+            <a href="{{ route('assets.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-semibold transition-colors shadow-md">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Tambah Data Aset</span>
+            </a>
+            <div class="relative" x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false">
+                <button @click="userMenuOpen = !userMenuOpen"
+                        class="flex items-center space-x-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span>{{ auth()->user()->name ?? 'Akun' }}</span>
+                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div x-show="userMenuOpen" x-transition x-cloak
+                     class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            <span>Keluar</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ============================================= -->
     <!-- Summary Cards - Baris 1                       -->
@@ -90,14 +83,14 @@
         <!-- Total Assets - TIDAK BISA DIKLIK (teks biasa) -->
         <div class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 overflow-hidden cursor-default">
             <div class="text-gray-500 text-xs font-medium mb-2">Total assets</div>
-            <div class="text-2xl font-bold text-gray-900">{{ $computedTotalAssets }}</div>
+            <div class="text-2xl font-bold text-gray-900">{{ $totalAssets }}</div>
             <div class="text-xs text-gray-400 mt-0.5">all categories</div>
             <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
             </svg>
         </div>
 
-        <!-- Data & Informasi - KLIK KE HALAMAN KATEGORI DI -->
+        <!-- Data & Informasi -->
         <a href="{{ route('assets.category.di') }}" class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">Data & Informasi</div>
             <div class="text-2xl font-bold text-gray-900">{{ $dataInfoCount }}</div>
@@ -107,7 +100,7 @@
             </svg>
         </a>
 
-        <!-- Perangkat Lunak - KLIK KE HALAMAN KATEGORI PL -->
+        <!-- Perangkat Lunak -->
         <a href="{{ route('assets.category.pl') }}" class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">Perangkat Lunak</div>
             <div class="text-2xl font-bold text-gray-900">{{ $softwareCount }}</div>
@@ -123,7 +116,7 @@
     <!-- ============================================= -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
 
-        <!-- Perangkat Keras - KLIK KE HALAMAN KATEGORI PK -->
+        <!-- Perangkat Keras -->
         <a href="{{ route('assets.category.pk') }}" class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">Perangkat Keras</div>
             <div class="text-2xl font-bold text-gray-900">{{ $hardwareCount }}</div>
@@ -133,7 +126,7 @@
             </svg>
         </a>
 
-        <!-- Sarana Pendukung - KLIK KE HALAMAN KATEGORI SP -->
+        <!-- Sarana Pendukung -->
         <a href="{{ route('assets.category.sp') }}" class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">Sarana Pendukung</div>
             <div class="text-2xl font-bold text-gray-900">{{ $supportCount }}</div>
@@ -143,7 +136,7 @@
             </svg>
         </a>
 
-        <!-- SDM & Pihak Ketiga - KLIK KE HALAMAN KATEGORI PS -->
+        <!-- SDM & Pihak Ketiga -->
         <a href="{{ route('assets.category.ps') }}" class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">SDM & Pihak Ketiga</div>
             <div class="text-2xl font-bold text-gray-900">{{ $personnelCount }}</div>
@@ -163,19 +156,9 @@
         <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-shadow duration-300">
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Server Type</h3>
             <div class="space-y-2.5">
-                @php
-                    $maxServerCount = max($serverTypes ?: [1]);
-                    $serverIcons = [
-                        'App server' => '',
-                        'Backup' => '',
-                        'Database server' => '',
-                        'File/ storage' => '',
-                        'Web server' => '',
-                    ];
-                @endphp
+                @php $maxServerCount = max($serverTypes ?: [1]); @endphp
                 @foreach($serverTypes as $type => $count)
                     <div class="flex items-center space-x-3">
-                        <span class="w-5 text-sm text-center flex-shrink-0">{{ $serverIcons[$type] ?? '' }}</span>
                         <span class="text-xs text-gray-700 w-24 flex-shrink-0 truncate">{{ ucfirst($type) }}</span>
                         <div class="flex-1 bg-gray-50 rounded-full h-2 overflow-hidden">
                             <div class="h-2 rounded-full bg-gradient-to-r from-blue-300 to-blue-600 shadow-sm shadow-blue-500/40" style="width:{{ ($count / $maxServerCount) * 100 }}%"></div>
@@ -226,10 +209,6 @@
                         <option>Physical</option>
                         <option>Virtual</option>
                     </select>
-                    <select class="border border-gray-300 rounded px-2 py-1 text-xs">
-                        <option>20/ page</option>
-                        <option>50/ page</option>
-                    </select>
                     <button @click="serverFilterOpen = !serverFilterOpen" class="flex items-center space-x-1 text-xs px-2 py-1 border rounded" :class="serverFilterOpen ? 'text-blue-600 border-blue-300 bg-blue-50' : 'text-gray-600 border-gray-300 hover:bg-gray-50'">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 8h12M10 12h4M12 16v4"/>
@@ -258,7 +237,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @foreach(\App\Models\Server::take(8)->get() as $server)
+                        @forelse($servers as $server)
                             <tr class="hover:bg-gray-50" x-data='{{ json_encode(["name" => $server->name, "ip" => $server->ip_address, "os" => $server->os, "type" => $server->type, "kind" => $server->kind]) }}' x-show="matchesServer(name, ip, os, type, kind)">
                                 <td class="px-3 py-2">
                                     <div class="flex items-center space-x-1.5">
@@ -277,22 +256,28 @@
                                 </td>
                                 <td class="px-3 py-2 text-gray-600" x-show="serverExpanded">{{ $server->type }}</td>
                                 <td class="px-3 py-2" x-show="serverExpanded">
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] {{ $server->kind === 'Physical' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700' }}">{{ $server->kind }}</span>
+                                    <span class="badge {{ $server->kind === 'Physical' ? 'badge-physical' : 'badge-virtual' }}">{{ $server->kind }}</span>
                                 </td>
                                 <td class="px-3 py-2" x-show="serverExpanded">
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] {{ $server->status === 'Online' ? 'bg-green-100 text-green-700' : ($server->status === 'Offline' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700') }}">{{ $server->status }}</span>
+                                    <span class="badge {{ $server->status === 'Online' ? 'status-online' : ($server->status === 'Offline' ? 'status-offline' : 'status-warning') }}">{{ $server->status }}</span>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-3 py-6 text-center text-gray-400">Belum ada data server.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
             <div class="flex items-center justify-between p-3 border-t border-gray-200">
-                <span class="text-xs text-gray-500">Showing {{ \App\Models\Server::count() }} servers</span>
-                <div class="flex items-center space-x-1">
-                    <button class="px-2 py-0.5 border border-gray-300 rounded text-xs text-gray-500 hover:bg-gray-50">1</button>
-                </div>
+                <span class="text-xs text-gray-500">
+                    Showing {{ $servers->count() }} of {{ $serverCount }} servers
+                </span>
+                @if($serverCount > $servers->count())
+                    <a href="{{ route('servers.index') }}" class="text-xs text-blue-600 hover:underline">Lihat semua →</a>
+                @endif
             </div>
         </div>
 
@@ -315,10 +300,6 @@
                         <option>Expiring</option>
                         <option>Expired</option>
                     </select>
-                    <select class="border border-gray-300 rounded px-2 py-1 text-xs">
-                        <option>20/ page</option>
-                        <option>50/ page</option>
-                    </select>
                     <button @click="subdomainFilterOpen = !subdomainFilterOpen" class="flex items-center space-x-1 text-xs px-2 py-1 border rounded" :class="subdomainFilterOpen ? 'text-blue-600 border-blue-300 bg-blue-50' : 'text-gray-600 border-gray-300 hover:bg-gray-50'">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 8h12M10 12h4M12 16v4"/>
@@ -336,75 +317,78 @@
 
             <div class="overflow-x-auto">
                 <table class="w-full text-xs">
-    <thead class="bg-blue-50 text-gray-600">
-        <tr>
-            <th class="px-3 py-2 text-left font-medium">Subdomain</th>
-            <th class="px-3 py-2 text-left font-medium">Status</th>
-            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Domain</th>
-            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Server</th>
-            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">OPD pengelola</th>
-            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Kontak/PIC</th>
-            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">SSL Expiry</th>
-        </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-100">
-        @foreach(\App\Models\Subdomain::take(8)->get() as $subdomain)
-            <tr class="hover:bg-gray-50"
-                x-data='{{ json_encode(["sub" => $subdomain->subdomain, "domain" => $subdomain->domain, "status" => $subdomain->status]) }}'
-                x-show="matchesSubdomain(sub, domain, status)">
- 
-                <td class="px-3 py-2">
-                    <div class="flex items-center space-x-1.5">
-                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                        </svg>
-                        <span class="font-mono text-gray-900">{{ $subdomain->subdomain }}</span>
-                    </div>
-                </td>
- 
-                <td class="px-3 py-2">
-                    <span class="px-1.5 py-0.5 rounded text-[10px] {{ $subdomain->status === 'Active' ? 'bg-green-100 text-green-700' : ($subdomain->status === 'Expiring' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
-                        {{ $subdomain->status }}
-                    </span>
-                </td>
- 
-                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
-                    {{ $subdomain->domain }}
-                </td>
- 
-                <td class="px-3 py-2 text-gray-700 font-medium" x-show="subdomainExpanded">
-                    @if($subdomain->server)
-                        {{ $subdomain->server->name }}
-                    @else
-                        <span class="text-gray-400">-</span>
-                    @endif
-                </td>
- 
-                {{-- FIX: kolom yang sebelumnya hilang --}}
-                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
-                    {{ $subdomain->opd_pengelola ?? '-' }}
-                </td>
- 
-                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
-                    {{ $subdomain->contact_pic ?? '-' }}
-                </td>
-                {{-- END FIX --}}
- 
-                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
-                    {{ $subdomain->ssl_expiry?->format('Y-m-d') ?? '-' }}
-                </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
+                    <thead class="bg-blue-50 text-gray-600">
+                        <tr>
+                            <th class="px-3 py-2 text-left font-medium">Subdomain</th>
+                            <th class="px-3 py-2 text-left font-medium">Status</th>
+                            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Domain</th>
+                            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Server</th>
+                            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">OPD pengelola</th>
+                            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">Kontak/PIC</th>
+                            <th class="px-3 py-2 text-left font-medium" x-show="subdomainExpanded">SSL Expiry</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($subdomains as $subdomain)
+                            <tr class="hover:bg-gray-50"
+                                x-data='{{ json_encode(["sub" => $subdomain->subdomain, "domain" => $subdomain->domain, "status" => $subdomain->status]) }}'
+                                x-show="matchesSubdomain(sub, domain, status)">
 
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center space-x-1.5">
+                                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                        </svg>
+                                        <span class="font-mono text-gray-900">{{ $subdomain->subdomain }}</span>
+                                    </div>
+                                </td>
+
+                                <td class="px-3 py-2">
+                                    <span class="badge {{ $subdomain->status === 'Active' ? 'status-active' : ($subdomain->status === 'Expiring' ? 'status-expiring' : 'status-expired') }}">
+                                        {{ $subdomain->status }}
+                                    </span>
+                                </td>
+
+                                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
+                                    {{ $subdomain->domain }}
+                                </td>
+
+                                <td class="px-3 py-2 text-gray-700 font-medium" x-show="subdomainExpanded">
+                                    @if($subdomain->server)
+                                        {{ $subdomain->server->name }}
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+
+                                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
+                                    {{ $subdomain->opd_pengelola ?? '-' }}
+                                </td>
+
+                                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
+                                    {{ $subdomain->contact_pic ?? '-' }}
+                                </td>
+
+                                <td class="px-3 py-2 text-gray-600" x-show="subdomainExpanded">
+                                    {{ $subdomain->ssl_expiry?->format('Y-m-d') ?? '-' }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-3 py-6 text-center text-gray-400">Belum ada data subdomain.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
             <div class="flex items-center justify-between p-3 border-t border-gray-200">
-                <span class="text-xs text-gray-500">Showing {{ \App\Models\Subdomain::count() }} subdomains</span>
-                <div class="flex items-center space-x-1">
-                    <button class="px-2 py-0.5 border border-gray-300 rounded text-xs text-gray-500 hover:bg-gray-50">1</button>
-                </div>
+                <span class="text-xs text-gray-500">
+                    Showing {{ $subdomains->count() }} of {{ $subdomainCount }} subdomains
+                </span>
+                @if($subdomainCount > $subdomains->count())
+                    <a href="{{ route('subdomains.index') }}" class="text-xs text-blue-600 hover:underline">Lihat semua →</a>
+                @endif
             </div>
         </div>
     </div>
