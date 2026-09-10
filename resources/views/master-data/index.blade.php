@@ -91,36 +91,40 @@
 }">
 
     {{-- ===== FILTER BAR (Real-time, tanpa form submit) ===== --}}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-md shadow-blue-500/10 p-4 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-            <div class="md:col-span-6">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Pencarian</label>
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" x-model="search" placeholder="Cari nama..."
-                           class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-            </div>
-            <div class="md:col-span-3">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                <select x-model="statusFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">Semua</option>
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Nonaktif</option>
-                </select>
-            </div>
-            <div class="md:col-span-3 flex gap-2">
-                {{-- Tombol Reset muncul otomatis hanya saat ada filter aktif --}}
-                <button type="button" 
-                        x-show="search !== '' || statusFilter !== ''" 
-                        @click="resetFilters()" 
-                        x-transition
-                        class="flex-1 basis-1/2 inline-flex items-center justify-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors">
-                    <i class="fas fa-undo mr-2"></i> Reset
-                </button>
+<div class="bg-white rounded-xl border border-gray-100 shadow-md shadow-blue-500/10 p-4 mb-4">
+    <div class="flex flex-col md:flex-row gap-3 items-end">
+        {{-- Search Field - Lebih panjang dengan flex-1 --}}
+        <div class="flex-1">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Pencarian</label>
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" x-model="search" placeholder="Cari nama..."
+                       class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
         </div>
+        
+        {{-- Status Dropdown - Lebih compact --}}
+        <div class="w-full md:w-48">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+            <select x-model="statusFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Semua</option>
+                <option value="active">Aktif</option>
+                <option value="inactive">Nonaktif</option>
+            </select>
+        </div>
+        
+        {{-- Reset Button --}}
+        <div class="w-full md:w-auto pb-0.5">
+            <button type="button" 
+                    x-show="search !== '' || statusFilter !== ''" 
+                    @click="resetFilters()" 
+                    x-transition
+                    class="w-full md:w-auto inline-flex items-center justify-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors h-[38px]">
+                <i class="fas fa-undo mr-2"></i> Reset
+            </button>
+        </div>
     </div>
+</div>
 
     {{-- ===== TABEL DATA ===== --}}
     <div class="bg-white rounded-xl border border-gray-100 shadow-lg shadow-blue-500/10 overflow-hidden">
