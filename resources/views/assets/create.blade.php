@@ -8,39 +8,40 @@
     $categories = $categories ?? \App\Models\AssetCategory::all();
 @endphp
 
-<a href="{{ url()->previous() }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50">← Kembali</a>
-<br><br>
+<a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition">
+    ← Kembali
+</a>
 
-<div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md">
+<div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md mt-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Tambah Aset Baru</h2>
-    
-    {{-- Tampilkan Error Validasi --}}
-@if ($errors->any())
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-        <p class="font-semibold">Terjadi kesalahan:</p>
-        <ul class="list-disc list-inside text-sm mt-2">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
 
-{{-- Tampilkan Pesan Success --}}
-@if (session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
-        {{ session('success') }}
-    </div>
-@endif
+    {{-- Tampilkan Error Validasi --}}
+    @if ($errors->any())
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            <p class="font-semibold">Terjadi kesalahan:</p>
+            <ul class="list-disc list-inside text-sm mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- Tampilkan Pesan Success --}}
+    @if (session('success'))
+        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
+            {{ session('success') }}
+        </div>
+    @endif
 
     <form method="POST" action="{{ route('assets.store') }}" enctype="multipart/form-data">
         @csrf
 
-        {{-- Kategori & Kode --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {{-- Kategori & Kode (Selalu Tampil) --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500">*</span></label>
-                <select name="asset_category_id" id="asset_category_id" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select name="asset_category_id" id="asset_category_id" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" data-code="{{ $cat->code }}" {{ (old('asset_category_id') == $cat->id || ($code == $cat->code && !old('asset_category_id'))) ? 'selected' : '' }}>
                             {{ $cat->name }} ({{ $cat->code }})
@@ -50,13 +51,16 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500">*</span></label>
-                <input type="text" name="asset_code" value="{{ old('asset_code') }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <input type="text" name="asset_code" value="{{ old('asset_code') }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: DI-001">
             </div>
         </div>
 
-        {{-- ============ DATA & INFORMASI (DI) ============ --}}
-        <div id="fields-DI" class="category-fields hidden">
-            <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">Data & Informasi</h3>
+        {{-- ========================================================= --}}
+        {{-- 1. DATA & INFORMASI (DI) --}}
+        {{-- ========================================================= --}}
+        <div id="fields-DI" class="category-fields hidden space-y-4">
+            <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Data & Informasi</h3>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -71,19 +75,13 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
                     <input type="text" name="name" value="{{ old('name') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
-                {{-- ✅ NOMOR DOKUMEN DIUBAH JADI DROPDOWN --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Dokumen</label>
-                    <select name="document_number" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($documentTypes['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('document_number') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Dokumen</label>
+                    <input type="text" name="document_number" value="{{ old('document_number') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: HR-001">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Penyusunan/Pengesahan</label>
-                    <input type="text" name="year" value="{{ old('year') }}" min="1900" max="{{ date('Y') + 10 }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <input type="number" name="year" value="{{ old('year') }}" min="1900" max="{{ date('Y') + 10 }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status Aset</label>
@@ -94,65 +92,91 @@
                         @endforeach
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan</label>
-                    <input type="text" name="location" value="{{ old('location') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+            </div>
+
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan Aset</label>
+                        <input type="text" name="location" value="{{ old('location') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Format Penyimpanan Aset</label>
+                        <select name="storage_format" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($storageFormats['DI'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('storage_format') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach 
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset</label>
+                        <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($opdOwners['DI'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Retensi Aset</label>
+                        <input type="text" name="retention" value="{{ old('retention') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: 1 Tahun">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Format Penyimpanan</label>
-                    <select name="storage_format" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($storageFormats['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('storage_format') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
+            </div>
+
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Kritikalitas Aset (Penilaian)</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kerahasiaan</label>
+                        <select name="confidentiality" id="di_confidentiality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($confidentialityLevels['DI'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('confidentiality') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Integritas</label>
+                        <select name="integrity" id="di_integrity" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($integrityLevels['DI'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('integrity') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ketersediaan</label>
+                        <select name="availability" id="di_availability" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($availabilityLevels['DI'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('availability') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset (OPD)</label>
-                    <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($opdOwners['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Retensi Aset</label>
-                    <input type="text" name="retention" value="{{ old('retention') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kerahasiaan</label>
-                    <select name="confidentiality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($confidentialityLevels['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('confidentiality') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Integritas</label>
-                    <select name="integrity" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($integrityLevels['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('integrity') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ketersediaan</label>
-                    <select name="availability" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($availabilityLevels['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('availability') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            </div>
+
+            {{-- KRITIKALITAS ASET DI POSISI PALING BAWAH --}}
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
+                <select name="criticality" id="di_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                    <option value="" selected disabled>Pilih...</option>
+                    @foreach($criticalityLevels['DI'] ?? [] as $opt)
+                        <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
-        {{-- ============ PERANGKAT LUNAK (PL) ============ --}}
-        <div id="fields-PL" class="category-fields hidden">
-            <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">Perangkat Lunak</h3>
+        {{-- ========================================================= --}}
+        {{-- 2. PERANGKAT LUNAK (PL) --}}
+        {{-- ========================================================= --}}
+        <div id="fields-PL" class="category-fields hidden space-y-4">
+            <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Lunak</h3>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -171,21 +195,12 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Rilis</label>
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
-                    <select name="platform" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($platforms['PL'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('platform') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Uraian Singkat Aplikasi</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Uraian Singkat Aplikasi / Business Proses</label>
                     <textarea name="app_description" rows="2" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ old('app_description') }}</textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Aplikasi/URL</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Aplikasi / URL</label>
                     <input type="url" name="app_url" value="{{ old('app_url') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
@@ -193,11 +208,20 @@
                     <input type="text" name="ip_address" value="{{ old('ip_address') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">IP Publik/Internal</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">IP Publik / Internal</label>
                     <select name="ip_public_internal" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
                         @foreach($ipTypes['PL'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('ip_public_internal') == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                    <select name="platform" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" selected disabled>Pilih...</option>
+                        @foreach($platforms['PL'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('platform') == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -214,7 +238,6 @@
                         @endforeach
                     </select>
                 </div>
-                {{-- ✅ DATA CENTER TETAP ADA --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Data Center</label>
                     <select name="data_center" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -225,7 +248,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kontak Pengelola/PIC</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kontak Pengelola / PIC</label>
                     <input type="text" name="contact_pic" value="{{ old('contact_pic') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
@@ -239,24 +262,40 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori SE</label>
-                    <select name="se_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <select name="se_category" id="pl_se_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
                         @foreach($seCategories['PL'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('se_category') == $opt->name)>{{ $opt->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumen Pendukung</label>
-                    <input type="file" name="document_file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                    <p class="text-xs text-gray-500 mt-1">Format: PDF, DOC, DOCX, XLS, XLSX, PPT, ZIP, RAR, JPG, PNG.</p>
-                </div>
+            </div>
+
+            {{-- Upload Dokumen (Khusus PL, Tetap Dipertahankan) --}}
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumen Pendukung</label>
+                <input type="file" name="document_file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <p class="text-xs text-gray-500 mt-1">Format: PDF, DOC, DOCX, XLS, XLSX, PPT, ZIP, RAR, JPG, PNG.</p>
+            </div>
+
+            {{-- KRITIKALITAS ASET DI POSISI PALING BAWAH --}}
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
+                <select name="criticality" id="pl_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                    <option value="" selected disabled>Pilih...</option>
+                    @foreach($criticalityLevels['PL'] ?? [] as $opt)
+                        <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
-        {{-- ============ PERANGKAT KERAS (PK) ============ --}}
-        <div id="fields-PK" class="category-fields hidden">
-            <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">Perangkat Keras</h3>
+        {{-- ========================================================= --}}
+        {{-- 3. PERANGKAT KERAS (PK) --}}
+        {{-- ========================================================= --}}
+        <div id="fields-PK" class="category-fields hidden space-y-4">
+            <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Keras</h3>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -273,49 +312,70 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Spesifikasi Aset</label>
-                    <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ old('specification') }}</textarea>
+                    <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: Merk, Tipe, Storage, RAM, Prosesor">{{ old('specification') }}</textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Pengadaan</label>
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan</label>
-                    <input type="text" name="location" value="{{ old('location') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+            </div>
+
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan Aset</label>
+                        <input type="text" name="location" value="{{ old('location') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset</label>
+                        <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($opdOwners['PK'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi Aset</label>
+                        <select name="condition" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($assetConditions['PK'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('condition') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset (OPD)</label>
-                    <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($opdOwners['PK'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi Aset</label>
-                    <select name="condition" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($assetConditions['PK'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('condition') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                    <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($assetTypeCategories['PK'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('asset_type_category') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            </div>
+
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                <select name="asset_type_category" id="pk_asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <option value="" selected disabled>Pilih...</option>
+                    @foreach($assetTypeCategories['PK'] ?? [] as $opt)
+                        <option value="{{ $opt->name }}" @selected(old('asset_type_category') == $opt->name)>{{ $opt->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- KRITIKALITAS ASET DI POSISI PALING BAWAH --}}
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
+                <select name="criticality" id="pk_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                    <option value="" selected disabled>Pilih...</option>
+                    @foreach($criticalityLevels['PK'] ?? [] as $opt)
+                        <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
-        {{-- ============ SARANA PENDUKUNG (SP) ============ --}}
-        <div id="fields-SP" class="category-fields hidden">
-            <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">Sarana Pendukung</h3>
+        {{-- ========================================================= --}}
+        {{-- 4. SARANA PENDUKUNG (SP) --}}
+        {{-- ========================================================= --}}
+        <div id="fields-SP" class="category-fields hidden space-y-4">
+            <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Sarana Pendukung</h3>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -332,49 +392,70 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Spesifikasi Aset</label>
-                    <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ old('specification') }}</textarea>
+                    <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: Kapasitas, Merk, Tipe">{{ old('specification') }}</textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Pengadaan</label>
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan</label>
-                    <input type="text" name="location" value="{{ old('location') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+            </div>
+
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan Aset</label>
+                        <input type="text" name="location" value="{{ old('location') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset</label>
+                        <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($opdOwners['SP'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi Aset</label>
+                        <select name="condition" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($assetConditions['SP'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('condition') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset (OPD)</label>
-                    <select name="owner" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($opdOwners['SP'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('owner') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kondisi Aset</label>
-                    <select name="condition" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($assetConditions['SP'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('condition') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                    <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($assetTypeCategories['SP'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('asset_type_category') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            </div>
+
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                <select name="asset_type_category" id="sp_asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <option value="" selected disabled>Pilih...</option>
+                    @foreach($assetTypeCategories['SP'] ?? [] as $opt)
+                        <option value="{{ $opt->name }}" @selected(old('asset_type_category') == $opt->name)>{{ $opt->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- KRITIKALITAS ASET DI POSISI PALING BAWAH --}}
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
+                <select name="criticality" id="sp_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                    <option value="" selected disabled>Pilih...</option>
+                    @foreach($criticalityLevels['SP'] ?? [] as $opt)
+                        <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
-        {{-- ============ SDM & PIHAK KETIGA (PS) ============ --}}
-        <div id="fields-PS" class="category-fields hidden">
-            <h3 class="text-sm font-semibold text-blue-600 mb-3 border-b pb-2">SDM & Pihak Ketiga</h3>
+        {{-- ========================================================= --}}
+        {{-- 5. SDM & PIHAK KETIGA (PS) --}}
+        {{-- ========================================================= --}}
+        <div id="fields-PS" class="category-fields hidden space-y-4">
+            <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">SDM & Pihak Ketiga</h3>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -386,11 +467,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Personil</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Personil / Perusahaan</label>
                     <input type="text" name="name" value="{{ old('name') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Personil</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset</label>
                     <select name="personnel_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
                         @foreach($personnelCategories['PS'] ?? [] as $opt)
@@ -399,75 +480,157 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">NIP/NIK</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NIP / NIK</label>
                     <input type="text" name="nip" value="{{ old('nip') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Fungsi</label>
-                    <select name="function" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($personnelFunctions['PS'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('function') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                    <input type="text" name="unit" value="{{ old('unit') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
-                    <input type="text" name="position" value="{{ old('position') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+            </div>
+
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Aset</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fungsi</label>
+                        <select name="function" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" selected disabled>Pilih...</option>
+                            @foreach($personnelFunctions['PS'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('function') == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                        <input type="text" name="unit" value="{{ old('unit') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {{-- KRITIKALITAS (Semua Kategori) --}}
-        <div class="mt-6 border-t pt-4">
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">Kritikalitas Aset</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kritikalitas</label>
-                    <select name="criticality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($criticalityLevels['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
+                <input type="text" name="position" value="{{ old('position') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
             </div>
+            
+            {{-- Catatan: Tidak ada field Kritikalitas untuk PS sesuai template Excel --}}
         </div>
 
-        <div class="flex justify-end space-x-3 mt-6">
-            <a href="{{ url()->previous() }}" class="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">Batal</a>
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Simpan</button>
+        {{-- Tombol Aksi --}}
+        <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+            <a href="{{ url()->previous() }}" class="px-5 py-2.5 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Batal</a>
+            <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition shadow-sm">Simpan Aset</button>
         </div>
     </form>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const select = document.getElementById('asset_category_id');
+    const categorySelect = document.getElementById('asset_category_id');
     const fields = document.querySelectorAll('.category-fields');
 
     function showFields() {
-        const selected = select.options[select.selectedIndex];
+        const selected = categorySelect.options[categorySelect.selectedIndex];
         const code = selected.getAttribute('data-code');
 
         fields.forEach(f => {
             f.classList.add('hidden');
-            f.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+            f.querySelectorAll('input, select, textarea').forEach(el => {
+                el.disabled = true;
+                el.removeAttribute('required'); // Hapus required agar tidak validasi saat hidden
+            });
         });
 
         const target = document.getElementById('fields-' + code);
         if (target) {
             target.classList.remove('hidden');
-            target.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
+            target.querySelectorAll('input, select, textarea').forEach(el => {
+                el.disabled = false;
+                // Kembalikan required jika elemen memang memilikinya secara default (opsional, tergantung validasi backend)
+                if(el.name === 'name' || el.name === 'sub_classification') {
+                   // el.setAttribute('required', 'required'); 
+                }
+            });
         }
     }
 
-    select.addEventListener('change', showFields);
-    showFields();
+    categorySelect.addEventListener('change', showFields);
+    showFields(); // Jalankan saat load
+
+    // ============ AUTO-HITUNG KRITIKALITAS ASET ============
+
+    function setSelectValue(select, value) {
+        if (!select || !value) return;
+        const match = Array.from(select.options).find(o => o.value.toLowerCase() === value.toLowerCase());
+        if (match) select.value = match.value;
+    }
+
+    // --- Data & Informasi ---
+    function scoreConfidentiality(v) {
+        v = (v || '').toLowerCase();
+        if (v.includes('strategis') || v.includes('rahasia')) return 3;
+        if (v.includes('terbatas')) return 2;
+        if (v.includes('terbuka') || v.includes('publik')) return 1;
+        return 0;
+    }
+    function scoreIntegrity(v) {
+        v = (v || '').toLowerCase();
+        if (v.includes('vital')) return 3;
+        if (v.includes('administrasi')) return 2;
+        if (v.includes('penunjang')) return 1;
+        return 0;
+    }
+    function scoreAvailability(v) {
+        v = (v || '').toLowerCase();
+        if (v.includes('seketika') || v.includes('real')) return 3;
+        if (v.includes('rutin')) return 2;
+        if (v.includes('fleksibel') || v.includes('non')) return 1;
+        return 0;
+    }
+
+    const diConf = document.getElementById('di_confidentiality');
+    const diInteg = document.getElementById('di_integrity');
+    const diAvail = document.getElementById('di_availability');
+    const diCrit = document.getElementById('di_criticality');
+
+    function updateDiCriticality() {
+        const total = scoreConfidentiality(diConf.value) + scoreIntegrity(diInteg.value) + scoreAvailability(diAvail.value);
+        if (total === 0) return;
+        let level = total <= 3 ? 'Rendah' : (total <= 6 ? 'Sedang' : 'Tinggi');
+        setSelectValue(diCrit, level);
+    }
+    [diConf, diInteg, diAvail].forEach(el => el && el.addEventListener('change', updateDiCriticality));
+
+    // --- Perangkat Lunak ---
+    function mapSeCategory(v) {
+        v = (v || '').toLowerCase();
+        if (v.includes('strategis')) return 'Tinggi';
+        if (v.includes('tinggi')) return 'Sedang';
+        if (v.includes('rendah')) return 'Rendah';
+        return null;
+    }
+    const plSe = document.getElementById('pl_se_category');
+    const plCrit = document.getElementById('pl_criticality');
+    if (plSe) {
+        plSe.addEventListener('change', () => setSelectValue(plCrit, mapSeCategory(plSe.value)));
+    }
+
+    // --- Perangkat Keras & Sarana Pendukung ---
+    function mapFisikCategory(v) {
+        v = (v || '').toLowerCase();
+        if (v.includes('strategis')) return 'Tinggi';
+        if (v.includes('operasional utama')) return 'Sedang';
+        if (v.includes('umum') || v.includes('non-esensial') || v.includes('non esensial')) return 'Rendah';
+        return null;
+    }
+    
+    const pkCat = document.getElementById('pk_asset_type_category');
+    const pkCrit = document.getElementById('pk_criticality');
+    if (pkCat) {
+        pkCat.addEventListener('change', () => setSelectValue(pkCrit, mapFisikCategory(pkCat.value)));
+    }
+    
+    const spCat = document.getElementById('sp_asset_type_category');
+    const spCrit = document.getElementById('sp_criticality');
+    if (spCat) {
+        spCat.addEventListener('change', () => setSelectValue(spCrit, mapFisikCategory(spCat.value)));
+    }
 });
 </script>
 @endsection

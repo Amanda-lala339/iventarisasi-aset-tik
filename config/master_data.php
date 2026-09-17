@@ -54,31 +54,6 @@ return [
         ],
     ],
 
-    // ✅ TAMBAHAN BARU: JENIS DOKUMEN
-    'document_types' => [
-        'label' => 'Jenis Dokumen',
-        'model' => \App\Models\DocumentType::class,
-        'icon' => 'fas fa-file-signature',
-        'group' => 'Aset',
-        'fields' => [
-            'name' => ['label' => 'Nama Jenis Dokumen', 'type' => 'text', 'required' => true],
-            'asset_category_code' => [
-                'label' => 'Kategori Aset (opsional)',
-                'type' => 'select',
-                'options' => [
-                    '' => '- Semua Kategori -',
-                    'DI' => 'Data & Informasi',
-                    'PL' => 'Perangkat Lunak',
-                    'PK' => 'Perangkat Keras',
-                    'SP' => 'Sarana Pendukung',
-                    'PS' => 'SDM & Pihak Ketiga',
-                ],
-            ],
-            'description' => ['label' => 'Deskripsi', 'type' => 'textarea'],
-            'order' => ['label' => 'Urutan', 'type' => 'number', 'default' => 0],
-            'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
-        ],
-    ],
 
     'asset_statuses' => [
         'label' => 'Status Aset',
