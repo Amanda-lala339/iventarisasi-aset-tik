@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\AssetCategory;
+use App\Models\AssetDocument;
 use App\Models\SubClassification;
 use App\Models\AssetStatus;
 use App\Models\AssetCondition;
@@ -21,7 +22,7 @@ use App\Models\StorageFormat;
 use App\Models\OpdOwner;
 use App\Models\DataCenter;
 use App\Models\DocumentType;
-
+use App\Models\DataClassification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
@@ -30,19 +31,12 @@ use App\Imports\AssetsImport;
 
 class AssetController extends Controller
 {
-    /**
-     * Ambil semua opsi master data, dikelompokkan per kategori aset.
-     * NULL = umum (muncul di semua kategori).
-     */
     private function masterDataOptions(): array
     {
         $codes = ['DI', 'PL', 'PK', 'SP', 'PS'];
-
         $byCategory = function (string $model) use ($codes) {
             try {
                 $tableName = (new $model)->getTable();
-
-                // Cek apakah tabel punya kolom 'order' sebelum pakai orderBy
                 if (Schema::hasColumn($tableName, 'order')) {
                     $items = $model::where('is_active', true)
                         ->orderBy('order')
@@ -53,7 +47,6 @@ class AssetController extends Controller
                         ->orderBy('name')
                         ->get();
                 }
-
                 $grouped = [];
                 foreach ($codes as $code) {
                     $grouped[$code] = $items->filter(
@@ -84,17 +77,16 @@ class AssetController extends Controller
             'opdOwners'             => $byCategory(OpdOwner::class),
             'dataCenters'           => $byCategory(DataCenter::class),
             'documentTypes'         => $byCategory(DocumentType::class),
+            'dataClassifications'   => $byCategory(DataClassification::class),
         ];
     }
 
     public function index(Request $request)
     {
-        $query = Asset::with('category');
-
+        $query = Asset::with('category', 'documents');
         if ($request->filled('category')) {
             $query->whereHas('category', fn($q) => $q->where('code', $request->category));
         }
-
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -102,14 +94,11 @@ class AssetController extends Controller
                   ->orWhere('asset_code', 'like', "%{$search}%");
             });
         }
-
         if ($request->filled('criticality')) {
             $query->where('criticality', $request->criticality);
         }
-
         $assets = $query->latest()->paginate(20);
         $categories = AssetCategory::orderBy('name')->get();
-
         return view('assets.index', compact('assets', 'categories'));
     }
 
@@ -124,73 +113,78 @@ class AssetController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'asset_category_id'  => 'required|exists:asset_categories,id',
-            'asset_code'         => 'required|string|max:255',
-            'name'               => 'nullable|string|max:255',
-            'sub_classification' => 'nullable|string|max:255',
-            'status'             => 'nullable|string|max:255',
-            'criticality'        => 'nullable|string|max:255',
-            'document_number'    => 'nullable|string|max:255',
-            'year'               => 'nullable|integer',
-            'location'           => 'nullable|string|max:255',
-            'storage_format'     => 'nullable|string|max:255',
-            'owner'              => 'nullable|string|max:255',
-            'retention'          => 'nullable|string|max:255',
-            'confidentiality'    => 'nullable|string|max:255',
-            'integrity'          => 'nullable|string|max:255',
-            'availability'       => 'nullable|string|max:255',
-            'specification'      => 'nullable|string',
-            'ip_address'         => 'nullable|string|max:255',
-            'ip_public_internal' => 'nullable|string|max:255',
-            'platform'           => 'nullable|string|max:255',
-            'os_server'          => 'nullable|string|max:255',
-            'contact_pic'        => 'nullable|string|max:255',
-            'se_category'        => 'nullable|string|max:255',
-            'app_description'    => 'nullable|string',
-            'app_url'            => 'nullable|string|max:255',
-            'data_center'        => 'nullable|string|max:255',
-            'condition'          => 'nullable|string|max:255',
-            'asset_type_category'=> 'nullable|string|max:255',
-            'function'           => 'nullable|string|max:255',
-            'unit'               => 'nullable|string|max:255',
-            'position'           => 'nullable|string|max:255',
-            'nip'                => 'nullable|string|max:255',
-            'personnel_category' => 'nullable|string|max:255',
-            'document_file'      => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip,rar',
+            'asset_category_id'   => 'required|exists:asset_categories,id',
+            'asset_code'          => 'required|string|max:255',
+            'name'                => 'nullable|string|max:255',
+            'sub_classification'  => 'nullable|string|max:255',
+            'status'              => 'nullable|string|max:255',
+            'criticality'         => 'nullable|string|max:255',
+            'document_number'     => 'nullable|string|max:255',
+            'year'                => 'nullable|integer',
+            'location'            => 'nullable|string|max:255',
+            'storage_format'      => 'nullable|string|max:255',
+            'owner'               => 'nullable|string|max:255',
+            'retention'           => 'nullable|string|max:255',
+            'confidentiality'     => 'nullable|string|max:255',
+            'integrity'           => 'nullable|string|max:255',
+            'availability'        => 'nullable|string|max:255',
+            'specification'       => 'nullable|string',
+            'ip_address'          => 'nullable|string|max:255',
+            'ip_public_internal'  => 'nullable|string|max:255',
+            'platform'            => 'nullable|string|max:255',
+            'os_server'           => 'nullable|string|max:255',
+            'contact_pic'         => 'nullable|string|max:255',
+            'se_category'         => 'nullable|string|max:255',
+            'app_description'     => 'nullable|string',
+            'app_url'             => 'nullable|string|max:255',
+            'data_center'         => 'nullable|string|max:255',
+            'condition'           => 'nullable|string|max:255',
+            'asset_type_category' => 'nullable|string|max:255',
+            'function'            => 'nullable|string|max:255',
+            'unit'                => 'nullable|string|max:255',
+            'position'            => 'nullable|string|max:255',
+            'nip'                 => 'nullable|string|max:255',
+            'personnel_category'  => 'nullable|string|max:255',
+            'data_classification' => 'nullable|string|max:255',
+            'document_files.*'    => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip,rar|max:10240',
         ]);
 
-        if ($request->hasFile('document_file')) {
-            $validated['document_file'] = $request->file('document_file')->store('asset_documents', 'public');
+        $assetData = collect($validated)->except(['document_files'])->toArray();
+        $asset = Asset::create($assetData);
+
+        if ($request->hasFile('document_files')) {
+            foreach ($request->file('document_files') as $file) {
+                $path = $file->store('asset_documents', 'public');
+                AssetDocument::create([
+                    'asset_id'      => $asset->id,
+                    'file_path'     => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                ]);
+            }
         }
 
-        Asset::create($validated);
-
         $category = AssetCategory::find($request->asset_category_id);
-        // Redirect ke route spesifik berdasarkan kode kategori (misal: assets.category.pl)
         return redirect()->route('assets.category.' . strtolower($category->code))
             ->with('success', 'Aset berhasil ditambahkan.');
     }
 
     public function show($id)
     {
-        $asset = Asset::with('category')->findOrFail($id);
-
+        $asset = Asset::with(['category', 'documents'])->findOrFail($id);
         $code = null;
         if (is_object($asset->category)) {
             $code = $asset->category->code;
         }
-
         if (!$code && !empty($asset->asset_code)) {
             $code = substr($asset->asset_code, 0, 2);
         }
-
         $code = strtoupper(trim($code ?? ''));
-
         return view('assets.show', compact('asset', 'code'));
     }
 
     public function edit(Asset $asset)
     {
+        $asset->load('documents');
         return view('assets.edit', array_merge([
             'asset'      => $asset,
             'categories' => AssetCategory::all(),
@@ -200,49 +194,69 @@ class AssetController extends Controller
     public function update(Request $request, Asset $asset)
     {
         $validated = $request->validate([
-            'asset_category_id'  => 'required|exists:asset_categories,id',
-            'asset_code'         => 'required|string|max:255',
-            'name'               => 'nullable|string|max:255',
-            'sub_classification' => 'nullable|string|max:255',
-            'status'             => 'nullable|string|max:255',
-            'criticality'        => 'nullable|string|max:255',
-            'document_number'    => 'nullable|string|max:255',
-            'year'               => 'nullable|integer',
-            'location'           => 'nullable|string|max:255',
-            'storage_format'     => 'nullable|string|max:255',
-            'owner'              => 'nullable|string|max:255',
-            'retention'          => 'nullable|string|max:255',
-            'confidentiality'    => 'nullable|string|max:255',
-            'integrity'          => 'nullable|string|max:255',
-            'availability'       => 'nullable|string|max:255',
-            'specification'      => 'nullable|string',
-            'ip_address'         => 'nullable|string|max:255',
-            'ip_public_internal' => 'nullable|string|max:255',
-            'platform'           => 'nullable|string|max:255',
-            'os_server'          => 'nullable|string|max:255',
-            'contact_pic'        => 'nullable|string|max:255',
-            'se_category'        => 'nullable|string|max:255',
-            'app_description'    => 'nullable|string',
-            'app_url'            => 'nullable|string|max:255',
-            'data_center'        => 'nullable|string|max:255',
-            'condition'          => 'nullable|string|max:255',
-            'asset_type_category'=> 'nullable|string|max:255',
-            'function'           => 'nullable|string|max:255',
-            'unit'               => 'nullable|string|max:255',
-            'position'           => 'nullable|string|max:255',
-            'nip'                => 'nullable|string|max:255',
-            'personnel_category' => 'nullable|string|max:255',
-            'document_file'      => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip,rar',
+            'asset_category_id'   => 'required|exists:asset_categories,id',
+            'asset_code'          => 'required|string|max:255',
+            'name'                => 'nullable|string|max:255',
+            'sub_classification'  => 'nullable|string|max:255',
+            'status'              => 'nullable|string|max:255',
+            'criticality'         => 'nullable|string|max:255',
+            'document_number'     => 'nullable|string|max:255',
+            'year'                => 'nullable|integer',
+            'location'            => 'nullable|string|max:255',
+            'storage_format'      => 'nullable|string|max:255',
+            'owner'               => 'nullable|string|max:255',
+            'retention'           => 'nullable|string|max:255',
+            'confidentiality'     => 'nullable|string|max:255',
+            'integrity'           => 'nullable|string|max:255',
+            'availability'        => 'nullable|string|max:255',
+            'specification'       => 'nullable|string',
+            'ip_address'          => 'nullable|string|max:255',
+            'ip_public_internal'  => 'nullable|string|max:255',
+            'platform'            => 'nullable|string|max:255',
+            'os_server'           => 'nullable|string|max:255',
+            'contact_pic'         => 'nullable|string|max:255',
+            'se_category'         => 'nullable|string|max:255',
+            'app_description'     => 'nullable|string',
+            'app_url'             => 'nullable|string|max:255',
+            'data_center'         => 'nullable|string|max:255',
+            'condition'           => 'nullable|string|max:255',
+            'asset_type_category' => 'nullable|string|max:255',
+            'function'            => 'nullable|string|max:255',
+            'unit'                => 'nullable|string|max:255',
+            'position'            => 'nullable|string|max:255',
+            'nip'                 => 'nullable|string|max:255',
+            'personnel_category'  => 'nullable|string|max:255',
+            'data_classification' => 'nullable|string|max:255',
+            'document_files.*'    => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip,rar|max:10240',
+            'remove_documents'    => 'nullable|array',
+            'remove_documents.*'  => 'string',
         ]);
 
-        if ($request->hasFile('document_file')) {
-            if ($asset->document_file && Storage::disk('public')->exists($asset->document_file)) {
-                Storage::disk('public')->delete($asset->document_file);
+        $assetData = collect($validated)->except(['document_files', 'remove_documents'])->toArray();
+        $asset->update($assetData);
+
+        if ($request->has('remove_documents')) {
+            foreach ($request->input('remove_documents') as $fileToRemove) {
+                $doc = $asset->documents()->where('file_path', $fileToRemove)->first();
+                if ($doc) {
+                    if (Storage::disk('public')->exists($doc->file_path)) {
+                        Storage::disk('public')->delete($doc->file_path);
+                    }
+                    $doc->delete();
+                }
             }
-            $validated['document_file'] = $request->file('document_file')->store('asset_documents', 'public');
         }
 
-        $asset->update($validated);
+        if ($request->hasFile('document_files')) {
+            foreach ($request->file('document_files') as $file) {
+                $path = $file->store('asset_documents', 'public');
+                AssetDocument::create([
+                    'asset_id'      => $asset->id,
+                    'file_path'     => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                ]);
+            }
+        }
 
         $category = AssetCategory::find($request->asset_category_id);
         return redirect()->route('assets.category.' . strtolower($category->code))
@@ -251,8 +265,55 @@ class AssetController extends Controller
 
     public function destroy(Asset $asset)
     {
+        foreach ($asset->documents as $doc) {
+            if (Storage::disk('public')->exists($doc->file_path)) {
+                Storage::disk('public')->delete($doc->file_path);
+            }
+        }
+        if ($asset->document_file && Storage::disk('public')->exists($asset->document_file)) {
+            Storage::disk('public')->delete($asset->document_file);
+        }
         $asset->delete();
         return redirect()->back()->with('success', 'Aset berhasil dihapus.');
+    }
+
+    /**
+ * Hapus dokumen via AJAX
+ */
+public function deleteDocumentAjax(Request $request, $documentId)
+{
+    try {
+        // Cari dokumen berdasarkan ID langsung
+        $document = AssetDocument::findOrFail($documentId);
+
+        // Hapus file dari storage
+        if (Storage::disk('public')->exists($document->file_path)) {
+            Storage::disk('public')->delete($document->file_path);
+        }
+
+        // Hapus dari database
+        $document->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dokumen berhasil dihapus'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
+    public function destroyDocument(AssetDocument $document)
+    {
+        if (Storage::disk('public')->exists($document->file_path)) {
+            Storage::disk('public')->delete($document->file_path);
+        }
+        $document->delete();
+        return back()->with('success', 'Dokumen berhasil dihapus.');
     }
 
     public function import(Request $request)
@@ -264,27 +325,20 @@ class AssetController extends Controller
         return back()->with('success', 'Data aset berhasil diimpor dari Excel.');
     }
 
-    /**
-     * Helper method untuk menampilkan aset berdasarkan kategori.
-     * Method ini akan secara otomatis me-render view: assets.category.{di|pl|pk|sp|ps}
-     */
     private function getCategoryAssets($categoryCode, $pageTitle, Request $request)
     {
         $category = AssetCategory::where('code', $categoryCode)->first();
-
-        $query = Asset::with('category')
+        $query = Asset::with(['category', 'documents'])
             ->where('asset_category_id', $category?->id);
 
         if ($request->filled('search')) {
             $search = $request->search;
-
             $query->where(function ($q) use ($search, $categoryCode) {
                 $q->where('asset_code', 'like', "%{$search}%")
                   ->orWhere('name', 'like', "%{$search}%")
                   ->orWhere('sub_classification', 'like', "%{$search}%")
                   ->orWhere('location', 'like', "%{$search}%")
                   ->orWhere('owner', 'like', "%{$search}%");
-
                 match ($categoryCode) {
                     'DI' => $q->orWhere('document_number', 'like', "%{$search}%")
                               ->orWhere('storage_format', 'like', "%{$search}%")
@@ -313,15 +367,11 @@ class AssetController extends Controller
         $assets = $query->latest()->paginate(20);
         $categories = AssetCategory::all();
 
-        // INI KUNCINYA: Secara dinamis memanggil file di.blade.php, pl.blade.php, dst.
         return view('assets.category.' . strtolower($categoryCode), compact(
             'assets', 'categories', 'pageTitle', 'categoryCode', 'category'
         ));
     }
 
-    /**
-     * Fallback route untuk menangani URL seperti /assets/category/pl atau /assets/category/perangkat-lunak
-     */
     public function category($slug)
     {
         $map = [
@@ -336,38 +386,15 @@ class AssetController extends Controller
             'sarana-pendukung'   => ['code' => 'SP', 'title' => 'Sarana Pendukung'],
             'sdm-pihak-ketiga'   => ['code' => 'PS', 'title' => 'SDM & Pihak Ketiga'],
         ];
-
         if (!isset($map[$slug])) {
             abort(404, 'Kategori aset tidak ditemukan.');
         }
-
-        // Delegasikan ke helper method yang sudah Anda buat
         return $this->getCategoryAssets($map[$slug]['code'], $map[$slug]['title'], request());
     }
 
-    // --- Route Spesifik (Named Routes) ---
-    public function dataInformasi(Request $request)
-    {
-        return $this->getCategoryAssets('DI', 'Data & Informasi', $request);
-    }
-
-    public function perangkatLunak(Request $request)
-    {
-        return $this->getCategoryAssets('PL', 'Perangkat Lunak', $request);
-    }
-
-    public function perangkatKeras(Request $request)
-    {
-        return $this->getCategoryAssets('PK', 'Perangkat Keras', $request);
-    }
-
-    public function saranaPendukung(Request $request)
-    {
-        return $this->getCategoryAssets('SP', 'Sarana Pendukung', $request);
-    }
-
-    public function sdmPihakKetiga(Request $request)
-    {
-        return $this->getCategoryAssets('PS', 'SDM & Pihak Ketiga', $request);
-    }
+    public function dataInformasi(Request $request)    { return $this->getCategoryAssets('DI', 'Data & Informasi', $request); }
+    public function perangkatLunak(Request $request)  { return $this->getCategoryAssets('PL', 'Perangkat Lunak', $request); }
+    public function perangkatKeras(Request $request)  { return $this->getCategoryAssets('PK', 'Perangkat Keras', $request); }
+    public function saranaPendukung(Request $request) { return $this->getCategoryAssets('SP', 'Sarana Pendukung', $request); }
+    public function sdmPihakKetiga(Request $request)  { return $this->getCategoryAssets('PS', 'SDM & Pihak Ketiga', $request); }
 }

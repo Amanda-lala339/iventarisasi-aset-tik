@@ -10,7 +10,7 @@
     .category-nav-item.active { background-color: #2563eb; color: white !important; font-weight: 600; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4); transform: scale(1.05); }
     .category-nav-item i { transition: transform 0.3s ease; }
     .category-nav-item:hover i, .category-nav-item.active i { transform: scale(1.1); }
-    .sticky-col { position: sticky; right: 0; background: white; box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.05); }
+    .sticky-col { position: sticky; right: 0; background: white; box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.05); z-index: 10; }
     thead .sticky-col { background: #eff6ff; }
     tbody tr:hover .sticky-col { background: #f9fafb; }
 </style>
@@ -37,7 +37,7 @@
 @section('content')
 <div class="flex items-center justify-between mb-4">
     <a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition-colors">← Kembali ke Dashboard</a>
-    <a href="{{ route('assets.create', ['category' => 'PL']) }}" class="flex items-center gap-1.5 bg-blue-600 text-white px-4 h-9 rounded text-sm hover:bg-blue-700 shadow-sm shadow-blue-300 transition-colors">
+    <a href="{{ route('assets.create', ['category' => $categoryCode ?? 'PL']) }}" class="flex items-center gap-1.5 bg-blue-600 text-white px-4 h-9 rounded text-sm hover:bg-blue-700 shadow-sm shadow-blue-300 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
@@ -111,6 +111,7 @@
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Status</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kategori SE</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kritikalitas</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Klasifikasi Data</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Dokumen File</th>
                     <th class="px-3 py-2.5 text-center font-semibold uppercase tracking-wide sticky-col">Aksi</th>
                 </tr>
@@ -119,6 +120,7 @@
                 @forelse($assets as $asset)
                 <tr class="hover:bg-gray-50 transition-colors"
                     x-show="matches(@js($asset->asset_code), @js($asset->name), @js($asset->app_url), @js($asset->ip_address), @js($asset->platform))">
+                    
                     <td class="px-3 py-2.5 font-mono text-gray-900 font-medium">{{ $asset->asset_code }}</td>
                     <td class="px-3 py-2.5 text-gray-700">{{ $asset->sub_classification ?? '-' }}</td>
                     <td class="px-3 py-2.5 text-gray-900 font-medium">{{ $asset->name ?? '-' }}</td>
@@ -151,18 +153,59 @@
                             <span class="badge status-active">Rendah</span>
                         @endif
                     </td>
+                    
+                    {{-- KOLOM: Klasifikasi Data --}}
+                    <td class="px-3 py-2.5 text-gray-600">
+                        @if(!empty($asset->data_classification))
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                                {{ $asset->data_classification }}
+                            </span>
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </td>
+
+                    {{-- KOLOM: Dokumen File (Horizontal - Compact & Rapi) --}}
                     <td class="px-3 py-2.5">
-                        @if($asset->document_file)
-                            <a href="{{ asset('storage/' . $asset->document_file) }}" target="_blank" class="inline-flex items-center gap-1 badge bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3"/>
-                                </svg>
-                                Unduh
-                            </a>
+                        @php
+                            // 1. Prioritas Utama: Ambil dari relasi 'documents'
+                            $docs = $asset->documents ?? collect();
+                            $files = $docs->isNotEmpty() 
+                                ? $docs->pluck('file_path')->toArray() 
+                                : [];
+
+                            // 2. Fallback: Cek kolom JSON 'document_files'
+                            if (empty($files)) {
+                                $jsonFiles = is_array($asset->document_files) ? $asset->document_files : (is_string($asset->document_files) ? json_decode($asset->document_files, true) : []);
+                                if (!empty($jsonFiles)) {
+                                    $files = $jsonFiles;
+                                }
+                            }
+
+                            // 3. Fallback: Cek kolom string 'document_file'
+                            if (empty($files) && !empty($asset->document_file)) {
+                                $files = [$asset->document_file];
+                            }
+                        @endphp
+
+                        @if(!empty($files))
+                            <div class="flex items-center gap-1 flex-nowrap overflow-x-auto max-w-xs no-scrollbar">
+                                @foreach($files as $file)
+                                    <a href="{{ asset('storage/' . $file) }}" target="_blank" 
+                                       class="inline-flex items-center gap-1 px-2 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100 text-[10px] font-medium transition-colors whitespace-nowrap"
+                                       title="{{ basename($file) }}">
+                                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3"/>
+                                        </svg>
+                                        <span class="truncate max-w-[80px]">{{ Str::limit(basename($file), 12) }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
                         @else
                             <span class="text-gray-400 text-[10px]">-</span>
                         @endif
                     </td>
+
                     <td class="px-3 py-2.5 text-center sticky-col">
                         <div class="inline-flex items-center gap-1">
                             <a href="{{ route('assets.show', $asset) }}" title="Detail" class="action-btn text-gray-500 hover:bg-gray-100">
@@ -188,12 +231,20 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="18" class="px-4 py-8 text-center text-gray-500">Belum ada data {{ $pageTitle }}. <a href="{{ route('assets.create', ['category' => 'PL']) }}" class="text-blue-600 hover:underline">Tambah sekarang</a></td></tr>
+                <tr>
+                    <td colspan="19" class="px-4 py-8 text-center text-gray-500">
+                        Belum ada data {{ $pageTitle }}. 
+                        <a href="{{ route('assets.create', ['category' => $categoryCode ?? 'PL']) }}" class="text-blue-600 hover:underline font-medium">Tambah sekarang</a>
+                    </td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-    <div class="p-4 border-t border-gray-200">{{ $assets->appends(request()->query())->links() }}</div>
+    
+    <div class="p-4 border-t border-gray-200">
+        {{ $assets->appends(request()->query())->links() }}
+    </div>
 </div>
 </div>
 @endsection

@@ -14,7 +14,16 @@
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md mt-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Aset: {{ $asset->asset_code }}</h2>
 
-    <form method="POST" action="{{ route('assets.update', $asset) }}" enctype="multipart/form-data">
+    @if ($errors->any())
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            <p class="font-semibold">Terjadi kesalahan:</p>
+            <ul class="list-disc list-inside text-sm mt-2">
+                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('assets.update', $asset) }}" enctype="multipart/form-data" id="assetForm">
         @csrf
         @method('PUT')
 
@@ -41,7 +50,6 @@
         {{-- ========================================================= --}}
         <div id="fields-DI" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Data & Informasi</h3>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -55,6 +63,15 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
                     <input type="text" name="name" value="{{ old('name', $asset->name) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Klasifikasi Data</label>
+                    <select name="data_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($dataClassifications['DI'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('data_classification', $asset->data_classification) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Dokumen</label>
@@ -74,7 +91,6 @@
                     </select>
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -106,7 +122,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Kritikalitas Aset (Penilaian)</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -139,8 +154,6 @@
                     </div>
                 </div>
             </div>
-
-            {{-- KRITIKALITAS ASET DI POSISI PALING BAWAH --}}
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" id="di_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
@@ -157,7 +170,6 @@
         {{-- ========================================================= --}}
         <div id="fields-PL" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Lunak</h3>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -251,24 +263,46 @@
                     </select>
                 </div>
             </div>
-
-            {{-- Upload Dokumen (Tetap Dipertahankan) --}}
+            
+            {{-- ========================================================= --}}
+            {{-- UPLOAD DOKUMEN (VERSI BERSIH & TANPA DUPLIKASI) --}}
+            {{-- ========================================================= --}}
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumen Pendukung</label>
-                @if($asset->document_file)
-                    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-                        <div class="flex items-center gap-2 truncate">
-                            <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <a href="{{ asset('storage/' . $asset->document_file) }}" target="_blank" class="text-sm text-blue-700 hover:underline truncate">{{ basename($asset->document_file) }}</a>
-                        </div>
-                        <a href="{{ asset('storage/' . $asset->document_file) }}" download class="ml-2 px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition">Download</a>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Bisa tambah berkali-kali)</span>
+                </label>
+                
+                {{-- Tampilkan File yang Sudah Ada dari Database --}}
+                @if($asset->documents && $asset->documents->count() > 0)
+                    <div class="mb-3 space-y-2">
+                        @foreach($asset->documents as $doc)
+                            <div class="flex items-center justify-between p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-xs" id="file-container-{{ $doc->id }}">
+                                <div class="flex items-center gap-2 truncate flex-1">
+                                    <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="text-blue-700 hover:underline truncate">
+                                        {{ $doc->original_name ?? basename($doc->file_path) }}
+                                    </a>
+                                </div>
+                                <button type="button" 
+                                        onclick="deleteFile({{ $asset->id }}, {{ $doc->id }}, '{{ $doc->file_path }}')"
+                                        class="ml-2 text-red-600 hover:text-red-800 font-medium text-xs transition-colors">
+                                    Hapus
+                                </button>
+                            </div>
+                        @endforeach
                     </div>
                 @endif
-                <input type="file" name="document_file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                <p class="text-xs text-gray-500 mt-1">Format: PDF, DOC, DOCX, XLS, XLSX, PPT, ZIP, RAR, JPG, PNG. Kosongkan jika tidak ingin mengubah.</p>
-            </div>
 
-            {{-- KRITIKALITAS ASET DI POSISI PALING BAWAH --}}
+                <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png"
+                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <p class="text-xs text-gray-500 mt-1">Klik "Choose Files" berulang kali untuk menambahkan file baru.</p>
+                
+                {{-- Wadah untuk menampilkan daftar file baru yang dipilih (belum di-submit) --}}
+                <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
+            </div>
+            
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" id="pl_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
@@ -285,7 +319,6 @@
         {{-- ========================================================= --}}
         <div id="fields-PK" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Keras</h3>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -309,7 +342,6 @@
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -337,7 +369,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                 <select name="asset_type_category" id="pk_asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -347,8 +378,6 @@
                     @endforeach
                 </select>
             </div>
-
-            {{-- KRITIKALITAS ASET DI POSISI PALING BAWAH --}}
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" id="pk_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
@@ -365,7 +394,6 @@
         {{-- ========================================================= --}}
         <div id="fields-SP" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Sarana Pendukung</h3>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -389,7 +417,6 @@
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -417,7 +444,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                 <select name="asset_type_category" id="sp_asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -427,8 +453,6 @@
                     @endforeach
                 </select>
             </div>
-
-            {{-- KRITIKALITAS ASET DI POSISI PALING BAWAH --}}
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" id="sp_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
@@ -445,7 +469,6 @@
         {{-- ========================================================= --}}
         <div id="fields-PS" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">SDM & Pihak Ketiga</h3>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Klasifikasi</label>
@@ -474,7 +497,6 @@
                     <input type="text" name="nip" value="{{ old('nip', $asset->nip) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Penugasan</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -493,13 +515,12 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
                 <input type="text" name="position" value="{{ old('position', $asset->position) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
             </div>
         </div>
-
+           
         {{-- Tombol Aksi --}}
         <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
             <a href="{{ url()->previous() }}" class="px-5 py-2.5 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Batal</a>
@@ -536,6 +557,73 @@ document.addEventListener('DOMContentLoaded', function () {
 
     categorySelect.addEventListener('change', showFields);
     showFields(); // Jalankan saat load untuk menampilkan data yang sudah ada
+
+    // ============================================================
+    // FITUR UPLOAD BERTAHAP (AKUMULATIF) KHUSUS PERANGKAT LUNAK (PL)
+    // ============================================================
+    const plFileInput = document.getElementById('pl-file-input');
+    const plFileListContainer = document.getElementById('pl-file-list');
+    let plSelectedFiles = []; // Array untuk menyimpan file baru secara akumulatif
+
+    if (plFileInput && plFileListContainer) {
+        plFileInput.addEventListener('change', function() {
+            // Tambahkan file baru ke dalam array
+            Array.from(this.files).forEach(file => {
+                plSelectedFiles.push(file);
+            });
+            
+            // Reset nilai input agar user bisa memilih file yang sama lagi jika mau
+            this.value = '';
+            
+            // Render ulang daftar file
+            renderPlFiles();
+        });
+
+        function renderPlFiles() {
+            plFileListContainer.innerHTML = '';
+            
+            if (plSelectedFiles.length === 0) return;
+
+            plSelectedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2.5 bg-green-50 border border-green-200 rounded-lg text-xs';
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 truncate flex-1">
+                        <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="truncate text-gray-700 font-medium">${file.name}</span>
+                        <span class="text-gray-400 ml-2 shrink-0">(${(file.size / 1024).toFixed(1)} KB)</span>
+                    </div>
+                    <button type="button" class="ml-2 px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition text-xs font-medium shrink-0" onclick="removePlFile(${index})">
+                        Hapus
+                    </button>
+                `;
+                plFileListContainer.appendChild(div);
+            });
+
+            // Tampilkan total file baru
+            const totalDiv = document.createElement('div');
+            totalDiv.className = 'text-xs text-gray-500 text-right mt-1';
+            totalDiv.textContent = `Total: ${plSelectedFiles.length} file baru akan diupload`;
+            plFileListContainer.appendChild(totalDiv);
+        }
+
+        // Fungsi global agar bisa dipanggil dari onclick HTML
+        window.removePlFile = function(index) {
+            plSelectedFiles.splice(index, 1);
+            renderPlFiles();
+        };
+
+        // Intercept form submit untuk memasukkan array file kembali ke input
+        document.getElementById('assetForm').addEventListener('submit', function(e) {
+            if (plSelectedFiles.length > 0) {
+                const dt = new DataTransfer();
+                plSelectedFiles.forEach(file => dt.items.add(file));
+                plFileInput.files = dt.files;
+            }
+        });
+    }
 
     // ============ AUTO-HITUNG KRITIKALITAS ASET ============
     function setSelectValue(select, value) {
@@ -615,5 +703,44 @@ document.addEventListener('DOMContentLoaded', function () {
         spCat.addEventListener('change', () => setSelectValue(spCrit, mapFisikCategory(spCat.value)));
     }
 });
+
+// ============================================================
+// FUNGSI HAPUS FILE VIA AJAX (MENGGUNAKAN ID DATABASE)
+// ============================================================
+window.deleteFile = function(assetId, documentId, filePath) {
+    if (!confirm('Yakin ingin menghapus file ini?')) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('_token', '{{ csrf_token() }}');
+    formData.append('file_path', filePath);
+
+    // Kirim request ke route yang menggunakan documentId
+    fetch(`/assets/documents/${documentId}/delete`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hapus elemen dari DOM secara visual
+            const element = document.getElementById(`file-container-${documentId}`);
+            if (element) {
+                element.remove();
+            }
+        } else {
+            alert('Gagal menghapus file: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat menghapus file');
+    });
+};
 </script>
 @endsection

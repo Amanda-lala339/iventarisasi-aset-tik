@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::post('assets/import', [AssetController::class, 'import'])->name('assets.import');
     Route::resource('assets', AssetController::class);
     Route::get('assets/category/{category}', [AssetController::class, 'category'])->name('assets.category');
+       Route::post('/assets/documents/{documentId}/delete', [AssetController::class, 'deleteDocumentAjax'])->name('assets.documents.delete-ajax');
 
     // === MASTER DATA ROUTES ===
     Route::prefix('master-data')->name('master-data.')->group(function () {
