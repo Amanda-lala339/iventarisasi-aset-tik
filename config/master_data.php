@@ -469,4 +469,43 @@ return [
             'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
         ],
     ],
+        'data_classifications' => [
+        'label' => 'Klasifikasi Data',
+        'model' => \App\Models\DataClassification::class,
+        'icon' => 'fas fa-layer-group', // Ikon tumpukan data/klasifikasi
+        'group' => 'Keamanan',
+        'fields' => [
+            'name' => [
+                'label' => 'Nama Klasifikasi', 
+                'type' => 'text', 
+                'required' => true
+            ],
+            'asset_category_code' => [
+                'label' => 'Kategori Aset (opsional)',
+                'type' => 'select',
+                'options' => [
+                    '' => '- Semua Kategori -',
+                    'DI' => 'Data & Informasi',
+                    'PL' => 'Perangkat Lunak',
+                    'PK' => 'Perangkat Keras',
+                    'SP' => 'Sarana Pendukung',
+                    'PS' => 'SDM & Pihak Ketiga',
+                ],
+            ],
+            'description' => [
+                'label' => 'Deskripsi', 
+                'type' => 'textarea'
+            ],
+            'order' => [
+                'label' => 'Urutan', 
+                'type' => 'number', 
+                'default' => 0
+            ],
+            'is_active' => [
+                'label' => 'Aktif', 
+                'type' => 'checkbox', 
+                'default' => true
+            ],
+        ],
+    ],
 ];

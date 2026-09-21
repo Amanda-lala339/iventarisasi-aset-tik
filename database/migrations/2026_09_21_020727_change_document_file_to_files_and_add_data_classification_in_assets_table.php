@@ -10,35 +10,49 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('assets', function (Blueprint $table) {
-            // Tambahkan kolom baru dulu
-            $table->json('document_files')->nullable()->after('document_file');
-            $table->string('data_classification')->nullable()->after('document_files');
+            // 1. Tambahkan document_files HANYA jika belum ada
+            if (!Schema::hasColumn('assets', 'document_files')) {
+                $table->json('document_files')->nullable()->after('document_file');
+            }
+
+            // 2. Tambahkan data_classification HANYA jika belum ada
+            if (!Schema::hasColumn('assets', 'data_classification')) {
+                $table->string('data_classification')->nullable()->after('document_files');
+            }
         });
 
-        // Migrasi data lama (string) ke JSON (array)
+        // Migrasi data lama (string) ke JSON (array) dengan aman
         $assets = DB::table('assets')->whereNotNull('document_file')->get();
         foreach ($assets as $asset) {
-            DB::table('assets')
-                ->where('id', $asset->id)
-                ->update(['document_files' => json_encode([$asset->document_file])]);
+            // Hanya update jika kolom document_files masih kosong/null
+            if (empty($asset->document_files)) {
+                DB::table('assets')
+                    ->where('id', $asset->id)
+                    ->update(['document_files' => json_encode([$asset->document_file])]);
+            }
         }
 
+        // 3. Hapus kolom document_file HANYA jika kolom tersebut masih ada
         Schema::table('assets', function (Blueprint $table) {
-            $table->dropColumn('document_file');
+            if (Schema::hasColumn('assets', 'document_file')) {
+                $table->dropColumn('document_file');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('assets', function (Blueprint $table) {
-            $table->string('document_file')->nullable()->after('document_files');
+            if (!Schema::hasColumn('assets', 'document_file')) {
+                $table->string('document_file')->nullable()->after('document_files');
+            }
         });
 
         // Kembalikan data dari JSON ke string (ambil file pertama)
         $assets = DB::table('assets')->whereNotNull('document_files')->get();
         foreach ($assets as $asset) {
             $files = json_decode($asset->document_files, true);
-            if (!empty($files)) {
+            if (!empty($files) && empty($asset->document_file)) {
                 DB::table('assets')
                     ->where('id', $asset->id)
                     ->update(['document_file' => $files[0]]);
@@ -46,7 +60,12 @@ return new class extends Migration
         }
 
         Schema::table('assets', function (Blueprint $table) {
-            $table->dropColumn(['document_files', 'data_classification']);
+            if (Schema::hasColumn('assets', 'document_files')) {
+                $table->dropColumn('document_files');
+            }
+            if (Schema::hasColumn('assets', 'data_classification')) {
+                $table->dropColumn('data_classification');
+            }
         });
     }
 };

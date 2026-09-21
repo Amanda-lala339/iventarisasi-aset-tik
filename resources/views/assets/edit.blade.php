@@ -65,15 +65,6 @@
                     <input type="text" name="name" value="{{ old('name', $asset->name) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Klasifikasi Data</label>
-                    <select name="data_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" disabled>Pilih...</option>
-                        @foreach($dataClassifications['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('data_classification', $asset->data_classification) == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Dokumen</label>
                     <input type="text" name="document_number" value="{{ old('document_number', $asset->document_number) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: HR-001">
                 </div>
@@ -184,6 +175,19 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
                     <input type="text" name="name" value="{{ old('name', $asset->name) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
+                
+                {{-- BARU: Klasifikasi Data KHUSUS Perangkat Lunak --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Klasifikasi Data</label>
+                    <select name="data_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" disabled>Pilih...</option>
+                        @foreach($dataClassifications['PL'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('data_classification', $asset->data_classification) == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                {{-- Akhir Klasifikasi Data --}}
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Rilis</label>
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -712,18 +716,13 @@ window.deleteFile = function(assetId, documentId, filePath) {
         return;
     }
 
-    const formData = new FormData();
-    formData.append('_token', '{{ csrf_token() }}');
-    formData.append('file_path', filePath);
-
     // Kirim request ke route yang menggunakan documentId
     fetch(`/assets/documents/${documentId}/delete`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
             'Accept': 'application/json',
-        },
-        body: formData
+        }
     })
     .then(response => response.json())
     .then(data => {

@@ -126,6 +126,16 @@
                     <dt class="sm:w-56 shrink-0 text-gray-500">{{ $code === 'PS' ? 'Nama Personil' : 'Nama Aset' }}</dt>
                     <dd class="font-medium text-gray-900">{{ $asset->name ?? '-' }}</dd>
                 </div>
+                
+                {{-- BARU: Klasifikasi Data KHUSUS Perangkat Lunak (PL) --}}
+                @if($code === 'PL')
+                <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
+                    <dt class="sm:w-56 shrink-0 text-gray-500">Klasifikasi Data</dt>
+                    <dd class="text-gray-900">{{ $asset->data_classification ?? '-' }}</dd>
+                </div>
+                @endif
+                {{-- Akhir Klasifikasi Data --}}
+
             </dl>
         </div>
 

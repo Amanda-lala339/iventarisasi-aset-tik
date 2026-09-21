@@ -6,7 +6,9 @@
     $code = old('category_code', $categoryCode ?? request('category') ?? 'DI');
     $categories = $categories ?? \App\Models\AssetCategory::all();
 @endphp
+
 <a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition">← Kembali</a>
+
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md mt-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Tambah Aset Baru</h2>
 
@@ -62,15 +64,6 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
                     <input type="text" name="name" value="{{ old('name') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Klasifikasi Data</label>
-                    <select name="data_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" selected disabled>Pilih...</option>
-                        @foreach($dataClassifications['DI'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('data_classification') == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Dokumen</label>
@@ -185,6 +178,19 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
                     <input type="text" name="name" value="{{ old('name') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
+                
+                {{-- BARU: Klasifikasi Data KHUSUS Perangkat Lunak --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Klasifikasi Data</label>
+                    <select name="data_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <option value="" selected disabled>Pilih...</option>
+                        @foreach($dataClassifications['PL'] ?? [] as $opt)
+                            <option value="{{ $opt->name }}" @selected(old('data_classification') == $opt->name)>{{ $opt->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                {{-- Akhir Klasifikasi Data --}}
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Rilis</label>
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
