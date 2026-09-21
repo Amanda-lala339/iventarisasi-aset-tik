@@ -37,29 +37,13 @@
         'PS' => 'SDM & Pihak Ketiga'
     ];
 
-    // ===== INJEKSI OTOMATIS FIELD PIC & OP JIKA BELUM TERDAFTAR DI CONFIG =====
+    // Ambil field default sesuai config master data
     $displayFields = $typeConfig['fields'] ?? [];
     
-    if (!isset($displayFields['pic'])) {
-        $newFields = [];
-        $inserted = false;
-        foreach ($displayFields as $k => $v) {
-            $newFields[$k] = $v;
-            if ($k === 'asset_category_code' || $k === 'name') {
-                if (!isset($displayFields['pic'])) {
-                    $newFields['pic'] = ['label' => 'PIC / Penanggung Jawab', 'type' => 'text'];
-                }
-                if (!isset($displayFields['op'])) {
-                    $newFields['op'] = ['label' => 'Operator (OP)', 'type' => 'text'];
-                }
-                $inserted = true;
-            }
-        }
-        if (!$inserted && !isset($displayFields['pic'])) {
-            $newFields['pic'] = ['label' => 'PIC / Penanggung Jawab', 'type' => 'text'];
-            $newFields['op'] = ['label' => 'Operator (OP)', 'type' => 'text'];
-        }
-        $displayFields = $newFields;
+    // Injeksi PIC & OP HANYA jika type adalah OPD / Pemilik Aset (sesuaikan slug $type jika berbeda)
+    if (in_array($type, ['opd', 'pemilik_aset', 'pemilik-aset', 'opd_owners']) && !isset($displayFields['pic'])) {
+        $displayFields['pic'] = ['label' => 'PIC / Penanggung Jawab', 'type' => 'text'];
+        $displayFields['op'] = ['label' => 'Operator (OP)', 'type' => 'text'];
     }
 @endphp
 
@@ -157,7 +141,7 @@
                 <label class="block text-xs font-medium text-gray-500 mb-1">Pencarian</label>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" x-model="search" placeholder="Cari nama, PIC, OP, email, dll..."
+                    <input type="text" x-model="search" placeholder="Cari nama, email, dll..."
                            class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
@@ -231,7 +215,6 @@
                                             </span>
                                         @else
                                             @php
-                                                // Cek kolom fisik model terlebih dahulu, jika null baca dari JSON custom_data
                                                 $val = $item->$field ?? ($item->custom_data[$field] ?? null);
                                             @endphp
                                             @if(is_array($val))

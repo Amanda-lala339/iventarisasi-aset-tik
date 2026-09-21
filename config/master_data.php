@@ -26,6 +26,7 @@ return [
         ],
     ],
 
+    // KHUSUS OPD / PEMILIK ASET (Ada PIC & OP)
     'opd_owners' => [
         'label' => 'OPD / Pemilik Aset',
         'model' => \App\Models\OpdOwner::class,
