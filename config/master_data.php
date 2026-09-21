@@ -45,6 +45,16 @@ return [
                     'PS' => 'SDM & Pihak Ketiga',
                 ],
             ],
+            'pic' => [
+                'label' => 'PIC / Penanggung Jawab',
+                'type' => 'text',
+                'required' => false,
+            ],
+            'op' => [
+                'label' => 'Operator (OP)',
+                'type' => 'text',
+                'required' => false,
+            ],
             'code' => ['label' => 'Kode OPD', 'type' => 'text'],
             'address' => ['label' => 'Alamat', 'type' => 'textarea'],
             'phone' => ['label' => 'Telepon', 'type' => 'text'],
@@ -53,7 +63,6 @@ return [
             'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
         ],
     ],
-
 
     'asset_statuses' => [
         'label' => 'Status Aset',
@@ -330,7 +339,6 @@ return [
         ],
     ],
 
-    // ✅ DATA CENTER - TETAP ADA dengan asset_category_code
     'data_centers' => [
         'label' => 'Data Center',
         'model' => \App\Models\DataCenter::class,

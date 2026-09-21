@@ -95,9 +95,10 @@ class MasterDataController extends Controller
         return $palette[crc32($group) % count($palette)];
     }
 
+    // PERBAIKAN: Hanya kecualikan field internal sistem agar description, code, asset_category_code, dll. bisa tersimpan
     private function hiddenFields(): array
     {
-        return ['description', 'color', 'icon', 'order', 'code', 'custom_data', 'asset_category_code'];
+        return ['custom_data', 'category_id'];
     }
 
     private function baseQuery(array $typeConfig)
@@ -155,7 +156,7 @@ class MasterDataController extends Controller
         $query->orderBy('name');
 
         $items = $query->paginate(15)->withQueryString();
-        $config = $this->getConfig(); 
+        $config = $this->getConfig();
 
         return view('master-data.index', compact('type', 'typeConfig', 'items', 'config'));
     }
@@ -174,17 +175,18 @@ class MasterDataController extends Controller
         $tableName = (new $model)->getTable();
         $hiddenFields = $this->hiddenFields();
 
-        // PERBAIKAN: Rule validasi dipisah per elemen array agar tidak error parsing
         $rules = [];
         foreach ($typeConfig['fields'] as $field => $fieldConfig) {
             if (in_array($field, $hiddenFields)) continue;
-            
+
             $rule = [];
             $rule[] = !empty($fieldConfig['required']) ? 'required' : 'nullable';
-            
+
             if (in_array($fieldConfig['type'], ['text', 'textarea'])) {
                 $rule[] = 'string';
-                $rule[] = 'max:255';
+                if ($fieldConfig['type'] === 'text') {
+                    $rule[] = 'max:255';
+                }
             } elseif ($fieldConfig['type'] === 'number') {
                 $rule[] = 'integer';
             } elseif ($fieldConfig['type'] === 'email') {
@@ -201,8 +203,8 @@ class MasterDataController extends Controller
         foreach ($typeConfig['fields'] as $field => $fieldConfig) {
             if (in_array($field, $hiddenFields)) continue;
 
-            $value = $fieldConfig['type'] === 'checkbox' 
-                ? $request->boolean($field) 
+            $value = $fieldConfig['type'] === 'checkbox'
+                ? $request->boolean($field)
                 : ($validated[$field] ?? ($fieldConfig['default'] ?? null));
 
             if (!empty($fieldConfig['is_custom'])) {
@@ -214,26 +216,21 @@ class MasterDataController extends Controller
             }
         }
 
-                if (!empty($customData)) {
+        if (!empty($customData)) {
             $standardData['custom_data'] = $customData;
         }
 
-        // PERBAIKAN: Pengecekan asset_category_code dipindah ke luar blok 'dynamic'
-        // agar berlaku untuk tabel statis (seperti sub_classifications) maupun dinamis.
         if (Schema::hasColumn($tableName, 'asset_category_code')) {
-            // Prioritaskan nilai yang dikirim dari form (Request)
             if ($request->filled('asset_category_code')) {
                 $standardData['asset_category_code'] = $request->asset_category_code;
-            } 
-            // Fallback ke konfigurasi jika di form tidak ada
-            elseif (!empty($typeConfig['asset_category_code'])) {
+            } elseif (!empty($typeConfig['asset_category_code'])) {
                 $standardData['asset_category_code'] = $typeConfig['asset_category_code'];
             }
         }
 
         if (!empty($typeConfig['dynamic'])) {
             $standardData['category_id'] = $typeConfig['category_id'];
-            
+
             if (Schema::hasColumn($tableName, 'color')) {
                 $standardData['color'] = $this->resolveGroupColor($typeConfig['group']);
             }
@@ -266,17 +263,18 @@ class MasterDataController extends Controller
         $item = $this->baseQuery($typeConfig)->findOrFail($id);
         $hiddenFields = $this->hiddenFields();
 
-        // PERBAIKAN: Rule validasi dipisah per elemen array agar tidak error parsing
         $rules = [];
         foreach ($typeConfig['fields'] as $field => $fieldConfig) {
             if (in_array($field, $hiddenFields)) continue;
-            
+
             $rule = [];
             $rule[] = !empty($fieldConfig['required']) ? 'required' : 'nullable';
-            
+
             if (in_array($fieldConfig['type'], ['text', 'textarea'])) {
                 $rule[] = 'string';
-                $rule[] = 'max:255';
+                if ($fieldConfig['type'] === 'text') {
+                    $rule[] = 'max:255';
+                }
             } elseif ($fieldConfig['type'] === 'number') {
                 $rule[] = 'integer';
             } elseif ($fieldConfig['type'] === 'email') {
@@ -293,8 +291,8 @@ class MasterDataController extends Controller
         foreach ($typeConfig['fields'] as $field => $fieldConfig) {
             if (in_array($field, $hiddenFields)) continue;
 
-            $value = $fieldConfig['type'] === 'checkbox' 
-                ? $request->boolean($field) 
+            $value = $fieldConfig['type'] === 'checkbox'
+                ? $request->boolean($field)
                 : ($validated[$field] ?? ($fieldConfig['default'] ?? null));
 
             if (!empty($fieldConfig['is_custom'])) {
@@ -306,14 +304,13 @@ class MasterDataController extends Controller
             }
         }
 
-                if (!empty($customData)) {
+        if (!empty($customData)) {
             $existingCustom = $item->custom_data ?? [];
             $standardData['custom_data'] = array_merge($existingCustom, $customData);
         }
 
         $tableName = $item->getTable();
 
-        // PERBAIKAN: Sama seperti di store, ini berlaku untuk semua tabel.
         if (Schema::hasColumn($tableName, 'asset_category_code')) {
             if ($request->filled('asset_category_code')) {
                 $standardData['asset_category_code'] = $request->asset_category_code;
@@ -337,21 +334,21 @@ class MasterDataController extends Controller
     {
         $typeConfig = $this->validateType($type);
         $item = $this->baseQuery($typeConfig)->findOrFail($id);
-        
+
         $deletedOrder = $item->order;
         $item->delete();
-        
+
         $tableName = (new $typeConfig['model'])->getTable();
         if (Schema::hasColumn($tableName, 'order')) {
             $query = $this->baseQuery($typeConfig)
                 ->where('order', '>', $deletedOrder)
                 ->orderBy('order');
-                
+
             foreach ($query->get() as $itemToUpdate) {
                 $itemToUpdate->decrement('order');
             }
         }
-        
+
         return redirect()->route('master-data.index', $type)
             ->with('success', 'Data berhasil dihapus');
     }
@@ -385,7 +382,7 @@ class MasterDataController extends Controller
             'asset_category_code' => 'nullable|in:DI,PL,PK,SP,PS',
             'custom_fields' => 'nullable|array',
             'custom_fields.key' => 'nullable|array',
-            'custom_fields.key.*' => 'required|string|regex:/^[a-z0-9_]+$/|not_in:name,order,is_active,category_id,color,custom_data,code,description,asset_category_code',
+            'custom_fields.key.*' => 'required|string|regex:/^[a-z0-9_]+$/|not_in:name,order,is_active,category_id,color,custom_data,code,description,asset_category_code,pic,op,address,phone,email',
             'custom_fields.label' => 'nullable|array',
             'custom_fields.label.*' => 'required|string|max:100',
         ], [
@@ -428,7 +425,7 @@ class MasterDataController extends Controller
             ->unique()
             ->filter()
             ->values();
-        
+
         return view('master-data.category-edit', compact('category', 'existingGroups'));
     }
 

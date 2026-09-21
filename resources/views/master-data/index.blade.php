@@ -34,8 +34,33 @@
         'PL' => 'Perangkat Lunak', 
         'PK' => 'Perangkat Keras', 
         'SP' => 'Sarana Pendukung', 
-        'PS' => 'SDM'
+        'PS' => 'SDM & Pihak Ketiga'
     ];
+
+    // ===== INJEKSI OTOMATIS FIELD PIC & OP JIKA BELUM TERDAFTAR DI CONFIG =====
+    $displayFields = $typeConfig['fields'] ?? [];
+    
+    if (!isset($displayFields['pic'])) {
+        $newFields = [];
+        $inserted = false;
+        foreach ($displayFields as $k => $v) {
+            $newFields[$k] = $v;
+            if ($k === 'asset_category_code' || $k === 'name') {
+                if (!isset($displayFields['pic'])) {
+                    $newFields['pic'] = ['label' => 'PIC / Penanggung Jawab', 'type' => 'text'];
+                }
+                if (!isset($displayFields['op'])) {
+                    $newFields['op'] = ['label' => 'Operator (OP)', 'type' => 'text'];
+                }
+                $inserted = true;
+            }
+        }
+        if (!$inserted && !isset($displayFields['pic'])) {
+            $newFields['pic'] = ['label' => 'PIC / Penanggung Jawab', 'type' => 'text'];
+            $newFields['op'] = ['label' => 'Operator (OP)', 'type' => 'text'];
+        }
+        $displayFields = $newFields;
+    }
 @endphp
 
 {{-- ===== HEADER ===== --}}
@@ -79,14 +104,12 @@
     </div>
 </div>
 
-{{-- ===== WRAPPER ALPINE.JS (DENGAN LOCALSTORAGE) ===== --}}
+{{-- ===== WRAPPER ALPINE.JS ===== --}}
 <div x-data="{
-    {{-- Inisialisasi: ambil dari localStorage dulu, jika tidak ada fallback ke request() --}}
     search: localStorage.getItem('filter_{{ $type }}_search') ?? '{{ request('search', '') }}',
     statusFilter: localStorage.getItem('filter_{{ $type }}_status') ?? '{{ request('status', '') }}',
     categoryFilter: localStorage.getItem('filter_{{ $type }}_category') ?? '{{ request('category', '') }}',
     
-    {{-- Init: Pantau perubahan dan otomatis simpan ke localStorage --}}
     init() {
         this.$watch('search', value => {
             value ? localStorage.setItem('filter_{{ $type }}_search', value) : localStorage.removeItem('filter_{{ $type }}_search');
@@ -99,14 +122,19 @@
         });
     },
     
-    matches(name, isActive, category) {
+    matches(item, isActive, category) {
         const q = (this.search || '').trim().toLowerCase();
-        const n = (name || '').toString().toLowerCase();
         
-        const matchSearch = q === '' || n.includes(q);
+        let matchSearch = q === '';
+        if (!matchSearch && item) {
+            const searchString = JSON.stringify(item).toLowerCase();
+            matchSearch = searchString.includes(q);
+        }
+
         const matchStatus = this.statusFilter === '' || 
                            (this.statusFilter === 'active' && isActive) || 
                            (this.statusFilter === 'inactive' && !isActive);
+                           
         const matchCategory = this.categoryFilter === '' || category === this.categoryFilter;
         
         return matchSearch && matchStatus && matchCategory;
@@ -116,7 +144,6 @@
         this.search = '';
         this.statusFilter = '';
         this.categoryFilter = '';
-        {{-- Bersihkan juga dari localStorage --}}
         localStorage.removeItem('filter_{{ $type }}_search');
         localStorage.removeItem('filter_{{ $type }}_status');
         localStorage.removeItem('filter_{{ $type }}_category');
@@ -126,17 +153,15 @@
     {{-- ===== FILTER BAR ===== --}}
     <div class="bg-white rounded-xl border border-gray-100 shadow-md shadow-blue-500/10 p-4 mb-4">
         <div class="flex flex-col md:flex-row gap-3 items-end">
-            {{-- Search Field --}}
             <div class="flex-1">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Pencarian</label>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" x-model="search" placeholder="Cari nama..."
+                    <input type="text" x-model="search" placeholder="Cari nama, PIC, OP, email, dll..."
                            class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
             
-            {{-- Kategori Dropdown --}}
             <div class="w-full md:w-48">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Kategori Aset</label>
                 <select x-model="categoryFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
@@ -147,7 +172,6 @@
                 </select>
             </div>
 
-            {{-- Status Dropdown --}}
             <div class="w-full md:w-40">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
                 <select x-model="statusFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
@@ -157,7 +181,6 @@
                 </select>
             </div>
             
-            {{-- Reset Button --}}
             <div class="w-full md:w-auto pb-0.5">
                 <button type="button" 
                         x-show="search !== '' || statusFilter !== '' || categoryFilter !== ''" 
@@ -177,7 +200,7 @@
                 <thead class="bg-blue-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
-                        @foreach($typeConfig['fields'] as $field => $fieldConfig)
+                        @foreach($displayFields as $field => $fieldConfig)
                             @if(!in_array($field, ['description', 'is_active', 'color', 'icon', 'order', 'code']))
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     {{ $fieldConfig['label'] }}
@@ -191,23 +214,33 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($items as $item)
                         <tr class="hover:bg-gray-50 transition-colors" 
-                            x-show="matches(@js($item->name ?? ''), @js((bool) $item->is_active), @js($item->asset_category_code ?? ''))">
+                            x-show="matches(@js($item->toArray()), @js((bool) $item->is_active), @js($item->asset_category_code ?? ''))">
                             
                             <td class="px-6 py-3.5 text-sm text-gray-400">
                                 {{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}
                             </td>
                             
-                            @foreach($typeConfig['fields'] as $field => $fieldConfig)
+                            @foreach($displayFields as $field => $fieldConfig)
                                 @if(!in_array($field, ['description', 'is_active', 'color', 'icon', 'order', 'code']))
                                     <td class="px-6 py-3.5 text-sm text-gray-800">
                                         @if($field === 'name')
-                                            <span class="font-medium">{{ $item->name }}</span>
+                                            <span class="font-medium text-gray-900">{{ $item->name }}</span>
                                         @elseif($field === 'asset_category_code')
                                             <span class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-medium">
-                                                {{ $assetCategories[$item->$field] ?? $item->$field }}
+                                                {{ $assetCategories[$item->$field] ?? ($item->$field ?? '-') }}
                                             </span>
                                         @else
-                                            {{ $item->$field ?? '-' }}
+                                            @php
+                                                // Cek kolom fisik model terlebih dahulu, jika null baca dari JSON custom_data
+                                                $val = $item->$field ?? ($item->custom_data[$field] ?? null);
+                                            @endphp
+                                            @if(is_array($val))
+                                                {{ implode(', ', $val) }}
+                                            @elseif(is_bool($val))
+                                                {{ $val ? 'Ya' : 'Tidak' }}
+                                            @else
+                                                {{ $val ?: '-' }}
+                                            @endif
                                         @endif
                                     </td>
                                 @endif
@@ -273,5 +306,5 @@
         @endif
     </div>
 
-</div> {{-- Akhir Wrapper Alpine.js --}}
+</div>
 @endsection

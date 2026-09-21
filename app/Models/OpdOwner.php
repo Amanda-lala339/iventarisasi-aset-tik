@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class OpdOwner extends Model
 {
     protected $fillable = [
-        'asset_category_code', 'name', 'code', 'address', 'phone', 'email', 'description', 'is_active'
+        'asset_category_code', 'name', 'code','pic','op', 'address', 'phone', 'email', 'description', 'is_active'
     ];
 
     protected $casts = ['is_active' => 'boolean'];
