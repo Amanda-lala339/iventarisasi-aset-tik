@@ -309,21 +309,30 @@ class DatabaseSeeder extends Seeder
         // 8. SUBDOMAINS
         // ========================================
         $subdomains = [
-            ['subdomain' => 'api.smartcity.go.id', 'status' => 'Active', 'domain' => 'smartcity.go.id', 'ip_address' => '10.0.0.11', 'ssl_expiry' => '2026-12-01'],
-            ['subdomain' => 'mail.smartcity.go.id', 'status' => 'Expiring', 'domain' => 'smartcity.go.id', 'ip_address' => '10.0.0.12', 'ssl_expiry' => '2025-07-10'],
-            ['subdomain' => 'dev.smartcity.go.id', 'status' => 'Active', 'domain' => 'smartcity.go.id', 'ip_address' => '10.0.0.13', 'ssl_expiry' => '2026-09-15'],
-            ['subdomain' => 'cdn.smartcity.go.id', 'status' => 'Expired', 'domain' => 'smartcity.go.id', 'ip_address' => '10.0.0.14', 'ssl_expiry' => '2024-03-01'],
-            ['subdomain' => 'portal.spbe.go.id', 'status' => 'Active', 'domain' => 'spbe.go.id', 'ip_address' => '10.0.1.11', 'ssl_expiry' => '2026-11-20'],
-            ['subdomain' => 'api.spbe.go.id', 'status' => 'Expiring', 'domain' => 'spbe.go.id', 'ip_address' => '10.0.1.12', 'ssl_expiry' => '2025-08-05'],
-            ['subdomain' => 'docs.spbe.go.id', 'status' => 'Active', 'domain' => 'spbe.go.id', 'ip_address' => '10.0.1.13', 'ssl_expiry' => '2026-06-30'],
-            ['subdomain' => 'monitor.portal.go.id', 'status' => 'Expired', 'domain' => 'portal.go.id', 'ip_address' => '10.0.2.11', 'ssl_expiry' => '2024-01-15'],
-            ['subdomain' => 'app.portal.go.id', 'status' => 'Expiring', 'domain' => 'portal.go.id', 'ip_address' => '10.0.2.12', 'ssl_expiry' => '2025-07-25'],
-            ['subdomain' => 'assets.portal.go.id', 'status' => 'Active', 'domain' => 'portal.go.id', 'ip_address' => '10.0.2.13', 'ssl_expiry' => '2026-10-10'],
-            ['subdomain' => 'api.dinas.id', 'status' => 'Active', 'domain' => 'dinas.id', 'ip_address' => '10.0.3.11', 'ssl_expiry' => '2026-08-01'],
-            ['subdomain' => 'mail.dinas.id', 'status' => 'Expired', 'domain' => 'dinas.id', 'ip_address' => '10.0.3.12', 'ssl_expiry' => '2024-05-20'],
+            ['subdomain' => 'api.smartcity.go.id', 'status' => 'Active', 'domain' => 'smartcity.go.id', 'server_name' => 'srv-app-01', 'ssl_expiry' => '2026-12-01'],
+            ['subdomain' => 'mail.smartcity.go.id', 'status' => 'Expiring', 'domain' => 'smartcity.go.id', 'server_name' => 'srv-file-01', 'ssl_expiry' => '2025-07-10'],
+            ['subdomain' => 'dev.smartcity.go.id', 'status' => 'Active', 'domain' => 'smartcity.go.id', 'server_name' => 'srv-app-02', 'ssl_expiry' => '2026-09-15'],
+            ['subdomain' => 'cdn.smartcity.go.id', 'status' => 'Expired', 'domain' => 'smartcity.go.id', 'server_name' => 'srv-web-03', 'ssl_expiry' => '2024-03-01'],
+            ['subdomain' => 'portal.spbe.go.id', 'status' => 'Active', 'domain' => 'spbe.go.id', 'server_name' => 'srv-web-01', 'ssl_expiry' => '2026-11-20'],
+            ['subdomain' => 'api.spbe.go.id', 'status' => 'Expiring', 'domain' => 'spbe.go.id', 'server_name' => 'srv-app-03', 'ssl_expiry' => '2025-08-05'],
+            ['subdomain' => 'docs.spbe.go.id', 'status' => 'Active', 'domain' => 'spbe.go.id', 'server_name' => 'srv-file-02', 'ssl_expiry' => '2026-06-30'],
+            ['subdomain' => 'monitor.portal.go.id', 'status' => 'Expired', 'domain' => 'portal.go.id', 'server_name' => 'srv-app-02', 'ssl_expiry' => '2024-01-15'],
+            ['subdomain' => 'app.portal.go.id', 'status' => 'Expiring', 'domain' => 'portal.go.id', 'server_name' => 'srv-web-02', 'ssl_expiry' => '2025-07-25'],
+            ['subdomain' => 'assets.portal.go.id', 'status' => 'Active', 'domain' => 'portal.go.id', 'server_name' => 'srv-file-01', 'ssl_expiry' => '2026-10-10'],
+            ['subdomain' => 'api.dinas.id', 'status' => 'Active', 'domain' => 'dinas.id', 'server_name' => 'srv-app-01', 'ssl_expiry' => '2026-08-01'],
+            ['subdomain' => 'mail.dinas.id', 'status' => 'Expired', 'domain' => 'dinas.id', 'server_name' => 'srv-file-02', 'ssl_expiry' => '2024-05-20'],
         ];
-        foreach ($subdomains as $sd) { Subdomain::firstOrCreate(['subdomain' => $sd['subdomain']], $sd); }
-        $this->command->info('✓ Subdomains: ' . count($subdomains) . ' records');
+        foreach ($subdomains as $sd) {
+    $server = Server::where('name', $sd['server_name'])->first();
+
+    Subdomain::firstOrCreate(['subdomain' => $sd['subdomain']], [
+        'status' => $sd['status'],
+        'domain' => $sd['domain'],
+        'server_id' => $server?->id, // ambil ID beneran, bukan nama string
+        'ssl_expiry' => $sd['ssl_expiry'],
+    ]);
+}
+$this->command->info('✓ Subdomains: ' . count($subdomains) . ' records');
 
         $this->command->info('');
         $this->command->info('========================================');
