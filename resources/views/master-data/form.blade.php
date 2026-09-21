@@ -15,13 +15,18 @@
         'Lainnya'   => 'bg-gray-100 text-gray-500',
     ];
     $currentGroup = $typeConfig['group'] ?? 'Lainnya';
-    $assetCategories = [
+
+    // Kategori khusus OPD (Tanpa SDM)
+    $opdCategories = [
         'DI' => 'Data & Informasi',
         'PL' => 'Perangkat Lunak',
         'PK' => 'Perangkat Keras',
         'SP' => 'Sarana Pendukung',
-        'PS' => 'SDM'
     ];
+
+    // Cek apakah halaman yang dibuka adalah OPD / Pemilik Aset
+    $isOpdType = in_array($type ?? '', ['opd', 'pemilik_aset', 'pemilik-aset', 'opd_owners']) 
+                 || str_contains(strtolower($typeConfig['label'] ?? ''), 'opd');
 @endphp
 
 <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-200">
@@ -102,7 +107,24 @@
                                 @if(empty($fieldConfig['required']))
                                     <option value="">- Pilih -</option>
                                 @endif
-                                @foreach($fieldConfig['options'] as $optValue => $optLabel)
+
+                                @php
+                                    // Ambil opsi default dari config bawaan
+                                    $options = $fieldConfig['options'] ?? [];
+
+                                    // HANYA JIKA tipe menu adalah OPD / Pemilik Aset, hapus opsi SDM
+                                    if ($isOpdType) {
+                                        if (in_array($field, ['asset_category_code', 'asset_category', 'kategori_aset', 'category'])) {
+                                            $options = $opdCategories;
+                                        } else {
+                                            $options = array_filter($options, function($label, $key) {
+                                                return $key !== 'PS' && !str_contains(strtolower($label), 'sdm');
+                                            }, ARRAY_FILTER_USE_BOTH);
+                                        }
+                                    }
+                                @endphp
+
+                                @foreach($options as $optValue => $optLabel)
                                     <option value="{{ $optValue }}" {{ $value == $optValue ? 'selected' : '' }}>
                                         {{ $optLabel }}
                                     </option>
