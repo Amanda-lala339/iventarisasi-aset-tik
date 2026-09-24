@@ -10,8 +10,8 @@ class SubdomainController extends Controller
 {
     public function index(Request $request)
     {
-        // Eager load relasi server untuk performa lebih baik
-        $query = Subdomain::with('server');
+        // Eager load relasi server + ips-nya subdomain untuk performa lebih baik
+        $query = Subdomain::with(['server', 'ips']);
 
         if ($request->filled('search')) {
             $query->where('subdomain', 'like', "%{$request->search}%");
@@ -34,13 +34,12 @@ class SubdomainController extends Controller
 
     public function create()
     {
-        $servers = Server::all(); 
+        $servers = Server::with('ips')->orderBy('name')->get();
         return view('subdomains.create', compact('servers'));
     }
 
     public function store(Request $request)
     {
-        // Validasi TANPA ip_address
         $validated = $request->validate([
             'subdomain' => 'required|string|max:255',
             'domain' => 'required|string|max:255',
@@ -49,22 +48,32 @@ class SubdomainController extends Controller
             'kontak' => 'nullable|string|max:255',
             'status' => 'required|in:Active,Expiring,Expired',
             'ssl_expiry' => 'nullable|date',
+            'ips' => 'required|array|min:1',
+            'ips.*' => 'exists:server_ips,id',
         ]);
 
-        Subdomain::create($validated);
-        
+        $subdomain = Subdomain::create(collect($validated)->except('ips')->toArray());
+        $subdomain->ips()->sync($validated['ips']);
+
         return redirect()->route('subdomains.index')->with('success', 'Subdomain berhasil ditambahkan.');
     }
 
+       public function show(Subdomain $subdomain)
+   {
+       $subdomain->load(['server', 'ips']);
+       return view('subdomains.show', compact('subdomain'));
+   }
+
     public function edit(Subdomain $subdomain)
     {
-        $servers = Server::all(); 
-        return view('subdomains.edit', compact('subdomain', 'servers'));
+        $servers = Server::with('ips')->orderBy('name')->get();
+        $selectedIps = $subdomain->ips->pluck('id')->toArray();
+
+        return view('subdomains.edit', compact('subdomain', 'servers', 'selectedIps'));
     }
 
     public function update(Request $request, Subdomain $subdomain)
     {
-        // Validasi TANPA ip_address
         $validated = $request->validate([
             'subdomain' => 'required|string|max:255',
             'domain' => 'required|string|max:255',
@@ -73,10 +82,13 @@ class SubdomainController extends Controller
             'kontak' => 'nullable|string|max:255',
             'status' => 'required|in:Active,Expiring,Expired',
             'ssl_expiry' => 'nullable|date',
+            'ips' => 'required|array|min:1',
+            'ips.*' => 'exists:server_ips,id',
         ]);
 
-        $subdomain->update($validated);
-        
+        $subdomain->update(collect($validated)->except('ips')->toArray());
+        $subdomain->ips()->sync($validated['ips']);
+
         return redirect()->route('subdomains.index')->with('success', 'Subdomain berhasil diperbarui.');
     }
 

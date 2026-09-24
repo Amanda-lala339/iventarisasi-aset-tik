@@ -95,24 +95,24 @@
         <table class="w-full text-xs whitespace-nowrap">
             <thead class="bg-blue-50 text-gray-600">
                 <tr>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kode</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kode Aset</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Sub Klasifikasi</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Nama Aset</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Tahun Rilis</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Uraian Singkat</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">URL</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">IP Address</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Publik/Internal</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Alamat Aplikasi/URL</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Alamat IP</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Aplikasi IP Publik/Internal</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Platform</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">OS Server</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Pemilik (OPD)</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Pemilik Aset (OPD)</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Data Center</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kontak PIC</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kontak Pengelola/PIC</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Status</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kategori SE</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kritikalitas</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Klasifikasi Data</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Dokumen File</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kritikalitas Aset</th>
                     <th class="px-3 py-2.5 text-center font-semibold uppercase tracking-wide sticky-col">Aksi</th>
                 </tr>
             </thead>
@@ -128,7 +128,7 @@
                     <td class="px-3 py-2.5 text-gray-600 max-w-xs truncate" title="{{ $asset->app_description }}">{{ $asset->app_description ?? '-' }}</td>
                     <td class="px-3 py-2.5">@if($asset->app_url) <a href="{{ $asset->app_url }}" target="_blank" class="text-blue-600 hover:underline">{{ $asset->app_url }}</a> @else - @endif</td>
                     <td class="px-3 py-2.5 font-mono text-gray-600">{{ $asset->ip_address ?? '-' }}</td>
-                    <td class="px-3 py-2.5 text-gray-600">{{ $asset->ip_public_internal ?? '-' }}</td>
+                    <td class="px-3 py-2.5 font-mono text-gray-600">{{ $asset->ip_public_internal ?? '-' }}</td>
                     <td class="px-3 py-2.5 text-gray-600">{{ $asset->platform ?? '-' }}</td>
                     <td class="px-3 py-2.5 text-gray-600">{{ $asset->os_server ?? '-' }}</td>
                     <td class="px-3 py-2.5 text-gray-600">{{ $asset->owner ?? '-' }}</td>
@@ -145,13 +145,6 @@
                                 {{ $asset->se_category }}
                             </span>
                         @else - @endif
-                    </td>
-                    <td class="px-3 py-2.5">
-                        @if($asset->criticality === 'Tinggi' || $asset->se_category === 'Strategis')
-                            <span class="badge status-offline">Tinggi</span>
-                        @else
-                            <span class="badge status-active">Rendah</span>
-                        @endif
                     </td>
                     
                     {{-- KOLOM: Klasifikasi Data --}}
@@ -203,6 +196,14 @@
                             </div>
                         @else
                             <span class="text-gray-400 text-[10px]">-</span>
+                        @endif
+                    </td>
+
+                    <td class="px-3 py-2.5">
+                        @if($asset->criticality === 'Tinggi' || $asset->se_category === 'Strategis')
+                            <span class="badge status-offline">Tinggi</span>
+                        @else
+                            <span class="badge status-active">Rendah</span>
                         @endif
                     </td>
 

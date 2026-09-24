@@ -28,19 +28,17 @@
         'Lainnya'   => 'text-gray-500',
     ];
     $currentGroup = $typeConfig['group'] ?? 'Lainnya';
-    
+
     $assetCategories = [
-        'DI' => 'Data & Informasi', 
-        'PL' => 'Perangkat Lunak', 
-        'PK' => 'Perangkat Keras', 
-        'SP' => 'Sarana Pendukung', 
+        'DI' => 'Data & Informasi',
+        'PL' => 'Perangkat Lunak',
+        'PK' => 'Perangkat Keras',
+        'SP' => 'Sarana Pendukung',
         'PS' => 'SDM & Pihak Ketiga'
     ];
 
-    // Ambil field default sesuai config master data
     $displayFields = $typeConfig['fields'] ?? [];
-    
-    // Injeksi PIC & OP HANYA jika type adalah OPD / Pemilik Aset (sesuaikan slug $type jika berbeda)
+
     if (in_array($type, ['opd', 'pemilik_aset', 'pemilik-aset', 'opd_owners']) && !isset($displayFields['pic'])) {
         $displayFields['pic'] = ['label' => 'PIC / Penanggung Jawab', 'type' => 'text'];
         $displayFields['op'] = ['label' => 'Operator (OP)', 'type' => 'text'];
@@ -93,7 +91,7 @@
     search: localStorage.getItem('filter_{{ $type }}_search') ?? '{{ request('search', '') }}',
     statusFilter: localStorage.getItem('filter_{{ $type }}_status') ?? '{{ request('status', '') }}',
     categoryFilter: localStorage.getItem('filter_{{ $type }}_category') ?? '{{ request('category', '') }}',
-    
+
     init() {
         this.$watch('search', value => {
             value ? localStorage.setItem('filter_{{ $type }}_search', value) : localStorage.removeItem('filter_{{ $type }}_search');
@@ -105,25 +103,25 @@
             value ? localStorage.setItem('filter_{{ $type }}_category', value) : localStorage.removeItem('filter_{{ $type }}_category');
         });
     },
-    
+
     matches(item, isActive, category) {
         const q = (this.search || '').trim().toLowerCase();
-        
+
         let matchSearch = q === '';
         if (!matchSearch && item) {
             const searchString = JSON.stringify(item).toLowerCase();
             matchSearch = searchString.includes(q);
         }
 
-        const matchStatus = this.statusFilter === '' || 
-                           (this.statusFilter === 'active' && isActive) || 
+        const matchStatus = this.statusFilter === '' ||
+                           (this.statusFilter === 'active' && isActive) ||
                            (this.statusFilter === 'inactive' && !isActive);
-                           
+
         const matchCategory = this.categoryFilter === '' || category === this.categoryFilter;
-        
+
         return matchSearch && matchStatus && matchCategory;
     },
-    
+
     resetFilters() {
         this.search = '';
         this.statusFilter = '';
@@ -145,7 +143,7 @@
                            class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
-            
+
             <div class="w-full md:w-48">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Kategori Aset</label>
                 <select x-model="categoryFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
@@ -164,11 +162,11 @@
                     <option value="inactive">Nonaktif</option>
                 </select>
             </div>
-            
+
             <div class="w-full md:w-auto pb-0.5">
-                <button type="button" 
-                        x-show="search !== '' || statusFilter !== '' || categoryFilter !== ''" 
-                        @click="resetFilters()" 
+                <button type="button"
+                        x-show="search !== '' || statusFilter !== '' || categoryFilter !== ''"
+                        @click="resetFilters()"
                         x-transition
                         class="w-full md:w-auto inline-flex items-center justify-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors h-[38px]">
                     <i class="fas fa-undo mr-2"></i> Reset
@@ -197,13 +195,13 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($items as $item)
-                        <tr class="hover:bg-gray-50 transition-colors" 
+                        <tr class="hover:bg-gray-50 transition-colors"
                             x-show="matches(@js($item->toArray()), @js((bool) $item->is_active), @js($item->asset_category_code ?? ''))">
-                            
+
                             <td class="px-6 py-3.5 text-sm text-gray-400">
                                 {{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}
                             </td>
-                            
+
                             @foreach($displayFields as $field => $fieldConfig)
                                 @if(!in_array($field, ['description', 'is_active', 'color', 'icon', 'order', 'code']))
                                     <td class="px-6 py-3.5 text-sm text-gray-800">
@@ -213,6 +211,13 @@
                                             <span class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-medium">
                                                 {{ $assetCategories[$item->$field] ?? ($item->$field ?? '-') }}
                                             </span>
+                                        @elseif(($fieldConfig['type'] ?? null) === 'select')
+                                            {{-- [BARU] Field select generik (mis. server_id) tampil pakai label dari options, bukan raw value --}}
+                                            @php $val = $item->$field ?? null; @endphp
+                                            {{ ($fieldConfig['options'][$val] ?? null) ?: ($val ?: '-') }}
+                                        @elseif(($fieldConfig['type'] ?? null) === 'checkbox')
+                                            {{-- [BARU] Field checkbox generik (mis. is_primary) tampil sebagai Ya/Tidak --}}
+                                            {{ ($item->$field ?? false) ? 'Ya' : 'Tidak' }}
                                         @else
                                             @php
                                                 $val = $item->$field ?? ($item->custom_data[$field] ?? null);
@@ -228,7 +233,7 @@
                                     </td>
                                 @endif
                             @endforeach
-                            
+
                             <td class="px-6 py-3.5 text-center">
                                 <form method="POST" action="{{ route('master-data.toggle', [$type, $item->id]) }}" class="inline">
                                     @csrf

@@ -6,10 +6,12 @@
 @section('content')
 <style>[x-cloak] { display: none !important; }</style>
 
-<a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition-colors">← Kembali ke Dashboard</a>
-<br><br>
+<a href="{{ route('dashboard') }}" class="inline-flex items-center gap-1.5 px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition-colors mb-4">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    Kembali ke Dashboard
+</a>
 
-<div class="flex items-center justify-between gap-4 flex-wrap">
+<div class="flex items-center justify-between gap-4 flex-wrap mb-6">
     <div>
         <h1 class="text-3xl font-bold text-blue-600 tracking-tight">
             Subdomain List<span class="text-gray-400 font-normal"> » </span><span class="text-lg font-semibold text-gray-500">Kelola Subdomain</span>
@@ -24,9 +26,7 @@
         Tambah Subdomain
     </a>
 </div>
-<br>
 
-<!-- Tambahkan x-data di container utama -->
 <div class="bg-white rounded-lg border border-gray-200 shadow-sm" x-data="{
     search: '',
     domainFilter: '{{ request('domain', 'All domains') }}' === '' ? 'All domains' : '{{ request('domain', 'All domains') }}',
@@ -44,15 +44,12 @@
         this.statusFilter = 'All status';
     }
 }">
-    <!-- Header & Filter -->
     <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-200 gap-3">
         <h2 class="text-lg font-semibold text-gray-800">Subdomain List</h2>
         <div class="flex flex-wrap items-center gap-2">
-            <!-- Input Search tanpa form -->
             <input type="text" x-model="search" placeholder="Cari subdomain..."
                    class="border border-gray-300 rounded px-3 h-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48">
 
-            <!-- Dropdown langsung pakai x-model -->
             <select x-model="domainFilter" class="border border-gray-300 rounded px-3 h-9 text-sm cursor-pointer">
                 <option value="All domains">All domains</option>
                 @foreach($domains as $domain)
@@ -67,17 +64,16 @@
                 @endforeach
             </select>
 
-            <!-- Tombol Reset menggunakan Alpine -->
-            <button x-show="search !== '' || domainFilter !== 'All domains' || statusFilter !== 'All status'" 
-                    @click="resetFilters()" 
+            <button x-show="search !== '' || domainFilter !== 'All domains' || statusFilter !== 'All status'"
+                    @click="resetFilters()"
                     x-transition
                     class="flex items-center gap-1.5 border border-blue-200 text-blue-600 px-4 h-9 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 Reset
             </button>
         </div>
     </div>
 
-    <!-- Tabel Subdomain -->
     <div class="overflow-x-auto">
         <table class="w-full text-sm whitespace-nowrap">
             <thead class="bg-blue-50 text-gray-600">
@@ -86,6 +82,7 @@
                     <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Status</th>
                     <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Domain</th>
                     <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Server</th>
+                    <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">IP Address</th>
                     <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">OPD Pengelola</th>
                     <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Kontak/PIC</th>
                     <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">SSL Expiry</th>
@@ -94,7 +91,6 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($subdomains as $subdomain)
-                <!-- Tambahkan x-data dan x-show di setiap baris -->
                 <tr class="hover:bg-gray-50 transition-colors"
                     x-data='{{ json_encode(["sub" => $subdomain->subdomain, "domain" => $subdomain->domain, "status" => $subdomain->status]) }}'
                     x-show="matches(sub, domain, status)"
@@ -107,7 +103,6 @@
                     </td>
                     <td class="px-4 py-3.5 text-gray-600">{{ $subdomain->domain }}</td>
 
-                    <!-- KOLOM SERVER -->
                     <td class="px-4 py-3.5 text-gray-700 font-medium">
                         @if($subdomain->server)
                             <div class="flex items-center space-x-2">
@@ -121,21 +116,38 @@
                         @endif
                     </td>
 
-                    <!-- KOLOM OPD PENGELOLA -->
+                    <td class="px-4 py-3.5">
+                        <div class="flex flex-wrap items-center gap-1">
+                            @forelse($subdomain->ips as $ip)
+                                <span class="inline-flex items-center font-mono text-xs px-2 py-0.5 rounded {{ $ip->type === 'Publik' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}" title="{{ $ip->type }}">
+                                    {{ $ip->ip_address }}
+                                </span>
+                            @empty
+                                <span class="text-gray-300 text-xs">—</span>
+                            @endforelse
+                        </div>
+                    </td>
+
                     <td class="px-4 py-3.5 text-gray-600">
                         {{ $subdomain->opd_pengelola ?: '-' }}
                     </td>
 
-                    <!-- KOLOM KONTAK -->
                     <td class="px-4 py-3.5 text-gray-600">
                         {{ $subdomain->kontak ?: '-' }}
                     </td>
 
-                    <td class="px-4 py-3.5 text-gray-600">{{ \Carbon\Carbon::parse($subdomain->ssl_expiry)->format('Y-m-d') }}</td>
+                    <td class="px-4 py-3.5 text-gray-600">{{ $subdomain->ssl_expiry ? \Carbon\Carbon::parse($subdomain->ssl_expiry)->format('Y-m-d') : '-' }}</td>
 
-                    <!-- KOLOM ACTIONS -->
                     <td class="px-4 py-3.5">
                         <div class="flex items-center gap-1">
+                            {{-- TOMBOL LIHAT DETAIL (SHOW) --}}
+                            <a href="{{ route('subdomains.show', $subdomain) }}" title="Lihat Detail" class="action-btn text-gray-600 hover:bg-gray-50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </a>
+
                             <a href="{{ route('subdomains.edit', $subdomain->id) }}" title="Edit" class="action-btn text-blue-600 hover:bg-blue-50">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -156,7 +168,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="px-4 py-10 text-center text-gray-400">
+                    <td colspan="9" class="px-4 py-10 text-center text-gray-400">
                         <div class="flex flex-col items-center gap-2">
                             <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
@@ -170,7 +182,6 @@
         </table>
     </div>
 
-    <!-- Pagination -->
     @if(method_exists($subdomains, 'links'))
     <div class="p-4 border-t border-gray-200">
         {{ $subdomains->links() }}

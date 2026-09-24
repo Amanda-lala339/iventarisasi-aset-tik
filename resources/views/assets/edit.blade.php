@@ -18,7 +18,7 @@
         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             <p class="font-semibold">Terjadi kesalahan:</p>
             <ul class="list-disc list-inside text-sm mt-2">
-                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                @foreach ($errors->all() as $error) <li>{{ $error }}</li> @endforeach
             </ul>
         </div>
     @endif
@@ -27,10 +27,9 @@
         @csrf
         @method('PUT')
 
-        {{-- Kategori & Kode (Selalu Tampil) --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500"></span></label>
                 <select name="asset_category_id" id="asset_category_id" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" data-code="{{ $cat->code }}" {{ old('asset_category_id', $asset->asset_category_id) == $cat->id ? 'selected' : '' }}>
@@ -40,14 +39,12 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500"></span></label>
                 <input type="text" name="asset_code" value="{{ old('asset_code', $asset->asset_code) }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: DI-001">
             </div>
         </div>
 
-        {{-- ========================================================= --}}
         {{-- 1. DATA & INFORMASI (DI) --}}
-        {{-- ========================================================= --}}
         <div id="fields-DI" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Data & Informasi</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -82,12 +79,18 @@
                     </select>
                 </div>
             </div>
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan Aset</label>
-                        <input type="text" name="location" value="{{ old('location', $asset->location) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="location" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" disabled>Pilih...</option>
+                            @foreach($locations['DI'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('location', $asset->location) == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Format Penyimpanan Aset</label>
@@ -113,12 +116,13 @@
                     </div>
                 </div>
             </div>
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Kritikalitas Aset (Penilaian)</h4>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Kritikalitas Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kerahasiaan</label>
-                        <select name="confidentiality" id="di_confidentiality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="confidentiality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                             <option value="" disabled>Pilih...</option>
                             @foreach($confidentialityLevels['DI'] ?? [] as $opt)
                                 <option value="{{ $opt->name }}" @selected(old('confidentiality', $asset->confidentiality) == $opt->name)>{{ $opt->name }}</option>
@@ -127,7 +131,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Integritas</label>
-                        <select name="integrity" id="di_integrity" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="integrity" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                             <option value="" disabled>Pilih...</option>
                             @foreach($integrityLevels['DI'] ?? [] as $opt)
                                 <option value="{{ $opt->name }}" @selected(old('integrity', $asset->integrity) == $opt->name)>{{ $opt->name }}</option>
@@ -136,7 +140,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Ketersediaan</label>
-                        <select name="availability" id="di_availability" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="availability" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                             <option value="" disabled>Pilih...</option>
                             @foreach($availabilityLevels['DI'] ?? [] as $opt)
                                 <option value="{{ $opt->name }}" @selected(old('availability', $asset->availability) == $opt->name)>{{ $opt->name }}</option>
@@ -145,9 +149,10 @@
                     </div>
                 </div>
             </div>
+
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
-                <select name="criticality" id="di_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" disabled>Pilih...</option>
                     @foreach($criticalityLevels['DI'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('criticality', $asset->criticality) == $opt->name)>{{ $opt->name }}</option>
@@ -156,9 +161,7 @@
             </div>
         </div>
 
-        {{-- ========================================================= --}}
         {{-- 2. PERANGKAT LUNAK (PL) --}}
-        {{-- ========================================================= --}}
         <div id="fields-PL" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Lunak</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -175,8 +178,6 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset</label>
                     <input type="text" name="name" value="{{ old('name', $asset->name) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
-                
-                {{-- BARU: Klasifikasi Data KHUSUS Perangkat Lunak --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Klasifikasi Data</label>
                     <select name="data_classification" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -186,18 +187,16 @@
                         @endforeach
                     </select>
                 </div>
-                {{-- Akhir Klasifikasi Data --}}
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Rilis</label>
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Uraian Singkat Aplikasi / Business Proses</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Uraian Singkat Aplikasi/Business Proses</label>
                     <textarea name="app_description" rows="2" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ old('app_description', $asset->app_description) }}</textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Aplikasi / URL</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Aplikasi/URL</label>
                     <input type="url" name="app_url" value="{{ old('app_url', $asset->app_url) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
@@ -205,22 +204,12 @@
                     <input type="text" name="ip_address" value="{{ old('ip_address', $asset->ip_address) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">IP Publik / Internal</label>
-                    <select name="ip_public_internal" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" disabled>Pilih...</option>
-                        @foreach($ipTypes['PL'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('ip_public_internal', $asset->ip_public_internal) == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Aplikasi IP Publik/Internal <span class="text-xs text-gray-400 ml-1"></span></label>
+                    <input type="text" name="ip_public_internal" value="{{ old('ip_public_internal', $asset->ip_public_internal) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono" placeholder="Contoh: 103.144.82.141">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
-                    <select name="platform" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="" disabled>Pilih...</option>
-                        @foreach($platforms['PL'] ?? [] as $opt)
-                            <option value="{{ $opt->name }}" @selected(old('platform', $asset->platform) == $opt->name)>{{ $opt->name }}</option>
-                        @endforeach
-                    </select>
+                    <input type="text" name="platform" value="{{ old('platform', $asset->platform) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sistem Operasi Server</label>
@@ -245,7 +234,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kontak Pengelola / PIC</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kontak Pengelola/PIC</label>
                     <input type="text" name="contact_pic" value="{{ old('contact_pic', $asset->contact_pic) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
@@ -259,7 +248,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori SE</label>
-                    <select name="se_category" id="pl_se_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <select name="se_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" disabled>Pilih...</option>
                         @foreach($seCategories['PL'] ?? [] as $opt)
                             <option value="{{ $opt->name }}" @selected(old('se_category', $asset->se_category) == $opt->name)>{{ $opt->name }}</option>
@@ -267,19 +256,14 @@
                     </select>
                 </div>
             </div>
-            
-            {{-- ========================================================= --}}
-            {{-- UPLOAD DOKUMEN (VERSI BERSIH & TANPA DUPLIKASI) --}}
-            {{-- ========================================================= --}}
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Bisa tambah berkali-kali)</span>
+                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold"></span>
                 </label>
-                
-                {{-- Tampilkan File yang Sudah Ada dari Database --}}
                 @if($asset->documents && $asset->documents->count() > 0)
                     <div class="mb-3 space-y-2">
-                        @foreach($asset->documents as $doc)
+                        @foreach ($asset->documents as $doc)
                             <div class="flex items-center justify-between p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-xs" id="file-container-{{ $doc->id }}">
                                 <div class="flex items-center gap-2 truncate flex-1">
                                     <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -289,7 +273,7 @@
                                         {{ $doc->original_name ?? basename($doc->file_path) }}
                                     </a>
                                 </div>
-                                <button type="button" 
+                                <button type="button"
                                         onclick="deleteFile({{ $asset->id }}, {{ $doc->id }}, '{{ $doc->file_path }}')"
                                         class="ml-2 text-red-600 hover:text-red-800 font-medium text-xs transition-colors">
                                     Hapus
@@ -298,18 +282,14 @@
                         @endforeach
                     </div>
                 @endif
-
                 <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png"
-                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                <p class="text-xs text-gray-500 mt-1">Klik "Choose Files" berulang kali untuk menambahkan file baru.</p>
-                
-                {{-- Wadah untuk menampilkan daftar file baru yang dipilih (belum di-submit) --}}
+                    class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
-            
+
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
-                <select name="criticality" id="pl_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" disabled>Pilih...</option>
                     @foreach($criticalityLevels['PL'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('criticality', $asset->criticality) == $opt->name)>{{ $opt->name }}</option>
@@ -318,9 +298,7 @@
             </div>
         </div>
 
-        {{-- ========================================================= --}}
         {{-- 3. PERANGKAT KERAS (PK) --}}
-        {{-- ========================================================= --}}
         <div id="fields-PK" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Keras</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -346,12 +324,18 @@
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan Aset</label>
-                        <input type="text" name="location" value="{{ old('location', $asset->location) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="location" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" disabled>Pilih...</option>
+                            @foreach($locations['PK'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('location', $asset->location) == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset</label>
@@ -373,18 +357,20 @@
                     </div>
                 </div>
             </div>
+
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <select name="asset_type_category" id="pk_asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                     <option value="" disabled>Pilih...</option>
                     @foreach($assetTypeCategories['PK'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('asset_type_category', $asset->asset_type_category) == $opt->name)>{{ $opt->name }}</option>
                     @endforeach
                 </select>
             </div>
+
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
-                <select name="criticality" id="pk_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" disabled>Pilih...</option>
                     @foreach($criticalityLevels['PK'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('criticality', $asset->criticality) == $opt->name)>{{ $opt->name }}</option>
@@ -393,9 +379,7 @@
             </div>
         </div>
 
-        {{-- ========================================================= --}}
         {{-- 4. SARANA PENDUKUNG (SP) --}}
-        {{-- ========================================================= --}}
         <div id="fields-SP" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Sarana Pendukung</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -421,12 +405,18 @@
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Keberadaan Aset</label>
-                        <input type="text" name="location" value="{{ old('location', $asset->location) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="location" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                            <option value="" disabled>Pilih...</option>
+                            @foreach($locations['SP'] ?? [] as $opt)
+                                <option value="{{ $opt->name }}" @selected(old('location', $asset->location) == $opt->name)>{{ $opt->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pemilik Aset</label>
@@ -448,18 +438,20 @@
                     </div>
                 </div>
             </div>
+
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <select name="asset_type_category" id="sp_asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                     <option value="" disabled>Pilih...</option>
                     @foreach($assetTypeCategories['SP'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('asset_type_category', $asset->asset_type_category) == $opt->name)>{{ $opt->name }}</option>
                     @endforeach
                 </select>
             </div>
+
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
-                <select name="criticality" id="sp_criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" disabled>Pilih...</option>
                     @foreach($criticalityLevels['SP'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('criticality', $asset->criticality) == $opt->name)>{{ $opt->name }}</option>
@@ -468,9 +460,7 @@
             </div>
         </div>
 
-        {{-- ========================================================= --}}
         {{-- 5. SDM & PIHAK KETIGA (PS) --}}
-        {{-- ========================================================= --}}
         <div id="fields-PS" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">SDM & Pihak Ketiga</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -484,7 +474,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Personil / Perusahaan</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Personil/Perusahaan</label>
                     <input type="text" name="name" value="{{ old('name', $asset->name) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
@@ -497,10 +487,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">NIP / NIK</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NIP/NIK</label>
                     <input type="text" name="nip" value="{{ old('nip', $asset->nip) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Penugasan</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -519,13 +510,13 @@
                     </div>
                 </div>
             </div>
+
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
                 <input type="text" name="position" value="{{ old('position', $asset->position) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
             </div>
         </div>
-           
-        {{-- Tombol Aksi --}}
+
         <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
             <a href="{{ url()->previous() }}" class="px-5 py-2.5 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Batal</a>
             <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition shadow-sm">Update Aset</button>
@@ -560,32 +551,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     categorySelect.addEventListener('change', showFields);
-    showFields(); // Jalankan saat load untuk menampilkan data yang sudah ada
+    showFields();
 
-    // ============================================================
-    // FITUR UPLOAD BERTAHAP (AKUMULATIF) KHUSUS PERANGKAT LUNAK (PL)
-    // ============================================================
+    // Upload bertahap PL
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
-    let plSelectedFiles = []; // Array untuk menyimpan file baru secara akumulatif
+    let plSelectedFiles = [];
 
     if (plFileInput && plFileListContainer) {
-        plFileInput.addEventListener('change', function() {
-            // Tambahkan file baru ke dalam array
+        plFileInput.addEventListener('change', function () {
             Array.from(this.files).forEach(file => {
                 plSelectedFiles.push(file);
             });
-            
-            // Reset nilai input agar user bisa memilih file yang sama lagi jika mau
             this.value = '';
-            
-            // Render ulang daftar file
             renderPlFiles();
         });
 
         function renderPlFiles() {
             plFileListContainer.innerHTML = '';
-            
             if (plSelectedFiles.length === 0) return;
 
             plSelectedFiles.forEach((file, index) => {
@@ -606,20 +589,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 plFileListContainer.appendChild(div);
             });
 
-            // Tampilkan total file baru
             const totalDiv = document.createElement('div');
             totalDiv.className = 'text-xs text-gray-500 text-right mt-1';
             totalDiv.textContent = `Total: ${plSelectedFiles.length} file baru akan diupload`;
             plFileListContainer.appendChild(totalDiv);
         }
 
-        // Fungsi global agar bisa dipanggil dari onclick HTML
         window.removePlFile = function(index) {
             plSelectedFiles.splice(index, 1);
             renderPlFiles();
         };
 
-        // Intercept form submit untuk memasukkan array file kembali ke input
         document.getElementById('assetForm').addEventListener('submit', function(e) {
             if (plSelectedFiles.length > 0) {
                 const dt = new DataTransfer();
@@ -629,94 +609,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ============ AUTO-HITUNG KRITIKALITAS ASET ============
-    function setSelectValue(select, value) {
-        if (!select || !value) return;
-        const match = Array.from(select.options).find(o => o.value.toLowerCase() === value.toLowerCase());
-        if (match) select.value = match.value;
-    }
-
-    // --- Data & Informasi ---
-    function scoreConfidentiality(v) {
-        v = (v || '').toLowerCase();
-        if (v.includes('strategis') || v.includes('rahasia')) return 3;
-        if (v.includes('terbatas')) return 2;
-        if (v.includes('terbuka') || v.includes('publik')) return 1;
-        return 0;
-    }
-    function scoreIntegrity(v) {
-        v = (v || '').toLowerCase();
-        if (v.includes('vital')) return 3;
-        if (v.includes('administrasi')) return 2;
-        if (v.includes('penunjang')) return 1;
-        return 0;
-    }
-    function scoreAvailability(v) {
-        v = (v || '').toLowerCase();
-        if (v.includes('seketika') || v.includes('real')) return 3;
-        if (v.includes('rutin')) return 2;
-        if (v.includes('fleksibel') || v.includes('non')) return 1;
-        return 0;
-    }
-
-    const diConf = document.getElementById('di_confidentiality');
-    const diInteg = document.getElementById('di_integrity');
-    const diAvail = document.getElementById('di_availability');
-    const diCrit = document.getElementById('di_criticality');
-
-    function updateDiCriticality() {
-        const total = scoreConfidentiality(diConf.value) + scoreIntegrity(diInteg.value) + scoreAvailability(diAvail.value);
-        if (total === 0) return;
-        let level = total <= 3 ? 'Rendah' : (total <= 6 ? 'Sedang' : 'Tinggi');
-        setSelectValue(diCrit, level);
-    }
-    [diConf, diInteg, diAvail].forEach(el => el && el.addEventListener('change', updateDiCriticality));
-
-    // --- Perangkat Lunak ---
-    function mapSeCategory(v) {
-        v = (v || '').toLowerCase();
-        if (v.includes('strategis')) return 'Tinggi';
-        if (v.includes('tinggi')) return 'Sedang';
-        if (v.includes('rendah')) return 'Rendah';
-        return null;
-    }
-    const plSe = document.getElementById('pl_se_category');
-    const plCrit = document.getElementById('pl_criticality');
-    if (plSe) {
-        plSe.addEventListener('change', () => setSelectValue(plCrit, mapSeCategory(plSe.value)));
-    }
-
-    // --- Perangkat Keras & Sarana Pendukung ---
-    function mapFisikCategory(v) {
-        v = (v || '').toLowerCase();
-        if (v.includes('strategis')) return 'Tinggi';
-        if (v.includes('operasional utama')) return 'Sedang';
-        if (v.includes('umum') || v.includes('non-esensial') || v.includes('non esensial')) return 'Rendah';
-        return null;
-    }
-    
-    const pkCat = document.getElementById('pk_asset_type_category');
-    const pkCrit = document.getElementById('pk_criticality');
-    if (pkCat) {
-        pkCat.addEventListener('change', () => setSelectValue(pkCrit, mapFisikCategory(pkCat.value)));
-    }
-    
-    const spCat = document.getElementById('sp_asset_type_category');
-    const spCrit = document.getElementById('sp_criticality');
-    if (spCat) {
-        spCat.addEventListener('change', () => setSelectValue(spCrit, mapFisikCategory(spCat.value)));
-    }
+    // ⭐ AUTO-FILL KRITIKALITAS DIHAPUS - user pilih manual
 });
 
-// ============================================================
-// FUNGSI HAPUS FILE VIA AJAX (MENGGUNAKAN ID DATABASE)
-// ============================================================
+// Hapus file via AJAX
 window.deleteFile = function(assetId, documentId, filePath) {
     if (!confirm('Yakin ingin menghapus file ini?')) {
         return;
     }
-
-    // Kirim request ke route yang menggunakan documentId
     fetch(`/assets/documents/${documentId}/delete`, {
         method: 'POST',
         headers: {
@@ -727,11 +627,8 @@ window.deleteFile = function(assetId, documentId, filePath) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Hapus elemen dari DOM secara visual
             const element = document.getElementById(`file-container-${documentId}`);
-            if (element) {
-                element.remove();
-            }
+            if (element) element.remove();
         } else {
             alert('Gagal menghapus file: ' + (data.message || 'Unknown error'));
         }

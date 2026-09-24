@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterDataCategory;
 use App\Models\MasterDataItem;
+use App\Models\Server;
+use App\Models\ServerIp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
@@ -28,7 +30,33 @@ class MasterDataController extends Controller
             ];
         }
 
-        return array_merge($dynamic, $static);
+        $config = array_merge($dynamic, $static);
+
+        // [BARU] Resolve field yang pilihannya diambil dari tabel lain
+        // (options_source), misalnya dropdown Server di kategori IP Address.
+        foreach ($config as $key => &$item) {
+            if (empty($item['fields'])) {
+                continue;
+            }
+            foreach ($item['fields'] as $field => &$fieldConfig) {
+                if (!empty($fieldConfig['options_source'])) {
+                    $fieldConfig['options'] = $this->resolveOptionsSource($fieldConfig['options_source']);
+                }
+            }
+            unset($fieldConfig);
+        }
+        unset($item);
+
+        return $config;
+    }
+
+    // [BARU] Sumber pilihan dropdown yang datanya diambil dari tabel lain.
+    private function resolveOptionsSource(string $source): array
+    {
+        return match ($source) {
+            'servers' => Server::orderBy('name')->pluck('name', 'id')->toArray(),
+            default => [],
+        };
     }
 
     private function buildDynamicFields(array $enabled): array
@@ -95,7 +123,6 @@ class MasterDataController extends Controller
         return $palette[crc32($group) % count($palette)];
     }
 
-    // PERBAIKAN: Hanya kecualikan field internal sistem agar description, code, asset_category_code, dll. bisa tersimpan
     private function hiddenFields(): array
     {
         return ['custom_data', 'category_id'];
@@ -109,6 +136,38 @@ class MasterDataController extends Controller
             $query->where('category_id', $typeConfig['category_id']);
         }
         return $query;
+    }
+
+    private function buildFieldRule(array $fieldConfig): array
+    {
+        if (!empty($fieldConfig['rules'])) {
+            return $fieldConfig['rules'];
+        }
+
+        $rule = [];
+        $rule[] = !empty($fieldConfig['required']) ? 'required' : 'nullable';
+
+        if (in_array($fieldConfig['type'], ['text', 'textarea'])) {
+            $rule[] = 'string';
+            if ($fieldConfig['type'] === 'text') {
+                $rule[] = 'max:255';
+            }
+        } elseif ($fieldConfig['type'] === 'number') {
+            $rule[] = 'integer';
+        } elseif ($fieldConfig['type'] === 'email') {
+            $rule[] = 'email';
+        }
+
+        return $rule;
+    }
+
+    private function afterMasterDataSave(string $type, $item): void
+    {
+        if ($type === 'ip_address' && $item->is_primary) {
+            ServerIp::where('server_id', $item->server_id)
+                ->where('id', '!=', $item->id)
+                ->update(['is_primary' => false]);
+        }
     }
 
     public function dashboard()
@@ -139,9 +198,14 @@ class MasterDataController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search, $tableName) {
-                $q->where('name', 'like', "%{$search}%");
-                if (Schema::hasColumn($tableName, 'code')) {
-                    $q->orWhere('code', 'like', "%{$search}%");
+                $applied = false;
+                foreach (['name', 'code', 'ip_address'] as $col) {
+                    if (Schema::hasColumn($tableName, $col)) {
+                        $applied
+                            ? $q->orWhere($col, 'like', "%{$search}%")
+                            : $q->where($col, 'like', "%{$search}%");
+                        $applied = true;
+                    }
                 }
             });
         }
@@ -153,7 +217,9 @@ class MasterDataController extends Controller
         if (Schema::hasColumn($tableName, 'order')) {
             $query->orderBy('order');
         }
-        $query->orderBy('name');
+        if (Schema::hasColumn($tableName, 'name')) {
+            $query->orderBy('name');
+        }
 
         $items = $query->paginate(15)->withQueryString();
         $config = $this->getConfig();
@@ -178,34 +244,25 @@ class MasterDataController extends Controller
         $rules = [];
         foreach ($typeConfig['fields'] as $field => $fieldConfig) {
             if (in_array($field, $hiddenFields)) continue;
-
-            $rule = [];
-            $rule[] = !empty($fieldConfig['required']) ? 'required' : 'nullable';
-
-            if (in_array($fieldConfig['type'], ['text', 'textarea'])) {
-                $rule[] = 'string';
-                if ($fieldConfig['type'] === 'text') {
-                    $rule[] = 'max:255';
-                }
-            } elseif ($fieldConfig['type'] === 'number') {
-                $rule[] = 'integer';
-            } elseif ($fieldConfig['type'] === 'email') {
-                $rule[] = 'email';
-            }
-
-            $rules[$field] = $rule;
+            $rules[$field] = $this->buildFieldRule($fieldConfig);
         }
 
         $validated = $request->validate($rules);
+
         $standardData = [];
         $customData = [];
 
         foreach ($typeConfig['fields'] as $field => $fieldConfig) {
             if (in_array($field, $hiddenFields)) continue;
 
-            $value = $fieldConfig['type'] === 'checkbox'
-                ? $request->boolean($field)
-                : ($validated[$field] ?? ($fieldConfig['default'] ?? null));
+            // ✅ PERBAIKAN: Cek keberadaan field di request sebelum menilai boolean
+            if ($fieldConfig['type'] === 'checkbox') {
+                $value = $request->has($field)
+                    ? $request->boolean($field)
+                    : ($fieldConfig['default'] ?? false);
+            } else {
+                $value = $validated[$field] ?? ($fieldConfig['default'] ?? null);
+            }
 
             if (!empty($fieldConfig['is_custom'])) {
                 if (!is_null($value) && $value !== '') {
@@ -230,7 +287,6 @@ class MasterDataController extends Controller
 
         if (!empty($typeConfig['dynamic'])) {
             $standardData['category_id'] = $typeConfig['category_id'];
-
             if (Schema::hasColumn($tableName, 'color')) {
                 $standardData['color'] = $this->resolveGroupColor($typeConfig['group']);
             }
@@ -245,7 +301,8 @@ class MasterDataController extends Controller
             $standardData['order'] = ($maxOrder !== null) ? ((int) $maxOrder + 1) : 1;
         }
 
-        $model::create($standardData);
+        $item = $model::create($standardData);
+        $this->afterMasterDataSave($type, $item);
 
         return redirect()->route('master-data.index', $type)->with('success', 'Data berhasil ditambahkan');
     }
@@ -266,34 +323,25 @@ class MasterDataController extends Controller
         $rules = [];
         foreach ($typeConfig['fields'] as $field => $fieldConfig) {
             if (in_array($field, $hiddenFields)) continue;
-
-            $rule = [];
-            $rule[] = !empty($fieldConfig['required']) ? 'required' : 'nullable';
-
-            if (in_array($fieldConfig['type'], ['text', 'textarea'])) {
-                $rule[] = 'string';
-                if ($fieldConfig['type'] === 'text') {
-                    $rule[] = 'max:255';
-                }
-            } elseif ($fieldConfig['type'] === 'number') {
-                $rule[] = 'integer';
-            } elseif ($fieldConfig['type'] === 'email') {
-                $rule[] = 'email';
-            }
-
-            $rules[$field] = $rule;
+            $rules[$field] = $this->buildFieldRule($fieldConfig);
         }
 
         $validated = $request->validate($rules);
+
         $standardData = [];
         $customData = [];
 
         foreach ($typeConfig['fields'] as $field => $fieldConfig) {
             if (in_array($field, $hiddenFields)) continue;
 
-            $value = $fieldConfig['type'] === 'checkbox'
-                ? $request->boolean($field)
-                : ($validated[$field] ?? ($fieldConfig['default'] ?? null));
+            // ✅ PERBAIKAN: Cek keberadaan field di request sebelum menilai boolean
+            if ($fieldConfig['type'] === 'checkbox') {
+                $value = $request->has($field)
+                    ? $request->boolean($field)
+                    : ($fieldConfig['default'] ?? false);
+            } else {
+                $value = $validated[$field] ?? ($fieldConfig['default'] ?? null);
+            }
 
             if (!empty($fieldConfig['is_custom'])) {
                 if (!is_null($value) && $value !== '') {
@@ -310,7 +358,6 @@ class MasterDataController extends Controller
         }
 
         $tableName = $item->getTable();
-
         if (Schema::hasColumn($tableName, 'asset_category_code')) {
             if ($request->filled('asset_category_code')) {
                 $standardData['asset_category_code'] = $request->asset_category_code;
@@ -326,6 +373,7 @@ class MasterDataController extends Controller
         }
 
         $item->update($standardData);
+        $this->afterMasterDataSave($type, $item);
 
         return redirect()->route('master-data.index', $type)->with('success', 'Data berhasil diperbarui');
     }
@@ -335,11 +383,11 @@ class MasterDataController extends Controller
         $typeConfig = $this->validateType($type);
         $item = $this->baseQuery($typeConfig)->findOrFail($id);
 
-        $deletedOrder = $item->order;
+        $deletedOrder = $item->order ?? null;
         $item->delete();
 
         $tableName = (new $typeConfig['model'])->getTable();
-        if (Schema::hasColumn($tableName, 'order')) {
+        if ($deletedOrder !== null && Schema::hasColumn($tableName, 'order')) {
             $query = $this->baseQuery($typeConfig)
                 ->where('order', '>', $deletedOrder)
                 ->orderBy('order');

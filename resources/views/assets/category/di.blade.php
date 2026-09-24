@@ -97,16 +97,16 @@
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Sub Klasifikasi</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Nama Aset</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">No. Dokumen</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Tahun</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Status</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Lokasi</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Format</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Pemilik</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Retensi</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Tahun Penyusunan/Pengesahan</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Status Aset</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Lokasi Aset</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Format Aset</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Pemilik Aset</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Retensi Aset</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kerahasiaan</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Integritas</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Ketersediaan</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kritikalitas</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kritikalitas Aset</th>
                     <th class="px-3 py-2.5 text-center font-semibold uppercase tracking-wide sticky-col">Aksi</th>
                 </tr>
             </thead>

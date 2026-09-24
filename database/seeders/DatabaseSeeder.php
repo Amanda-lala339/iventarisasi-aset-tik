@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\AssetCategory;
+use App\Models\Asset;
 use App\Models\Server;
 use App\Models\Subdomain;
-use App\Models\Asset;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,9 +13,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ========================================
-        // 0. Jalankan MasterDataSeeder DULU
+        // 0. Jalankan MasterDataSeeder DULU (Opsional)
         // ========================================
-        $this->call(MasterDataSeeder::class);
+        // $this->call(MasterDataSeeder::class);
 
         // ========================================
         // 1. ASSET CATEGORIES
@@ -34,259 +34,253 @@ class DatabaseSeeder extends Seeder
         $this->command->info('✓ Asset Categories: ' . count($categories) . ' records');
 
         // ========================================
-        // 2. DATA & INFORMASI (DI) — 3 record
+        // 2. DATA & INFORMASI (DI) — Sesuai Excel
         // ========================================
         $di = AssetCategory::where('code', 'DI')->first();
 
         Asset::firstOrCreate(['asset_code' => 'DI-001'], [
             'asset_category_id' => $di->id,
-            'asset_code' => 'DI-001',
             'sub_classification' => 'Database dan data files',
-            'name' => 'Data Pegawai Aktif',
-            'document_number' => 'HR-001',
-            'year' => 2023,
-            'status' => 'Draft',
+            'name' => 'Data Absensi Pegawai',
+            'document_number' => '-',
+            'year' => 2020,
+            'status' => null,
             'location' => 'Server Data Center',
-            'storage_format' => 'Database (SQL)',
-            'owner' => 'Biro SDM',
-            'retention' => '1 Tahun',
-            'confidentiality' => 'Informasi Terbuka / Publik',
-            'integrity' => 'Data Penunjang Umum',
-            'availability' => 'Akses Fleksibel / Non-Kritis',
-        ]);
-
-        Asset::firstOrCreate(['asset_code' => 'DI-002'], [
-            'asset_category_id' => $di->id,
-            'asset_code' => 'DI-002',
-            'sub_classification' => 'Data Log dan Audit',
-            'name' => 'Statistik Pengunjung Website',
-            'document_number' => 'WEB-STAT-01',
-            'year' => 2024,
-            'status' => 'Sudah Disahkan',
-            'location' => 'Server Aplikasi Web',
-            'storage_format' => 'Database & CSV',
-            'owner' => 'Unit TI',
-            'retention' => '1 Tahun',
+            'storage_format' => 'Database (MariaDB)',
+            'owner' => 'BKPSDM',
+            'retention' => '5 Tahun',
             'confidentiality' => 'Informasi Terbatas',
             'integrity' => 'Data Proses Administrasi',
             'availability' => 'Akses Rutin Terjadwal',
         ]);
 
+        Asset::firstOrCreate(['asset_code' => 'DI-002'], [
+            'asset_category_id' => $di->id,
+            'sub_classification' => 'Business Process/Prosedur',
+            'name' => 'SOP Backup dan Restore Database',
+            'document_number' => '490/592/SOP-Diskominfo/2021',
+            'year' => 2021,
+            'status' => 'Disahkan',
+            'location' => 'Cloud Service',
+            'storage_format' => 'Softcopy format pdf',
+            'owner' => 'Diskominfo',
+            'retention' => '5 Tahun',
+            'confidentiality' => 'Informasi Terbuka / Publik',
+            'integrity' => 'Data Penunjang Umum',
+            'availability' => 'Akses Fleksibel / Non-Kritis',
+        ]);
+
         Asset::firstOrCreate(['asset_code' => 'DI-003'], [
             'asset_category_id' => $di->id,
-            'asset_code' => 'DI-003',
-            'sub_classification' => 'Dokumen Kontrak dan Legal',
-            'name' => 'Perjanjian Kerja Sama',
-            'document_number' => 'PKS-022',
-            'year' => 2022,
-            'status' => 'Sudah Disahkan',
-            'location' => 'Arsip Digital & Fisik',
-            'storage_format' => 'PDF & Hardcopy',
-            'owner' => 'Bagian Hukum',
+            'sub_classification' => 'Business Process/Prosedur',
+            'name' => 'SOP Evaluasi Kinerja Keamanan Informasi SPBE',
+            'document_number' => '000.8.3.3/263/M/Diskominfo',
+            'year' => 2025,
+            'status' => 'Disahkan',
+            'location' => 'Cloud Service',
+            'storage_format' => 'Softcopy format pdf',
+            'owner' => 'Diskominfo',
             'retention' => '5 Tahun',
-            'confidentiality' => 'Informasi Strategis / Rahasia',
-            'integrity' => 'Data Vital Pengambilan Keputusan',
-            'availability' => 'Akses Seketika (Real-time)',
+            'confidentiality' => 'Informasi Terbuka / Publik',
+            'integrity' => 'Data Penunjang Umum',
+            'availability' => 'Akses Fleksibel / Non-Kritis',
         ]);
-        $this->command->info('✓ Data & Informasi: 3 records');
+        $this->command->info('✓ Data & Informasi: 3 records (Sesuai Excel)');
 
         // ========================================
-        // 3. PERANGKAT LUNAK (PL) — 3 record
+        // 3. PERANGKAT LUNAK (PL) — Sesuai Excel
         // ========================================
         $pl = AssetCategory::where('code', 'PL')->first();
 
         Asset::firstOrCreate(['asset_code' => 'PL-001'], [
             'asset_category_id' => $pl->id,
-            'asset_code' => 'PL-001',
-            'sub_classification' => 'Aplikasi Berbasis Website',
-            'name' => 'Sistem Informasi Layanan Online',
-            'year' => 2025,
-            'app_description' => 'Aplikasi pengajuan layanan publik secara daring (perizinan & administrasi)',
-            'app_url' => 'https://silo.instansi.go.id',
-            'ip_address' => '103.25.10.12',
-            'ip_public_internal' => 'Publik',
-            'platform' => 'Web-Based',
-            'os_server' => 'Ubuntu 24.04',
-            'owner' => 'BKPSDM',
-            'data_center' => 'Server BKPSDM',
-            'contact_pic' => 'Bidang TIK BKPSDM - it-support@instansi.go.id',
+            'sub_classification' => 'Sistem Utility',
+            'name' => 'Aplikasi Penarik Data Mesin Absensi',
+            'year' => 2021,
+            'app_description' => 'Tools Utility yang berguna untuk melakukan penarikan data dari mesin merk solution ke aplikasi e-presensi kota balikpapan',
+            'app_url' => null,
+            'ip_address' => '10.10.200.129',
+            'ip_public_internal' => null, // Di Excel kosong untuk baris ini
+            'platform' => 'Ubuntu',
+            'os_server' => null,
+            'owner' => 'Diskominfo',
+            'data_center' => 'Diskominfo',
+            'contact_pic' => 'Adi Prasetyo Nugroho',
             'status' => 'Aktif',
             'se_category' => 'Rendah',
+            'criticality' => 'sedang',
         ]);
 
         Asset::firstOrCreate(['asset_code' => 'PL-002'], [
             'asset_category_id' => $pl->id,
-            'asset_code' => 'PL-002',
-            'sub_classification' => 'Aplikasi Berbasis Website',
-            'name' => 'Sistem Informasi Kepegawaian',
-            'year' => 2025,
-            'app_description' => 'Pengelolaan data pegawai, cuti, kenaikan pangkat',
-            'app_url' => 'https://simpeg.internal.go.id',
-            'ip_address' => '10.10.5.21',
-            'ip_public_internal' => 'Internal',
-            'platform' => 'Web-Based',
-            'os_server' => 'CentOS 9',
-            'owner' => 'BKPSDM',
-            'data_center' => 'Server Diskominfo dan Server PDN',
-            'contact_pic' => 'Bidang Aptika Diskominfo - sdm@instansi.go.id',
+            'sub_classification' => 'Aplikasi berbasis Website',
+            'name' => 'Portal Layanan Masyarakat',
+            'year' => 2021,
+            'app_description' => 'Aplikasi untuk mengintegrasikan layanan publik di kota balikpapan',
+            'app_url' => 'https://emanuntung.balikpapan.go.id',
+            'ip_address' => '10.10.200.176',
+            'ip_public_internal' => '103.144.82.141', // ✅ PERBAIKAN: Berisi IP Address, bukan "Publik"
+            'platform' => 'PHP, Laravel',
+            'os_server' => 'Ubuntu 24.0.4',
+            'owner' => 'Diskominfo',
+            'data_center' => 'Diskominfo',
+            'contact_pic' => 'Adi Prasetyo Nugroho',
             'status' => 'Aktif',
             'se_category' => 'Tinggi',
+            'criticality' => 'Tinggi',
         ]);
 
         Asset::firstOrCreate(['asset_code' => 'PL-003'], [
             'asset_category_id' => $pl->id,
-            'asset_code' => 'PL-003',
-            'sub_classification' => 'Aplikasi Berbasis Website',
-            'name' => 'Website Profil Instansi',
-            'year' => 2022,
-            'app_description' => 'Portal informasi dan publikasi kegiatan instansi',
-            'app_url' => 'https://instansi.go.id',
-            'ip_address' => '103.25.10.5',
-            'ip_public_internal' => 'Publik',
-            'platform' => 'Mobile-Based',
-            'os_server' => 'Windows 11',
+            'sub_classification' => 'Aplikasi berbasis Website',
+            'name' => 'Aplikasi Pengukuran Evaluasi dan Akuntabilitas Kinerja Terintegrasi (eSakip)',
+            'year' => 2023,
+            'app_description' => 'Aplikasi untuk melakukan evaluasi kinerja perangkat daerah',
+            'app_url' => 'https://reaksi.balikpapan.go.id',
+            'ip_address' => '10.10.200.152',
+            'ip_public_internal' => '103.144.82.155', // ✅ PERBAIKAN: Berisi IP Address
+            'platform' => 'PHP, Laravel',
+            'os_server' => null,
             'owner' => 'Diskominfo',
-            'data_center' => 'Cloud Hostinger',
-            'contact_pic' => 'Bidang Aptika Diskominfo - sdm@instansi.go.id',
+            'data_center' => 'Diskominfo',
+            'contact_pic' => 'Istiqomah',
             'status' => 'Aktif',
-            'se_category' => 'Strategis',
+            'se_category' => 'Rendah',
+            'criticality' => 'sedang',
         ]);
-        $this->command->info('✓ Perangkat Lunak: 3 records');
+        $this->command->info('✓ Perangkat Lunak: 3 records (Sesuai Excel)');
 
         // ========================================
-        // 4. PERANGKAT KERAS (PK) — 3 record
+        // 4. PERANGKAT KERAS (PK) — Sesuai Excel
         // ========================================
         $pk = AssetCategory::where('code', 'PK')->first();
 
-        Asset::firstOrCreate(['asset_code' => 'PK-001'], [
+        Asset::firstOrCreate(['asset_code' => '1.3.2.10.002.004.001'], [
             'asset_category_id' => $pk->id,
-            'asset_code' => 'PK-001',
             'sub_classification' => 'Server',
-            'name' => 'Server Database Nasional',
-            'specification' => "Merk Dagang: ABC\nTipe: AH123\nStorage: 4TB SSD\nProsesor: 2x Xeon Gold\nRAM: 128GB",
-            'year' => 2025,
+            'name' => 'Server',
+            'specification' => 'DELL PowerEdge M620',
+            'year' => 2013,
             'location' => 'Data Center Utama Diskominfo',
             'owner' => 'Diskominfo',
             'condition' => 'Layak',
             'asset_type_category' => 'Aset Umum',
+            'criticality' => 'Tinggi',
         ]);
 
-        Asset::firstOrCreate(['asset_code' => 'PK-002'], [
+        Asset::firstOrCreate(['asset_code' => '1.3.2.10.002.003.017'], [
             'asset_category_id' => $pk->id,
-            'asset_code' => 'PK-002',
-            'sub_classification' => 'Server',
-            'name' => 'Server Backup',
-            'specification' => "Merk Dagang: ABC\nTipe: AH123\nStorage: 8TB HDD\nProsesor: 1x Xeon Silver\nRAM: 64GB\nSistem Operasi: Windows/Linux/Mac OS xx",
-            'year' => 2023,
-            'location' => 'Data Center Cadangan Diskominfo',
-            'owner' => 'Diskominfo',
-            'condition' => 'Layak',
-            'asset_type_category' => 'Aset Operasional Utama',
-        ]);
-
-        Asset::firstOrCreate(['asset_code' => 'PK-003'], [
-            'asset_category_id' => $pk->id,
-            'asset_code' => 'PK-003',
-            'sub_classification' => 'Perangkat Jaringan (Network Device)',
-            'name' => 'Firewall Appliance',
-            'specification' => 'Fortigate 200E',
-            'year' => 2023,
+            'sub_classification' => 'Perangkat Penyimpanan (Storage Device)',
+            'name' => 'NAS',
+            'specification' => 'WD MYCLOUD PR 2100',
+            'year' => 2020,
             'location' => 'Data Center Utama Diskominfo',
             'owner' => 'Diskominfo',
             'condition' => 'Layak',
-            'asset_type_category' => 'Aset Strategis',
+            'asset_type_category' => 'Aset Umum',
+            'criticality' => 'Tinggi',
         ]);
-        $this->command->info('✓ Perangkat Keras: 3 records');
+
+        Asset::firstOrCreate(['asset_code' => '1.3.2.10.002.004.024'], [
+            'asset_category_id' => $pk->id,
+            'sub_classification' => 'Perangkat Jaringan (Network Device)',
+            'name' => 'Switch',
+            'specification' => 'Switch HP ARUBA / J9981A 48 Port',
+            'year' => 2021,
+            'location' => 'Data Center Utama Diskominfo',
+            'owner' => 'Diskominfo',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Aset Umum',
+            'criticality' => 'Tinggi',
+        ]);
+        $this->command->info('✓ Perangkat Keras: 3 records (Sesuai Excel)');
 
         // ========================================
-        // 5. SARANA PENDUKUNG (SP) — 3 record
+        // 5. SARANA PENDUKUNG (SP) — Sesuai Excel
         // ========================================
         $sp = AssetCategory::where('code', 'SP')->first();
 
-        Asset::firstOrCreate(['asset_code' => 'SP-001'], [
+        Asset::firstOrCreate(['asset_code' => '1.3.2.06.001.001.048'], [
             'asset_category_id' => $sp->id,
-            'asset_code' => 'SP-001',
-            'sub_classification' => 'Support Appliance',
-            'name' => 'UPS 10 kVA',
-            'specification' => 'Online UPS 10 kVA + Battery Backup 30 menit',
-            'year' => 2023,
-            'location' => 'Data Center Utama Diskominfo',
-            'owner' => 'Diskominfo',
-            'condition' => 'Layak',
-            'asset_type_category' => 'Fasilitas Operasional Utama',
-        ]);
-
-        Asset::firstOrCreate(['asset_code' => 'SP-002'], [
-            'asset_category_id' => $sp->id,
-            'asset_code' => 'SP-002',
-            'sub_classification' => 'Support Facility',
-            'name' => 'Rak Server (Server Rack)',
-            'specification' => '42U Enclosed Rack + Cooling Fan',
-            'year' => 2022,
-            'location' => 'Data Center Utama Diskominfo',
-            'owner' => 'Diskominfo',
-            'condition' => 'Layak',
-            'asset_type_category' => 'Fasilitas Pendukung Non-Esensial',
-        ]);
-
-        Asset::firstOrCreate(['asset_code' => 'SP-003'], [
-            'asset_category_id' => $sp->id,
-            'asset_code' => 'SP-003',
-            'sub_classification' => 'Support Appliance',
-            'name' => 'CCTV Ruang Server',
-            'specification' => 'IP Camera 4MP + NVR',
-            'year' => 2023,
+            'sub_classification' => 'Support Appliances',
+            'name' => 'UPS 1100 VA',
+            'specification' => 'APC / 1100 VA',
+            'year' => 2012,
             'location' => 'Ruang Server',
             'owner' => 'Diskominfo',
             'condition' => 'Layak',
-            'asset_type_category' => 'Fasilitas Strategis',
+            'asset_type_category' => 'Fasilitas Operasional Utama',
+            'criticality' => 'Tinggi',
         ]);
-        $this->command->info('✓ Sarana Pendukung: 3 records');
+
+        Asset::firstOrCreate(['asset_code' => '1.3.2.15.004.005.006'], [
+            'asset_category_id' => $sp->id,
+            'sub_classification' => 'Support Facility',
+            'name' => 'AC',
+            'specification' => 'LG / APNQ48GT3E4 FLOOR STANDING AIR CONDITIONER AC',
+            'year' => 2021,
+            'location' => 'Ruang Server',
+            'owner' => 'Diskominfo',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Fasilitas Pendukung Non-Esensial',
+            'criticality' => 'Sedang',
+        ]);
+
+        Asset::firstOrCreate(['asset_code' => 'SP-008'], [
+            'asset_category_id' => $sp->id,
+            'sub_classification' => 'Support Facility',
+            'name' => 'Genset (Generator Set)',
+            'specification' => 'YANMAR / TYG 4.25',
+            'year' => 2022,
+            'location' => 'Ruang Server',
+            'owner' => 'Diskominfo',
+            'condition' => 'Layak',
+            'asset_type_category' => 'Fasilitas Pendukung Non-Esensial',
+            'criticality' => 'sedang',
+        ]);
+        $this->command->info('✓ Sarana Pendukung: 3 records (Sesuai Excel)');
 
         // ========================================
-        // 6. SDM & PIHAK KETIGA (PS) — 3 record
+        // 6. SDM & PIHAK KETIGA (PS) — Sesuai Excel
         // ========================================
         $ps = AssetCategory::where('code', 'PS')->first();
 
         Asset::firstOrCreate(['asset_code' => 'PS-001'], [
             'asset_category_id' => $ps->id,
-            'asset_code' => 'PS-001',
             'sub_classification' => 'Technical',
-            'name' => 'Andi Pratama',
+            'name' => 'Kalma Caesaria Novenda',
             'personnel_category' => 'ASN',
-            'nip' => '198805152015031002',
-            'function' => 'Pengelolaan database & backup',
-            'unit' => 'Bidang Persandian Diskominfo',
-            'position' => 'Sandiman Ahli Muda',
+            'nip' => '199011212025041003',
+            'function' => 'Pengelolaan keamanan sistem & respons insiden',
+            'unit' => 'Bidang eGovernment Diskominfo',
+            'position' => 'Sandiman Ahli Pertama',
         ]);
 
         Asset::firstOrCreate(['asset_code' => 'PS-002'], [
             'asset_category_id' => $ps->id,
-            'asset_code' => 'PS-002',
-            'sub_classification' => 'Management',
-            'name' => 'PT Teknologi Nusantara',
-            'personnel_category' => 'Pihak Ketiga',
-            'nip' => '8123456789012',
-            'function' => 'Pengembangan & maintenance aplikasi SILO',
-            'unit' => 'Bidang APTIKA Diskominfo',
-            'position' => 'Project Manager',
+            'sub_classification' => 'Technical',
+            'name' => 'Adi Prasetyo Nugroho',
+            'personnel_category' => 'ASN',
+            'nip' => '199607122020101006',
+            'function' => 'Programmer',
+            'unit' => 'Bidang eGovernment Diskominfo',
+            'position' => 'Pranata Komputer Ahli Pertama',
         ]);
 
         Asset::firstOrCreate(['asset_code' => 'PS-003'], [
             'asset_category_id' => $ps->id,
-            'asset_code' => 'PS-003',
             'sub_classification' => 'Technical',
-            'name' => 'Budi Santoso',
+            'name' => 'Indra Yoga Permana',
             'personnel_category' => 'ASN',
-            'nip' => '199001012020121001',
-            'function' => 'Pengelolaan keamanan sistem & respons insiden',
-            'unit' => 'Bidang APTIKA Diskominfo',
-            'position' => 'Pranata Komputer Ahli Pertama',
+            'nip' => '198807122020101006',
+            'function' => 'Programmer',
+            'unit' => 'Bidang eGovernment Diskominfo',
+            'position' => 'Pranata Komputer Terampil',
         ]);
-        $this->command->info('✓ SDM & Pihak Ketiga: 3 records');
+        $this->command->info('✓ SDM & Pihak Ketiga: 3 records (Sesuai Excel)');
 
-        // ========================================
-        // 7. SERVERS
+                // ========================================
+        // 7. SERVERS & SERVER IPS
         // ========================================
         $servers = [
             ['name' => 'srv-web-01', 'ip_address' => '10.0.0.1', 'os' => 'Ubuntu', 'type' => 'Web server', 'kind' => 'Physical', 'os_version' => '22.04 LTS', 'status' => 'Online'],
@@ -302,8 +296,33 @@ class DatabaseSeeder extends Seeder
             ['name' => 'srv-file-02', 'ip_address' => '10.0.0.11', 'os' => 'Ubuntu', 'type' => 'File / storage', 'kind' => 'Physical', 'os_version' => '20.04 LTS', 'status' => 'Online'],
             ['name' => 'srv-backup-01', 'ip_address' => '10.0.0.12', 'os' => 'CentOS', 'type' => 'Backup', 'kind' => 'Physical', 'os_version' => '7.9', 'status' => 'Warning'],
         ];
-        foreach ($servers as $s) { Server::firstOrCreate(['name' => $s['name']], $s); }
-        $this->command->info('✓ Servers: ' . count($servers) . ' records');
+
+        foreach ($servers as $s) { 
+            // 1. Buat Server (tanpa ip_address agar tidak bentrok mass assignment)
+            $server = \App\Models\Server::firstOrCreate(
+                ['name' => $s['name']], 
+                [
+                    'os' => $s['os'],
+                    'type' => $s['type'],
+                    'kind' => $s['kind'],
+                    'os_version' => $s['os_version'],
+                    'status' => $s['status'],
+                ]
+            );
+            
+            // 2. Simpan IP ke tabel server_ips (INI KUNCINYA agar IP muncul di aplikasi)
+            if (!empty($s['ip_address'])) {
+                \App\Models\ServerIp::firstOrCreate(
+                    ['server_id' => $server->id, 'ip_address' => $s['ip_address']],
+                    [
+                        'type' => 'Internal',
+                        'is_primary' => true,
+                        'is_active' => true,
+                    ]
+                );
+            }
+        }
+        $this->command->info(' ✓ Servers & Server IPs: ' . count($servers) . ' records');
 
         // ========================================
         // 8. SUBDOMAINS
@@ -322,23 +341,36 @@ class DatabaseSeeder extends Seeder
             ['subdomain' => 'api.dinas.id', 'status' => 'Active', 'domain' => 'dinas.id', 'server_name' => 'srv-app-01', 'ssl_expiry' => '2026-08-01'],
             ['subdomain' => 'mail.dinas.id', 'status' => 'Expired', 'domain' => 'dinas.id', 'server_name' => 'srv-file-02', 'ssl_expiry' => '2024-05-20'],
         ];
-        foreach ($subdomains as $sd) {
-    $server = Server::where('name', $sd['server_name'])->first();
 
-    Subdomain::firstOrCreate(['subdomain' => $sd['subdomain']], [
-        'status' => $sd['status'],
-        'domain' => $sd['domain'],
-        'server_id' => $server?->id, // ambil ID beneran, bukan nama string
-        'ssl_expiry' => $sd['ssl_expiry'],
-    ]);
-}
-$this->command->info('✓ Subdomains: ' . count($subdomains) . ' records');
+        foreach ($subdomains as $sd) {
+            $server = \App\Models\Server::where('name', $sd['server_name'])->first();
+            
+            $subdomain = \App\Models\Subdomain::firstOrCreate(
+                ['subdomain' => $sd['subdomain']],
+                [
+                    'status' => $sd['status'],
+                    'domain' => $sd['domain'],
+                    'server_id' => $server?->id,
+                    'ssl_expiry' => $sd['ssl_expiry'],
+                ]
+            );
+
+            // 3. Attach IP Utama server ke subdomain agar data IP tidak kosong
+            if ($server) {
+                $primaryIp = $server->ips()->where('is_primary', true)->first() ?? $server->ips()->first();
+                if ($primaryIp && !$subdomain->ips()->where('server_ip_id', $primaryIp->id)->exists()) {
+                    $subdomain->ips()->attach($primaryIp->id);
+                }
+            }
+        }
+        $this->command->info(' ✓ Subdomains: ' . count($subdomains) . ' records');
 
         $this->command->info('');
         $this->command->info('========================================');
         $this->command->info('✓ DATABASE SEEDING BERHASIL');
-        $this->command->info('  Total Aset TIK: 15 records');
-        $this->command->info('  (hanya data yang lengkap dari Excel)');
+        $this->command->info('  Total Aset TIK: 15 records (Sesuai Excel)');
+        $this->command->info('  Total Servers: 12 records');
+        $this->command->info('  Total Subdomains: 12 records');
         $this->command->info('========================================');
     }
 }

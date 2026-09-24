@@ -17,11 +17,16 @@ class Subdomain extends Model
     ];
 
     protected $casts = [
-    'ssl_expiry' => 'date',
-];
+        'ssl_expiry' => 'date',
+    ];
 
     public function server()
     {
         return $this->belongsTo(Server::class);
+    }
+
+    public function ips()
+    {
+        return $this->belongsToMany(ServerIp::class, 'subdomain_server_ip');
     }
 }

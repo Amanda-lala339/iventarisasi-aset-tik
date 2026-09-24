@@ -469,15 +469,16 @@ return [
             'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
         ],
     ],
-        'data_classifications' => [
+
+    'data_classifications' => [
         'label' => 'Klasifikasi Data',
         'model' => \App\Models\DataClassification::class,
         'icon' => 'fas fa-layer-group', // Ikon tumpukan data/klasifikasi
         'group' => 'Keamanan',
         'fields' => [
             'name' => [
-                'label' => 'Nama Klasifikasi', 
-                'type' => 'text', 
+                'label' => 'Nama Klasifikasi',
+                'type' => 'text',
                 'required' => true
             ],
             'asset_category_code' => [
@@ -493,19 +494,89 @@ return [
                 ],
             ],
             'description' => [
-                'label' => 'Deskripsi', 
+                'label' => 'Deskripsi',
                 'type' => 'textarea'
             ],
             'order' => [
-                'label' => 'Urutan', 
-                'type' => 'number', 
+                'label' => 'Urutan',
+                'type' => 'number',
                 'default' => 0
             ],
             'is_active' => [
-                'label' => 'Aktif', 
-                'type' => 'checkbox', 
+                'label' => 'Aktif',
+                'type' => 'checkbox',
                 'default' => true
             ],
+        ],
+    ],
+
+    // ===== KATEGORI BARU: IP ADDRESS =====
+    // Ini sejajar dengan kategori lain di atas (bukan nested di dalam fields siapa pun).
+    'ip_address' => [
+        'label' => 'IP Address',
+        'model' => \App\Models\ServerIp::class,
+        'icon' => 'fas fa-network-wired',
+        'group' => 'Teknologi',
+        'fields' => [
+            'server_id' => [
+                'label' => 'Server',
+                'type' => 'select',
+                'required' => true,
+                'options_source' => 'servers',
+                'rules' => ['required', 'exists:servers,id'],
+            ],
+            'ip_address' => [
+                'label' => 'Alamat IP',
+                'type' => 'text',
+                'required' => true,
+            ],
+            'type' => [
+                'label' => 'Tipe',
+                'type' => 'select',
+                'required' => true,
+                'options' => [
+                    'Publik' => 'Publik',
+                    'Internal' => 'Internal',
+                    'Lainnya' => 'Lainnya',
+                ],
+                'rules' => ['required', 'in:Publik,Internal,Lainnya'],
+            ],
+            'is_primary' => [
+                'label' => 'Jadikan IP Utama',
+                'type' => 'checkbox',
+                'default' => false,
+            ],
+            'is_active' => [
+                'label' => 'Aktif',
+                'type' => 'checkbox',
+                'default' => true,
+            ],
+        ],
+    ],
+        // ... kode existing lainnya ...
+    
+    'locations' => [
+        'label' => 'Lokasi Keberadaan Aset',
+        'model' => \App\Models\Location::class,
+        'icon' => 'fas fa-map-marker-alt',
+        'group' => 'Aset',
+        'fields' => [
+            'name' => ['label' => 'Nama Lokasi', 'type' => 'text', 'required' => true],
+            'asset_category_code' => [
+                'label' => 'Kategori Aset (opsional)',
+                'type' => 'select',
+                'options' => [
+                    '' => '- Semua Kategori -',
+                    'DI' => 'Data & Informasi',
+                    'PL' => 'Perangkat Lunak',
+                    'PK' => 'Perangkat Keras',
+                    'SP' => 'Sarana Pendukung',
+                    'PS' => 'SDM & Pihak Ketiga',
+                ],
+            ],
+            'description' => ['label' => 'Deskripsi', 'type' => 'textarea'],
+            'order' => ['label' => 'Urutan', 'type' => 'number', 'default' => 0],
+            'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
         ],
     ],
 ];

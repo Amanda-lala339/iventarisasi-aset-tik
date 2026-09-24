@@ -245,9 +245,9 @@
                 <dd class="font-mono text-gray-900">{{ $asset->ip_address ?? '-' }}</dd>
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                <dt class="sm:w-56 shrink-0 text-gray-500">IP Publik/Internal</dt>
-                <dd class="text-gray-900">{{ $asset->ip_public_internal ?? '-' }}</dd>
-            </div>
+    <dt class="sm:w-56 shrink-0 text-gray-500">Aplikasi IP Publik/Internal</dt>
+    <dd class="font-mono text-gray-900">{{ $asset->ip_public_internal ?? '-' }}</dd>
+</div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                 <dt class="sm:w-56 shrink-0 text-gray-500">Sistem Operasi Server</dt>
                 <dd class="text-gray-900">{{ $asset->os_server ?? '-' }}</dd>

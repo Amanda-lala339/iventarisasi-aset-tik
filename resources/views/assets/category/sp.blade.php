@@ -97,13 +97,13 @@
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kode Aset</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Sub Klasifikasi</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Nama Aset</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Spesifikasi</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Tahun</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Lokasi</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Pemilik</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kondisi</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Spesifikasi Aset</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Tahun Pengadaan</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Lokasi Aset</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Pemilik Aset</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kondisi Aset</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kategori</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kritikalitas</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kritikalitas Aset</th>
                     <th class="px-3 py-2.5 text-center font-semibold uppercase tracking-wide sticky-col">Aksi</th>
                 </tr>
             </thead>

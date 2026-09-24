@@ -99,7 +99,7 @@
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Sub Klasifikasi</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Nama Personil</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Kategori Aset</th>
-                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">NIP/NIK</th>
+                    <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">NIP/NIB</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Fungsi</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Unit</th>
                     <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Jabatan</th>
