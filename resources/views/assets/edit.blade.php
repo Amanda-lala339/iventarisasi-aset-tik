@@ -526,8 +526,11 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // 1. Logika Tampilkan/Sembunyikan Form Berdasarkan Kategori
     const categorySelect = document.getElementById('asset_category_id');
     const fields = document.querySelectorAll('.category-fields');
+    const assetCodeInput = document.getElementById('asset_code_input');
+    const lastCodes = @json($lastCodes ?? []);
 
     function showFields() {
         const selected = categorySelect.options[categorySelect.selectedIndex];
@@ -550,19 +553,32 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    categorySelect.addEventListener('change', showFields);
-    showFields();
+    function updateAssetCode(categoryCode) {
+        if (!assetCodeInput) return;
+        if (lastCodes[categoryCode]) {
+            assetCodeInput.value = lastCodes[categoryCode];
+        } else {
+            assetCodeInput.value = categoryCode + '-001';
+        }
+    }
 
-    // Upload bertahap PL
+    categorySelect.addEventListener('change', function () {
+        showFields();
+        const selected = categorySelect.options[categorySelect.selectedIndex];
+        const code = selected.getAttribute('data-code') || 'DI';
+        updateAssetCode(code);
+    });
+
+    showFields(); // Jalankan saat load
+
+    // 2. Logika Upload File Bertahap (Khusus PL)
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
     let plSelectedFiles = [];
 
     if (plFileInput && plFileListContainer) {
         plFileInput.addEventListener('change', function () {
-            Array.from(this.files).forEach(file => {
-                plSelectedFiles.push(file);
-            });
+            Array.from(this.files).forEach(file => plSelectedFiles.push(file));
             this.value = '';
             renderPlFiles();
         });
@@ -576,22 +592,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 div.className = 'flex items-center justify-between p-2.5 bg-green-50 border border-green-200 rounded-lg text-xs';
                 div.innerHTML = `
                     <div class="flex items-center gap-2 truncate flex-1">
-                        <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
+                        <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         <span class="truncate text-gray-700 font-medium">${file.name}</span>
                         <span class="text-gray-400 ml-2 shrink-0">(${(file.size / 1024).toFixed(1)} KB)</span>
                     </div>
-                    <button type="button" class="ml-2 px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition text-xs font-medium shrink-0" onclick="removePlFile(${index})">
-                        Hapus
-                    </button>
+                    <button type="button" class="ml-2 px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition text-xs font-medium shrink-0" onclick="removePlFile(${index})">Hapus</button>
                 `;
                 plFileListContainer.appendChild(div);
             });
 
             const totalDiv = document.createElement('div');
             totalDiv.className = 'text-xs text-gray-500 text-right mt-1';
-            totalDiv.textContent = `Total: ${plSelectedFiles.length} file baru akan diupload`;
+            totalDiv.textContent = `Total: ${plSelectedFiles.length} file akan diupload`;
             plFileListContainer.appendChild(totalDiv);
         }
 
@@ -609,14 +621,61 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ⭐ AUTO-FILL KRITIKALITAS DIHAPUS - user pilih manual
-});
+    // 3. ⭐ AUTO-CALCULATE KRITIKALITAS ASET (DI) - Berdasarkan Excel
+    const diConfSelect = document.querySelector('select[name="confidentiality"]');
+    const diIntegSelect = document.querySelector('select[name="integrity"]');
+    const diAvailSelect = document.querySelector('select[name="availability"]');
+    const diCritSelect = document.querySelector('select[name="criticality"]');
 
-// Hapus file via AJAX
-window.deleteFile = function(assetId, documentId, filePath) {
-    if (!confirm('Yakin ingin menghapus file ini?')) {
-        return;
+    function updateDICriticality() {
+        if (!diConfSelect || !diIntegSelect || !diAvailSelect || !diCritSelect) return;
+        
+        // Mapping skor PERSIS sesuai "Definisi Range Aset" di Excel
+        const confScore = {
+            'Informasi Terbuka / Publik': 1,
+            'Informasi Terbatas': 2,
+            'Informasi Strategis / Rahasia': 3
+        }[diConfSelect.value] || 0;
+
+        const integScore = {
+            'Data Penunjang Umum': 1,
+            'Data Proses Administrasi': 2,
+            'Data Vital Pengambilan Keputusan': 3
+        }[diIntegSelect.value] || 0;
+
+        const availScore = {
+            'Akses Fleksibel / Non-Kritis': 1,
+            'Akses Rutin Terjadwal': 2,
+            'Akses Seketika (Real-time)': 3
+        }[diAvailSelect.value] || 0;
+
+        // Hitung total dan tentukan kritikalitas (Range: 1-9)
+        if (confScore > 0 && integScore > 0 && availScore > 0) {
+            const total = confScore + integScore + availScore;
+            if (total >= 7) {
+                diCritSelect.value = 'Tinggi';
+            } else if (total >= 4) {
+                diCritSelect.value = 'Sedang';
+            } else {
+                diCritSelect.value = 'Rendah';
+            }
+        }
     }
+
+    // Pasang event listener agar kalkulasi berjalan real-time saat user mengganti pilihan
+    if (diConfSelect) diConfSelect.addEventListener('change', updateDICriticality);
+    if (diIntegSelect) diIntegSelect.addEventListener('change', updateDICriticality);
+    if (diAvailSelect) diAvailSelect.addEventListener('change', updateDICriticality);
+    
+    // Jalankan sekali saat halaman dimuat (Sangat penting untuk halaman Edit agar nilai tersimpan terbaca)
+    updateDICriticality();
+
+}); // <-- Penutup DOMContentLoaded
+
+// 4. Logika Hapus File via AJAX (Khusus Edit Page)
+window.deleteFile = function(assetId, documentId, filePath) {
+    if (!confirm('Yakin ingin menghapus file ini?')) return;
+    
     fetch(`/assets/documents/${documentId}/delete`, {
         method: 'POST',
         headers: {

@@ -178,7 +178,6 @@ class ServerController extends Controller
             }
         }
 
-        // Safety: pastikan tidak ada lebih dari 1 IP yang ditandai sebagai primary
         $primaryCount = $server->ips()->where('is_primary', true)->count();
         if ($primaryCount > 1) {
             $firstPrimary = $server->ips()->where('is_primary', true)->orderBy('id')->first();
