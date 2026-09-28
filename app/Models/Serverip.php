@@ -22,8 +22,13 @@ class ServerIp extends Model
         return $this->belongsTo(Server::class);
     }
 
-    public function subdomains()
-    {
-        return $this->belongsToMany(Subdomain::class, 'subdomain_server_ip');
-    }
+public function subdomains()
+{
+    return $this->belongsToMany(
+        Subdomain::class,
+        'server_ip_subdomain',   
+        'server_ip_id',          
+        'subdomain_id'           
+    );
+}
 }
