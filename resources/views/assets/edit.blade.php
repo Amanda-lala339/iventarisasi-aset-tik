@@ -29,7 +29,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500"></span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500">*</span></label>
                 <select name="asset_category_id" id="asset_category_id" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" data-code="{{ $cat->code }}" {{ old('asset_category_id', $asset->asset_category_id) == $cat->id ? 'selected' : '' }}>
@@ -39,7 +39,7 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500"></span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500">*</span></label>
                 <input type="text" name="asset_code" value="{{ old('asset_code', $asset->asset_code) }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: DI-001">
             </div>
         </div>
@@ -259,8 +259,10 @@
 
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold"></span>
-                </label>
+    Upload Dokumen Pendukung 
+    <span class="text-xs text-red-500 font-semibold">(Maksimal 5 MB per file)</span>
+    <span class="text-xs text-blue-600 font-semibold ml-1">• Hanya: Gambar, PDF, Word, Excel</span>
+</label>
                 @if($asset->documents && $asset->documents->count() > 0)
                     <div class="mb-3 space-y-2">
                         @foreach ($asset->documents as $doc)
@@ -282,7 +284,8 @@
                         @endforeach
                     </div>
                 @endif
-                <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png"
+                <input type="file" id="pl-file-input" name="document_files[]" multiple 
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx"
                     class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
@@ -528,6 +531,9 @@
 document.addEventListener('DOMContentLoaded', function () {
     const categorySelect = document.getElementById('asset_category_id');
     const fields = document.querySelectorAll('.category-fields');
+    const assetCodeInput = document.getElementById('asset_code_input');
+
+    const lastCodes = @json($lastCodes ?? []);
 
     function showFields() {
         const selected = categorySelect.options[categorySelect.selectedIndex];
@@ -550,33 +556,99 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    categorySelect.addEventListener('change', showFields);
+    function updateAssetCode(categoryCode) {
+        const input = document.getElementById('asset_code_input');
+        const preview = document.getElementById('asset_code_preview');
+
+        if (!input) return;
+
+        if (lastCodes[categoryCode]) {
+            const newCode = lastCodes[categoryCode];
+            input.value = newCode;
+            if (preview) preview.textContent = newCode;
+        } else {
+            const fallback = categoryCode + '-001';
+            input.value = fallback;
+            if (preview) preview.textContent = fallback;
+        }
+    }
+
+    categorySelect.addEventListener('change', function () {
+        showFields();
+        const selected = categorySelect.options[categorySelect.selectedIndex];
+        const code = selected.getAttribute('data-code') || 'DI';
+        updateAssetCode(code);
+    });
+
     showFields();
 
-    // Upload bertahap PL
+    // ========== UPLOAD VALIDASI KETAT ==========
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
     let plSelectedFiles = [];
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    
+    // HANYA ekstensi ini yang diizinkan
+    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
 
     if (plFileInput && plFileListContainer) {
-        plFileInput.addEventListener('change', function () {
-            Array.from(this.files).forEach(file => {
+        plFileInput.addEventListener('change', function (e) {
+            const files = Array.from(this.files);
+            
+            files.forEach(file => {
+                // Ambil ekstensi dari nama file
+                const fileName = file.name;
+                const fileExt = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+                
+                console.log('Checking file:', fileName, 'Extension:', fileExt);
+                
+                // VALIDASI EKSTENSI - WAJIB
+                if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+                    alert(`❌ File "${fileName}" DITOLAK!\n\nFormat tidak diizinkan: .${fileExt}\n\nHanya boleh upload:\n• Gambar: JPG, PNG, GIF, WEBP\n• Dokumen: PDF, DOC, DOCX\n• Excel: XLS, XLSX`);
+                    return; // Skip file ini
+                }
+                
+                // VALIDASI UKURAN - WAJIB
+                if (file.size > MAX_FILE_SIZE) {
+                    alert(`❌ File "${fileName}" DITOLAK!\n\nUkuran file ${(file.size / 1024 / 1024).toFixed(2)} MB melebihi batas maksimal 5 MB.`);
+                    return; // Skip file ini
+                }
+                
+                // Lolos validasi, tambahkan ke array
                 plSelectedFiles.push(file);
             });
+            
+            // Reset input value agar bisa pilih file yang sama lagi
             this.value = '';
+            
+            // Render ulang daftar file
             renderPlFiles();
         });
 
         function renderPlFiles() {
             plFileListContainer.innerHTML = '';
-            if (plSelectedFiles.length === 0) return;
+            
+            if (plSelectedFiles.length === 0) {
+                return;
+            }
 
             plSelectedFiles.forEach((file, index) => {
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between p-2.5 bg-green-50 border border-green-200 rounded-lg text-xs';
+                
+                // Tentukan icon berdasarkan tipe file
+                let iconColor = 'text-green-600';
+                if (['pdf'].includes(file.name.split('.').pop().toLowerCase())) {
+                    iconColor = 'text-red-600';
+                } else if (['doc', 'docx'].includes(file.name.split('.').pop().toLowerCase())) {
+                    iconColor = 'text-blue-600';
+                } else if (['xls', 'xlsx'].includes(file.name.split('.').pop().toLowerCase())) {
+                    iconColor = 'text-green-700';
+                }
+                
                 div.innerHTML = `
                     <div class="flex items-center gap-2 truncate flex-1">
-                        <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 ${iconColor} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         <span class="truncate text-gray-700 font-medium">${file.name}</span>
@@ -591,7 +663,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const totalDiv = document.createElement('div');
             totalDiv.className = 'text-xs text-gray-500 text-right mt-1';
-            totalDiv.textContent = `Total: ${plSelectedFiles.length} file baru akan diupload`;
+            totalDiv.textContent = `Total: ${plSelectedFiles.length} file akan diupload (Maks. 5 MB/file)`;
             plFileListContainer.appendChild(totalDiv);
         }
 
@@ -600,6 +672,7 @@ document.addEventListener('DOMContentLoaded', function () {
             renderPlFiles();
         };
 
+        // Validasi sebelum submit
         document.getElementById('assetForm').addEventListener('submit', function(e) {
             if (plSelectedFiles.length > 0) {
                 const dt = new DataTransfer();
@@ -608,35 +681,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
-    // ⭐ AUTO-FILL KRITIKALITAS DIHAPUS - user pilih manual
 });
-
-// Hapus file via AJAX
-window.deleteFile = function(assetId, documentId, filePath) {
-    if (!confirm('Yakin ingin menghapus file ini?')) {
-        return;
-    }
-    fetch(`/assets/documents/${documentId}/delete`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const element = document.getElementById(`file-container-${documentId}`);
-            if (element) element.remove();
-        } else {
-            alert('Gagal menghapus file: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat menghapus file');
-    });
-};
 </script>
 @endsection
