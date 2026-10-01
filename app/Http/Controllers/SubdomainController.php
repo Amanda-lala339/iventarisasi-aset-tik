@@ -9,28 +9,29 @@ use Illuminate\Http\Request;
 class SubdomainController extends Controller
 {
     public function index(Request $request)
-    {
-        // Eager load relasi server + ips-nya subdomain untuk performa lebih baik
-        $query = Subdomain::with(['server', 'ips']);
-
-        if ($request->filled('search')) {
-            $query->where('subdomain', 'like', "%{$request->search}%");
-        }
-
-        if ($request->filled('domain') && $request->domain !== 'All domains') {
-            $query->where('domain', $request->domain);
-        }
-
-        if ($request->filled('status') && $request->status !== 'All status') {
-            $query->where('status', $request->status);
-        }
-
-        $subdomains = $query->paginate($request->get('per_page', 20));
-        $domains = Subdomain::select('domain')->distinct()->pluck('domain');
-        $statuses = Subdomain::select('status')->distinct()->pluck('status');
-
-        return view('subdomains.index', compact('subdomains', 'domains', 'statuses'));
+{
+    // Eager load relasi server + ips-nya subdomain untuk performa lebih baik
+    $query = Subdomain::with(['server', 'ips']);
+    
+    if ($request->filled('search')) {
+        $query->where('subdomain', 'like', "%{$request->search}%");
     }
+    if ($request->filled('domain') && $request->domain !== 'All domains') {
+        $query->where('domain', $request->domain);
+    }
+    if ($request->filled('status') && $request->status !== 'All status') {
+        $query->where('status', $request->status);
+    }
+
+    // ✨ TAMBAHKAN BARIS INI agar data terbaru muncul di atas ✨
+    $query->latest();
+
+    $subdomains = $query->paginate($request->get('per_page', 20));
+    $domains = Subdomain::select('domain')->distinct()->pluck('domain');
+    $statuses = Subdomain::select('status')->distinct()->pluck('status');
+    
+    return view('subdomains.index', compact('subdomains', 'domains', 'statuses'));
+}
 
     public function create()
     {
