@@ -1,17 +1,13 @@
 @extends('layouts.app')
-
 @section('title', 'Edit Aset')
 @section('page', 'Edit Aset')
-
 @section('content')
 <style>
     [x-cloak] { display: none !important; }
 </style>
-
 @php
     $code = old('category_code', $asset->category->code ?? 'DI');
 @endphp
-
 <div x-data="{ 
     showModal: false, previewUrl: '', previewName: '', zoomScale: 1, panX: 0, panY: 0, isDragging: false, startX: 0, startY: 0,
     isImage(url) { return /\.(jpg|jpeg|png|gif|webp|svg)($|\?)/i.test(url); },
@@ -23,11 +19,9 @@
     drag(e) { if (!this.isDragging) return; this.panX = e.clientX - this.startX; this.panY = e.clientY - this.startY; },
     endDrag() { this.isDragging = false; }
 }">
-
 <a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition">
     ← Kembali
 </a>
-
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md mt-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Aset: {{ $asset->asset_code }}</h2>
     
@@ -39,7 +33,6 @@
             </ul>
         </div>
     @endif
-
     <form method="POST" action="{{ route('assets.update', $asset) }}" enctype="multipart/form-data" id="assetForm">
         @csrf
         @method('PUT')
@@ -60,7 +53,6 @@
                 <input type="text" name="asset_code" value="{{ old('asset_code', $asset->asset_code) }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: DI-001">
             </div>
         </div>
-
         {{-- 1. DATA & INFORMASI (DI) --}}
         <div id="fields-DI" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Data & Informasi</h3>
@@ -174,7 +166,6 @@
                 </select>
             </div>
         </div>
-
         {{-- 2. PERANGKAT LUNAK (PL) --}}
         <div id="fields-PL" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Lunak</h3>
@@ -271,7 +262,7 @@
                 </div>
             </div>
             
-            {{-- PERUBAHAN: Upload Dokumen dengan Validasi 5MB & Format Tertentu + Preview Modal --}}
+            {{-- Upload Dokumen dengan Validasi 5MB & Format Tertentu + Preview Modal --}}
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
                     Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Maks. 5MB, Format: PDF, Word, Excel, & Gambar)</span>
@@ -285,7 +276,7 @@
                                     <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
-                                    <button type="button" 
+                                    <button type="button"  
                                             @click="showModal = true; previewUrl = '{{ asset('storage/' . $doc->file_path) }}'; previewName = '{{ addslashes($doc->original_name ?? basename($doc->file_path)) }}'; resetZoom();"
                                             class="text-blue-700 hover:underline truncate text-left bg-transparent border-none p-0 cursor-pointer">
                                         {{ $doc->original_name ?? basename($doc->file_path) }}
@@ -305,7 +296,6 @@
                     class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
-
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
@@ -316,7 +306,6 @@
                 </select>
             </div>
         </div>
-
         {{-- 3. PERANGKAT KERAS (PK) --}}
         <div id="fields-PK" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Keras</h3>
@@ -343,6 +332,66 @@
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
+            
+            {{-- ⭐ BARU: SPESIFIKASI HARDWARE MENDALAM --}}
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Spesifikasi Hardware (Untuk Kalkulasi Dashboard)</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Prosessor</label>
+                        <input type="text" name="cpu_type" value="{{ old('cpu_type', $asset->cpu_type) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Cth: Intel Xeon Gold 6248R">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Core (CPU)</label>
+                        <input type="number" name="cpu_cores" value="{{ old('cpu_cores', $asset->cpu_cores) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Cth: 32" min="1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kapasitas RAM (GB)</label>
+                        <input type="number" name="ram_gb" value="{{ old('ram_gb', $asset->ram_gb) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Cth: 128" min="1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kapasitas Storage (GB)</label>
+                        <input type="number" name="storage_gb" value="{{ old('storage_gb', $asset->storage_gb) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Cth: 2000" min="1">
+                    </div>
+                </div>
+            </div>
+            
+            {{-- ⭐ BARU: MULTI USERNAME & PASSWORD (Server, NAS, Access Point) --}}
+            <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md" x-data="credentialManager()">
+                <h4 class="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                    Kredensial Akses (Server / NAS / Access Point)
+                </h4>
+                <p class="text-xs text-gray-500 mb-3">Kredensial akan dienkripsi end-to-end di database. Kosongkan password jika tidak ingin mengubahnya.</p>
+
+                <template x-for="(cred, index) in credentials" :key="index">
+                    <div class="grid grid-cols-12 gap-2 mb-2 items-end bg-white p-2 rounded border border-gray-200">
+                        <div class="col-span-4">
+                            <label class="text-xs text-gray-600">Username</label>
+                            <input type="text" :name="`credentials[${index}][username]`" x-model="cred.username" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs">
+                        </div>
+                        <div class="col-span-4">
+                            <label class="text-xs text-gray-600">Password <span x-show="cred.id" class="text-blue-500">(kosongkan jika tidak diubah)</span></label>
+                            <input type="password" :name="`credentials[${index}][password]`" x-model="cred.password" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" placeholder="••••••••">
+                        </div>
+                        <div class="col-span-3">
+                            <label class="text-xs text-gray-600">Role / Keterangan</label>
+                            <input type="text" :name="`credentials[${index}][role]`" x-model="cred.role" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" placeholder="Admin / Root">
+                        </div>
+                        <div class="col-span-1">
+                            <button type="button" @click="removeCred(index)" class="w-full h-[30px] flex items-center justify-center bg-red-100 text-red-600 rounded hover:bg-red-200 text-xs">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+
+                <button type="button" @click="addCred()" class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Tambah Akun Akses
+                </button>
+            </div>
+            
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -394,7 +443,6 @@
                 </select>
             </div>
         </div>
-
         {{-- 4. SARANA PENDUKUNG (SP) --}}
         <div id="fields-SP" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Sarana Pendukung</h3>
@@ -472,7 +520,6 @@
                 </select>
             </div>
         </div>
-
         {{-- 5. SDM & PIHAK KETIGA (PS) --}}
         <div id="fields-PS" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">SDM & Pihak Ketiga</h3>
@@ -527,22 +574,19 @@
                 <input type="text" name="position" value="{{ old('position', $asset->position) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
             </div>
         </div>
-
         <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
             <a href="{{ url()->previous() }}" class="px-5 py-2.5 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Batal</a>
             <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition shadow-sm">Update Aset</button>
         </div>
     </form>
 </div>
-
 {{-- MODAL PREVIEW DOKUMEN (KHUSUS EDIT) --}}
 <div x-show="showModal" x-cloak x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" @click.outside="showModal = false">
     <div class="bg-white rounded-2xl max-w-5xl w-full p-5 relative shadow-2xl flex flex-col max-h-[92vh] border border-gray-100">
-        <!-- Header Modal -->
         <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-100 gap-2">
             <div class="min-w-0">
                 <h3 class="font-semibold text-gray-800 text-sm truncate" x-text="previewName || 'Preview Dokumen'"></h3>
-                <p class="text-[11px] text-gray-400" x-show="isImage(previewUrl)"> Scroll mouse untuk zoom, klik & tahan untuk geser </p>
+                <p class="text-[11px] text-gray-400" x-show="isImage(previewUrl)">Scroll mouse untuk zoom, klik & tahan untuk geser</p>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
                 <template x-if="isImage(previewUrl)">
@@ -565,7 +609,6 @@
                 </button>
             </div>
         </div>
-        <!-- Area Preview -->
         <div class="flex-1 overflow-hidden rounded-xl bg-slate-900/5 border border-gray-100 mt-3 p-2 flex items-center justify-center h-[600px] relative select-none" @wheel.prevent="handleWheel($event)">
             <template x-if="isImage(previewUrl)">
                 <div class="w-full h-full flex items-center justify-center overflow-hidden" @mousedown="startDrag($event)" @mousemove="drag($event)" @mouseup="endDrag()" @mouseleave="endDrag()">
@@ -578,8 +621,24 @@
         </div>
     </div>
 </div>
-
 <script>
+function credentialManager() {
+    const existingData = @json($asset->credentials ?? []);
+    return {
+        credentials: existingData.length > 0 ? existingData.map(c => ({
+            id: c.id,
+            username: c.username,
+            password: '', // Jangan isi password existing, biarkan user input baru jika ingin mengubah
+            role: c.role
+        })) : [{ username: '', password: '', role: '' }],
+        addCred() { this.credentials.push({ username: '', password: '', role: '' }); },
+        removeCred(index) { 
+            this.credentials.splice(index, 1); 
+            if(this.credentials.length === 0) this.addCred(); 
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const categorySelect = document.getElementById('asset_category_id');
     const fields = document.querySelectorAll('.category-fields');
@@ -604,16 +663,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     categorySelect.addEventListener('change', showFields);
     showFields();
-
+    
     // Upload bertahap PL
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
     let plSelectedFiles = [];
     
-    // PERUBAHAN: Validasi file (Maks 5MB & Format Tertentu)
+    // Validasi file (Maks 5MB & Format Tertentu)
     const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
     const maxSizeBytes = 5 * 1024 * 1024; // 5MB
-
     if (plFileInput && plFileListContainer) {
         plFileInput.addEventListener('change', function () {
             let errorMessages = [];
@@ -623,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!allowedExtensions.includes(ext)) {
                     errorMessages.push(`"${file.name}" (format tidak diizinkan)`);
                 } else if (file.size > maxSizeBytes) {
-                    errorMessages.push(`"${file.name}" (melebihi batas 5MB)`);
+                    errorMessages.push(`"${file.name}" (melebihi batas 5 MB)`);
                 } else {
                     plSelectedFiles.push(file);
                 }
@@ -676,7 +734,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
-
 // Hapus file via AJAX
 window.deleteFile = function (assetId, documentId, filePath) {
     if (!confirm('Yakin ingin menghapus file ini?')) {

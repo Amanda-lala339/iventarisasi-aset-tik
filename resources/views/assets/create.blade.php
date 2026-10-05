@@ -1,18 +1,14 @@
 @extends('layouts.app')
-
 @section('title', 'Tambah Aset')
 @section('page', 'Tambah Aset')
-
 @section('content')
 @php
     $code = old('category_code', $categoryCode ?? request('category') ?? 'DI');
     $categories = $categories ?? \App\Models\AssetCategory::all();
 @endphp
-
 <a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition">
     ← Kembali
 </a>
-
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md mt-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Tambah Aset Baru</h2>
     
@@ -24,11 +20,9 @@
             </ul>
         </div>
     @endif
-
     @if (session('success'))
         <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">{{ session('success') }}</div>
     @endif
-
     <form method="POST" action="{{ route('assets.store') }}" enctype="multipart/form-data" id="assetForm">
         @csrf
         
@@ -52,7 +46,6 @@
                     class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
         </div>
-
         {{-- 1. DATA & INFORMASI (DI) --}}
         <div id="fields-DI" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Data & Informasi</h3>
@@ -166,7 +159,6 @@
                 </select>
             </div>
         </div>
-
         {{-- 2. PERANGKAT LUNAK (PL) --}}
         <div id="fields-PL" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Lunak</h3>
@@ -274,7 +266,6 @@
                 <div id="pl-file-error" class="text-red-600 text-xs mt-2 hidden"></div>
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
-
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
@@ -285,7 +276,6 @@
                 </select>
             </div>
         </div>
-
         {{-- 3. PERANGKAT KERAS (PK) --}}
         <div id="fields-PK" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Keras</h3>
@@ -312,6 +302,66 @@
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
+            
+            {{-- ⭐ BARU: SPESIFIKASI HARDWARE MENDALAM --}}
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Spesifikasi Hardware (Untuk Kalkulasi Dashboard)</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Prosessor</label>
+                        <input type="text" name="cpu_type" value="{{ old('cpu_type') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Cth: Intel Xeon Gold 6248R">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Core (CPU)</label>
+                        <input type="number" name="cpu_cores" value="{{ old('cpu_cores') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Cth: 32" min="1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kapasitas RAM (GB)</label>
+                        <input type="number" name="ram_gb" value="{{ old('ram_gb') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Cth: 128" min="1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kapasitas Storage (GB)</label>
+                        <input type="number" name="storage_gb" value="{{ old('storage_gb') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Cth: 2000" min="1">
+                    </div>
+                </div>
+            </div>
+            
+            {{-- ⭐ BARU: MULTI USERNAME & PASSWORD (Server, NAS, Access Point) --}}
+            <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md" x-data="credentialManager()">
+                <h4 class="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                    Kredensial Akses (Server / NAS / Access Point)
+                </h4>
+                <p class="text-xs text-gray-500 mb-3">Kredensial akan dienkripsi end-to-end di database.</p>
+
+                <template x-for="(cred, index) in credentials" :key="index">
+                    <div class="grid grid-cols-12 gap-2 mb-2 items-end bg-white p-2 rounded border border-gray-200">
+                        <div class="col-span-4">
+                            <label class="text-xs text-gray-600">Username</label>
+                            <input type="text" :name="`credentials[${index}][username]`" x-model="cred.username" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs">
+                        </div>
+                        <div class="col-span-4">
+                            <label class="text-xs text-gray-600">Password</label>
+                            <input type="password" :name="`credentials[${index}][password]`" x-model="cred.password" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" placeholder="••••••••">
+                        </div>
+                        <div class="col-span-3">
+                            <label class="text-xs text-gray-600">Role / Keterangan</label>
+                            <input type="text" :name="`credentials[${index}][role]`" x-model="cred.role" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" placeholder="Admin / Root">
+                        </div>
+                        <div class="col-span-1">
+                            <button type="button" @click="removeCred(index)" class="w-full h-[30px] flex items-center justify-center bg-red-100 text-red-600 rounded hover:bg-red-200 text-xs">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+
+                <button type="button" @click="addCred()" class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Tambah Akun Akses
+                </button>
+            </div>
+            
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -363,7 +413,6 @@
                 </select>
             </div>
         </div>
-
         {{-- 4. SARANA PENDUKUNG (SP) --}}
         <div id="fields-SP" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Sarana Pendukung</h3>
@@ -441,7 +490,6 @@
                 </select>
             </div>
         </div>
-
         {{-- 5. SDM & PIHAK KETIGA (PS) --}}
         <div id="fields-PS" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">SDM & Pihak Ketiga</h3>
@@ -496,21 +544,29 @@
                 <input type="text" name="position" value="{{ old('position') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
             </div>
         </div>
-
         <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
             <a href="{{ url()->previous() }}" class="px-5 py-2.5 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Batal</a>
             <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition shadow-sm">Simpan Aset</button>
         </div>
     </form>
 </div>
-
 <script>
+function credentialManager() {
+    return {
+        credentials: [{ username: '', password: '', role: '' }],
+        addCred() { this.credentials.push({ username: '', password: '', role: '' }); },
+        removeCred(index) { 
+            this.credentials.splice(index, 1); 
+            if(this.credentials.length === 0) this.addCred(); 
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const categorySelect = document.getElementById('asset_category_id');
     const fields = document.querySelectorAll('.category-fields');
     const assetCodeInput = document.getElementById('asset_code_input');
     const lastCodes = @json($lastCodes ?? []);
-
     function showFields() {
         const selected = categorySelect.options[categorySelect.selectedIndex];
         const code = selected.getAttribute('data-code');
@@ -529,7 +585,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
-
     function updateAssetCode(categoryCode) {
         const input = document.getElementById('asset_code_input');
         const preview = document.getElementById('asset_code_preview');
@@ -544,7 +599,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (preview) preview.textContent = fallback;
         }
     }
-
     categorySelect.addEventListener('change', function () {
         showFields();
         const selected = categorySelect.options[categorySelect.selectedIndex];
@@ -552,7 +606,6 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAssetCode(code);
     });
     showFields();
-
     // Upload bertahap PL
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
@@ -562,7 +615,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // PERUBAHAN: Konfigurasi validasi file (Maks 5MB & Format Tertentu)
     const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
     const maxSizeBytes = 5 * 1024 * 1024; // 5MB
-
     if (plFileInput && plFileListContainer) {
         plFileInput.addEventListener('change', function () {
             plFileError.classList.add('hidden');
@@ -575,12 +627,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!allowedExtensions.includes(ext)) {
                     errorMessages.push(`"${file.name}" (format tidak diizinkan)`);
                 } else if (file.size > maxSizeBytes) {
-                    errorMessages.push(`"${file.name}" (melebihi batas 5MB)`);
+                    errorMessages.push(`"${file.name}" (melebihi batas 5 MB)`);
                 } else {
                     plSelectedFiles.push(file);
                 }
             });
-
             if (errorMessages.length > 0) {
                 plFileError.textContent = 'Gagal menambahkan: ' + errorMessages.join(', ');
                 plFileError.classList.remove('hidden');

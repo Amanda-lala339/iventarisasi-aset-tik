@@ -12,6 +12,8 @@ use App\Http\Controllers\MasterDataController;
 require __DIR__.'/auth.php';
 
 Route::middleware('auth')->group(function () {
+    Route::post('/assets/credentials/{credentialId}/request-access', [AssetController::class, 'requestCredentialAccess'])
+    ->name('assets.credentials.request-access');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -26,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('assets/category/perangkat-keras', [AssetController::class, 'perangkatKeras'])->name('assets.category.pk');
     Route::get('assets/category/sarana-pendukung', [AssetController::class, 'saranaPendukung'])->name('assets.category.sp');
     Route::get('assets/category/sdm-pihak-ketiga', [AssetController::class, 'sdmPihakKetiga'])->name('assets.category.ps');
+    Route::get('assets/credentials/{id}/reveal', [AssetController::class, 'revealCredential'])->name('assets.credentials.reveal');
     Route::resource('assets', AssetController::class);
     Route::get('assets/category/{category}', [AssetController::class, 'category'])->name('assets.category');
        Route::post('/assets/documents/{documentId}/delete', [AssetController::class, 'deleteDocumentAjax'])->name('assets.documents.delete-ajax');

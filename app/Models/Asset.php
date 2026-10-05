@@ -53,6 +53,10 @@ class Asset extends Model
         'condition',
         'document_file',
         'data_classification',
+        'cpu_type',
+        'cpu_cores',
+        'ram_gb',
+        'storage_gb',
     ];
 
     protected $casts = [
@@ -115,4 +119,9 @@ class Asset extends Model
                     ->withTimestamps();
     }
    
+    public function credentials()
+{
+    return $this->hasMany(AssetCredential::class);
+}
+
 }

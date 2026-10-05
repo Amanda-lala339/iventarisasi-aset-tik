@@ -1,13 +1,10 @@
 @extends('layouts.app')
-
 @section('title', 'Detail Aset')
 @section('page', 'Detail Aset')
-
 @section('content')
 <style>
     [x-cloak] { display: none !important; }
 </style>
-
 <div class="max-w-6xl mx-auto pb-10" x-data="{ 
     showModal: false, previewUrl: '', previewName: '', zoomScale: 1, panX: 0, panY: 0, isDragging: false, startX: 0, startY: 0,
     isImage(url) { return /\.(jpg|jpeg|png|gif|webp|svg)($|\?)/i.test(url); },
@@ -19,7 +16,6 @@
     drag(e) { if (!this.isDragging) return; this.panX = e.clientX - this.startX; this.panY = e.clientY - this.startY; },
     endDrag() { this.isDragging = false; }
 }">
-
     {{-- ============================================= --}}
     {{-- HELPERS: badge status mapping --}}
     {{-- ============================================= --}}
@@ -27,28 +23,23 @@
         $badgeStatus = function ($value, array $map, $default = 'status-warning') {
             return $map[$value] ?? $default;
         };
-
         $criticalityStatus = $badgeStatus($asset->criticality ?? null, [
             'Tinggi' => 'status-offline',
             'Sedang' => 'status-warning',
             'Rendah' => 'status-active',
         ]);
-
         $statusDI = $badgeStatus($asset->status ?? null, [
             'Sudah Disahkan' => 'status-active',
             'Draft'          => 'status-warning',
         ]);
-
         $statusPL = $badgeStatus($asset->status ?? null, [
             'Aktif'              => 'status-active',
             'Dalam Pemeliharaan' => 'status-warning',
         ], 'status-offline');
-
         $conditionStatus = $badgeStatus($asset->condition ?? null, [
             'Layak'           => 'status-active',
             'Perlu Perbaikan' => 'status-warning',
         ], 'status-offline');
-
         $categoryBadge = function () use ($asset, $code) {
             if (is_object($asset->category)) {
                 return '<span class="badge badge-physical">' . e($asset->category->code) . ' &middot; ' . e($asset->category->name) . '</span>';
@@ -68,16 +59,12 @@
             'SP' => 'Sarana Pendukung',
             'PS' => 'SDM & Pihak Ketiga',
         ];
-
         $displayName = $categoryNames[$code] ?? 'Aset';
-
         $backRoute = in_array(strtolower($code), ['di', 'pl', 'pk', 'sp', 'ps'])
             ? route('assets.category.' . strtolower($code))
             : route('assets.index');
     @endphp
-
-    <a href="{{ $backRoute }}"
-       class="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-800 transition-colors mb-5">
+    <a href="{{ $backRoute }}" class="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-800 transition-colors mb-5">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
         </svg>
@@ -95,10 +82,8 @@
             </div>
             <p class="text-sm text-gray-500 mt-1">Detail lengkap informasi aset</p>
         </div>
-
         <div class="flex items-center gap-2 shrink-0">
-            <a href="{{ route('assets.edit', $asset) }}"
-               class="inline-flex items-center gap-1.5 bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-400 transition-colors">
+            <a href="{{ route('assets.edit', $asset) }}" class="inline-flex items-center gap-1.5 bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-400 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
                 </svg>
@@ -106,8 +91,7 @@
             </a>
             <form method="POST" action="{{ route('assets.destroy', $asset) }}" onsubmit="return confirm('Yakin hapus aset ini?')">
                 @csrf @method('DELETE')
-                <button type="submit"
-                        class="inline-flex items-center gap-1.5 bg-red-600 text-white px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+                <button type="submit" class="inline-flex items-center gap-1.5 bg-red-600 text-white px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
@@ -140,7 +124,6 @@
                     <dt class="sm:w-56 shrink-0 text-gray-500">{{ $code === 'PS' ? 'Nama Personil' : 'Nama Aset' }}</dt>
                     <dd class="font-medium text-gray-900">{{ $asset->name ?? '-' }}</dd>
                 </div>
-                
                 @if($code === 'PL')
                 <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
                     <dt class="sm:w-56 shrink-0 text-gray-500">Klasifikasi Data</dt>
@@ -149,7 +132,6 @@
                 @endif
             </dl>
         </div>
-
         <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col">
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Kritikalitas Aset</h3>
             <div class="flex-1 flex flex-col items-center justify-center text-center gap-2">
@@ -202,7 +184,7 @@
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Tahun Rilis</dt><dd class="text-gray-900">{{ $asset->year ?? '-' }}</dd></div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Platform</dt><dd class="text-gray-900">{{ $asset->platform ?? '-' }}</dd></div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Uraian Singkat Aplikasi</dt><dd class="text-gray-900">{{ $asset->app_description ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Alamat Aplikasi/URL</dt><dd class="text-gray-900 break-all">@if($asset->app_url)<a href="{{ $asset->app_url }}" target="_blank" class="text-blue-600 hover:text-blue-700 hover:underline">{{ $asset->app_url }}</a>@else - @endif</dd></div>
+            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Alamat Aplikasi/URL</dt><dd class="text-gray-900 break-all">@if($asset->app_url)<a href="{{ $asset->app_url }}" target="_blank" class="text-blue-600 hover:text-blue-700 hover:underline">{{ $asset->app_url }}</a>@else-@endif</dd></div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Alamat IP</dt><dd class="font-mono text-gray-900">{{ $asset->ip_address ?? '-' }}</dd></div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Aplikasi IP Publik/Internal</dt><dd class="font-mono text-gray-900">{{ $asset->ip_public_internal ?? '-' }}</dd></div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Sistem Operasi Server</dt><dd class="text-gray-900">{{ $asset->os_server ?? '-' }}</dd></div>
@@ -223,12 +205,10 @@
                             $files = [$asset->document_file];
                         }
                     @endphp
-                    
                     @if(!empty($files))
                         <div class="flex flex-wrap gap-2">
                             @foreach($files as $file)
-                                {{-- PERUBAHAN: Menggunakan button untuk memicu modal preview --}}
-                                <button type="button" 
+                                <button type="button"  
                                         @click="showModal = true; previewUrl = '{{ asset('storage/' . $file) }}'; previewName = '{{ addslashes(basename($file)) }}'; resetZoom();"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-medium transition-colors cursor-pointer">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -266,7 +246,91 @@
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Pemilik Aset</dt><dd class="text-gray-900">{{ $asset->owner ?? '-' }}</dd></div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kondisi Aset</dt><dd><span class="badge {{ $conditionStatus }}">{{ $asset->condition ?? '-' }}</span></dd></div>
             <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kategori Tipe</dt><dd class="text-gray-900">{{ $asset->asset_type_category ?? '-' }}</dd></div>
+            
+            {{-- ⭐ SPESIFIKASI HARDWARE MENDALAM --}}
+            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
+                <dt class="sm:w-56 shrink-0 text-gray-500">Jenis Prosessor</dt>
+                <dd class="text-gray-900 font-medium">{{ $asset->cpu_type ?? '-' }}</dd>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
+                <dt class="sm:w-56 shrink-0 text-gray-500">Jumlah Core (CPU)</dt>
+                <dd class="text-gray-900 font-mono">{{ $asset->cpu_cores ? $asset->cpu_cores . ' Cores' : '-' }}</dd>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
+                <dt class="sm:w-56 shrink-0 text-gray-500">Kapasitas RAM</dt>
+                <dd class="text-gray-900 font-mono">
+                    @if($asset->ram_gb)
+                        {{ $asset->ram_gb >= 1024 ? number_format($asset->ram_gb / 1024, 2) . ' TB' : $asset->ram_gb . ' GB' }}
+                    @else
+                        -
+                    @endif
+                </dd>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
+                <dt class="sm:w-56 shrink-0 text-gray-500">Kapasitas Storage</dt>
+                <dd class="text-gray-900 font-mono">
+                    @if($asset->storage_gb)
+                        {{ $asset->storage_gb >= 1000 ? number_format($asset->storage_gb / 1000, 2) . ' TB' : $asset->storage_gb . ' GB' }}
+                    @else
+                        -
+                    @endif
+                </dd>
+            </div>
         </dl>
+    </div>
+
+    {{-- ============================================= --}}
+    {{-- KREDENSIAL AKSES (HANYA USERNAME, PASSWORD DISEMBUNYIKAN) --}}
+    {{-- ============================================= --}}
+    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
+        <h3 class="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-4 pb-3 border-b border-gray-100">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            Kredensial Akses (Terenkripsi)
+        </h3>
+        
+        @if($asset->credentials && $asset->credentials->isNotEmpty())
+            <div class="space-y-2">
+                @foreach($asset->credentials as $cred)
+                    <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                        <div class="flex items-center gap-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $cred->role ?? 'User' }}
+                            </span>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-gray-500 uppercase tracking-wider">Username</span>
+                                <span class="font-mono text-gray-800 font-medium">{{ $cred->username }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            <span class="text-xs font-medium">Password Terenkripsi</span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            
+            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-lg flex items-start gap-2">
+                <svg class="w-4 h-4 text-yellow-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-[11px] text-yellow-800">
+                    <strong>Kebijakan Keamanan:</strong> Password disimpan secara terenkripsi di database untuk kepatuhan audit inventaris. 
+                    Untuk keperluan akses teknis, silakan hubungi Administrator Infrastruktur atau gunakan Password Manager resmi instansi.
+                </p>
+            </div>
+        @else
+            <div class="text-center py-8 text-gray-400">
+                <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                <p class="text-sm">Tidak ada kredensial yang dicatat untuk perangkat ini.</p>
+            </div>
+        @endif
     </div>
     @endif
 
@@ -332,11 +396,10 @@
     {{-- ============================================= --}}
     <div x-show="showModal" x-cloak x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" @click.outside="showModal = false">
         <div class="bg-white rounded-2xl max-w-5xl w-full p-5 relative shadow-2xl flex flex-col max-h-[92vh] border border-gray-100">
-            <!-- Header Modal -->
             <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-100 gap-2">
                 <div class="min-w-0">
                     <h3 class="font-semibold text-gray-800 text-sm truncate" x-text="previewName || 'Preview Dokumen'"></h3>
-                    <p class="text-[11px] text-gray-400" x-show="isImage(previewUrl)"> Scroll mouse untuk zoom, klik & tahan untuk geser </p>
+                    <p class="text-[11px] text-gray-400" x-show="isImage(previewUrl)">Scroll mouse untuk zoom, klik & tahan untuk geser</p>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <template x-if="isImage(previewUrl)">
@@ -359,7 +422,6 @@
                     </button>
                 </div>
             </div>
-            <!-- Area Preview -->
             <div class="flex-1 overflow-hidden rounded-xl bg-slate-900/5 border border-gray-100 mt-3 p-2 flex items-center justify-center h-[600px] relative select-none" @wheel.prevent="handleWheel($event)">
                 <template x-if="isImage(previewUrl)">
                     <div class="w-full h-full flex items-center justify-center overflow-hidden" @mousedown="startDrag($event)" @mousemove="drag($event)" @mouseup="endDrag()" @mouseleave="endDrag()">
@@ -372,6 +434,5 @@
             </div>
         </div>
     </div>
-
 </div>
 @endsection
