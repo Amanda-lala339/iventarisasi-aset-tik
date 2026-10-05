@@ -1,11 +1,28 @@
 @extends('layouts.app')
+
 @section('title', 'Edit Aset')
 @section('page', 'Edit Aset')
 
 @section('content')
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
 @php
     $code = old('category_code', $asset->category->code ?? 'DI');
 @endphp
+
+<div x-data="{ 
+    showModal: false, previewUrl: '', previewName: '', zoomScale: 1, panX: 0, panY: 0, isDragging: false, startX: 0, startY: 0,
+    isImage(url) { return /\.(jpg|jpeg|png|gif|webp|svg)($|\?)/i.test(url); },
+    resetZoom() { this.zoomScale = 1; this.panX = 0; this.panY = 0; this.isDragging = false; },
+    zoomIn() { if (this.zoomScale < 5) this.zoomScale = Math.round((this.zoomScale + 0.15) * 100) / 100; },
+    zoomOut() { if (this.zoomScale > 1) { this.zoomScale = Math.max(1, Math.round((this.zoomScale - 0.15) * 100) / 100); if (this.zoomScale === 1) { this.panX = 0; this.panY = 0; } } },
+    handleWheel(e) { if (!this.isImage(this.previewUrl)) return; const step = 0.10; if (e.deltaY < 0) { if (this.zoomScale < 5) this.zoomScale = Math.round((this.zoomScale + step) * 100) / 100; } else { if (this.zoomScale > 1) { this.zoomScale = Math.max(1, Math.round((this.zoomScale - step) * 100) / 100); if (this.zoomScale === 1) { this.panX = 0; this.panY = 0; } } } },
+    startDrag(e) { if (this.zoomScale <= 1) return; this.isDragging = true; this.startX = e.clientX - this.panX; this.startY = e.clientY - this.panY; },
+    drag(e) { if (!this.isDragging) return; this.panX = e.clientX - this.startX; this.panY = e.clientY - this.startY; },
+    endDrag() { this.isDragging = false; }
+}">
 
 <a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition">
     ← Kembali
@@ -13,7 +30,7 @@
 
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md mt-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Aset: {{ $asset->asset_code }}</h2>
-
+    
     @if ($errors->any())
         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             <p class="font-semibold">Terjadi kesalahan:</p>
@@ -26,7 +43,7 @@
     <form method="POST" action="{{ route('assets.update', $asset) }}" enctype="multipart/form-data" id="assetForm">
         @csrf
         @method('PUT')
-
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500">*</span></label>
@@ -79,7 +96,6 @@
                     </select>
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -116,7 +132,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Kritikalitas Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -149,9 +164,8 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" disabled>Pilih...</option>
                     @foreach($criticalityLevels['DI'] ?? [] as $opt)
@@ -204,7 +218,7 @@
                     <input type="text" name="ip_address" value="{{ old('ip_address', $asset->ip_address) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Aplikasi IP Publik/Internal <span class="text-xs text-gray-400 ml-1"></span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Aplikasi IP Publik/Internal</label>
                     <input type="text" name="ip_public_internal" value="{{ old('ip_public_internal', $asset->ip_public_internal) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono">
                 </div>
                 <div>
@@ -256,11 +270,13 @@
                     </select>
                 </div>
             </div>
-
+            
+            {{-- PERUBAHAN: Upload Dokumen dengan Validasi 5MB & Format Tertentu + Preview Modal --}}
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Hanya PDF, Word, Excel, & Gambar)</span>
+                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Maks. 5MB, Format: PDF, Word, Excel, & Gambar)</span>
                 </label>
+                
                 @if($asset->documents && $asset->documents->count() > 0)
                     <div class="mb-3 space-y-2">
                         @foreach ($asset->documents as $doc)
@@ -269,9 +285,11 @@
                                     <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
-                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="text-blue-700 hover:underline truncate">
+                                    <button type="button" 
+                                            @click="showModal = true; previewUrl = '{{ asset('storage/' . $doc->file_path) }}'; previewName = '{{ addslashes($doc->original_name ?? basename($doc->file_path)) }}'; resetZoom();"
+                                            class="text-blue-700 hover:underline truncate text-left bg-transparent border-none p-0 cursor-pointer">
                                         {{ $doc->original_name ?? basename($doc->file_path) }}
-                                    </a>
+                                    </button>
                                 </div>
                                 <button type="button"
                                         onclick="deleteFile({{ $asset->id }}, {{ $doc->id }}, '{{ $doc->file_path }}')"
@@ -283,14 +301,13 @@
                     </div>
                 @endif
                 
-                <!-- PERUBAHAN 1: Atribut accept diperbarui -->
                 <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp"
                     class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
 
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" disabled>Pilih...</option>
                     @foreach($criticalityLevels['PL'] ?? [] as $opt)
@@ -326,7 +343,6 @@
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -359,7 +375,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                 <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -369,9 +384,8 @@
                     @endforeach
                 </select>
             </div>
-
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" disabled>Pilih...</option>
                     @foreach($criticalityLevels['PK'] ?? [] as $opt)
@@ -407,7 +421,6 @@
                     <input type="number" name="year" value="{{ old('year', $asset->year) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -440,7 +453,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                 <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -450,9 +462,8 @@
                     @endforeach
                 </select>
             </div>
-
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" disabled>Pilih...</option>
                     @foreach($criticalityLevels['SP'] ?? [] as $opt)
@@ -493,7 +504,6 @@
                     <input type="text" name="nip" value="{{ old('nip', $asset->nip) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Penugasan</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -512,7 +522,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
                 <input type="text" name="position" value="{{ old('position', $asset->position) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -526,15 +535,58 @@
     </form>
 </div>
 
+{{-- MODAL PREVIEW DOKUMEN (KHUSUS EDIT) --}}
+<div x-show="showModal" x-cloak x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" @click.outside="showModal = false">
+    <div class="bg-white rounded-2xl max-w-5xl w-full p-5 relative shadow-2xl flex flex-col max-h-[92vh] border border-gray-100">
+        <!-- Header Modal -->
+        <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-100 gap-2">
+            <div class="min-w-0">
+                <h3 class="font-semibold text-gray-800 text-sm truncate" x-text="previewName || 'Preview Dokumen'"></h3>
+                <p class="text-[11px] text-gray-400" x-show="isImage(previewUrl)"> Scroll mouse untuk zoom, klik & tahan untuk geser </p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <template x-if="isImage(previewUrl)">
+                    <div class="flex items-center bg-gray-100 border border-gray-200 rounded-lg p-0.5 mr-1">
+                        <button type="button" @click="zoomOut()" class="p-1 text-gray-600 hover:text-blue-600 hover:bg-white rounded" :disabled="zoomScale <= 1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                        </button>
+                        <button type="button" @click="resetZoom()" class="px-2 py-0.5 text-[11px] font-mono font-medium text-gray-700 hover:text-blue-600 hover:bg-white rounded" x-text="Math.round(zoomScale * 100) + '%'"></button>
+                        <button type="button" @click="zoomIn()" class="p-1 text-gray-600 hover:text-blue-600 hover:bg-white rounded">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                        </button>
+                    </div>
+                </template>
+                <a :href="previewUrl" download class="text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3" /></svg>
+                    Unduh
+                </a>
+                <button type="button" @click="showModal = false" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+        </div>
+        <!-- Area Preview -->
+        <div class="flex-1 overflow-hidden rounded-xl bg-slate-900/5 border border-gray-100 mt-3 p-2 flex items-center justify-center h-[600px] relative select-none" @wheel.prevent="handleWheel($event)">
+            <template x-if="isImage(previewUrl)">
+                <div class="w-full h-full flex items-center justify-center overflow-hidden" @mousedown="startDrag($event)" @mousemove="drag($event)" @mouseup="endDrag()" @mouseleave="endDrag()">
+                    <img :src="previewUrl" :style="'transform: translate3d(' + panX + 'px, ' + panY + 'px, 0px) scale(' + zoomScale + '); transition: ' + (isDragging ? 'none' : 'transform 0.12s ease-out') + '; cursor: ' + (zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default')" class="max-h-full max-w-full object-contain rounded-lg shadow-sm">
+                </div>
+            </template>
+            <template x-if="!isImage(previewUrl)">
+                <iframe :src="previewUrl" class="w-full h-full rounded-lg" frameborder="0"></iframe>
+            </template>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const categorySelect = document.getElementById('asset_category_id');
     const fields = document.querySelectorAll('.category-fields');
-
+    
     function showFields() {
         const selected = categorySelect.options[categorySelect.selectedIndex];
         const code = selected.getAttribute('data-code');
-
         fields.forEach(f => {
             f.classList.add('hidden');
             f.querySelectorAll('input, select, textarea').forEach(el => {
@@ -542,7 +594,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 el.removeAttribute('required');
             });
         });
-
         const target = document.getElementById('fields-' + code);
         if (target) {
             target.classList.remove('hidden');
@@ -551,7 +602,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
-
     categorySelect.addEventListener('change', showFields);
     showFields();
 
@@ -560,29 +610,35 @@ document.addEventListener('DOMContentLoaded', function () {
     const plFileListContainer = document.getElementById('pl-file-list');
     let plSelectedFiles = [];
     
-    // PERUBAHAN 2: Tambahkan array ekstensi yang diizinkan
+    // PERUBAHAN: Validasi file (Maks 5MB & Format Tertentu)
     const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
 
     if (plFileInput && plFileListContainer) {
         plFileInput.addEventListener('change', function () {
+            let errorMessages = [];
             Array.from(this.files).forEach(file => {
                 const ext = file.name.split('.').pop().toLowerCase();
                 
-                // PERUBAHAN 3: Validasi ekstensi file sebelum dimasukkan ke array
-                if (allowedExtensions.includes(ext)) {
-                    plSelectedFiles.push(file);
+                if (!allowedExtensions.includes(ext)) {
+                    errorMessages.push(`"${file.name}" (format tidak diizinkan)`);
+                } else if (file.size > maxSizeBytes) {
+                    errorMessages.push(`"${file.name}" (melebihi batas 5MB)`);
                 } else {
-                    alert(`File "${file.name}" tidak diizinkan.\nHanya format PDF, Word, Excel, dan Gambar yang diperbolehkan.`);
+                    plSelectedFiles.push(file);
                 }
             });
+            
+            if (errorMessages.length > 0) {
+                alert('Gagal menambahkan file:\n- ' + errorMessages.join('\n- '));
+            }
             this.value = '';
             renderPlFiles();
         });
-
+        
         function renderPlFiles() {
             plFileListContainer.innerHTML = '';
             if (plSelectedFiles.length === 0) return;
-
             plSelectedFiles.forEach((file, index) => {
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between p-2.5 bg-green-50 border border-green-200 rounded-lg text-xs';
@@ -600,18 +656,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
                 plFileListContainer.appendChild(div);
             });
-
             const totalDiv = document.createElement('div');
             totalDiv.className = 'text-xs text-gray-500 text-right mt-1';
             totalDiv.textContent = `Total: ${plSelectedFiles.length} file baru akan diupload`;
             plFileListContainer.appendChild(totalDiv);
         }
-
+        
         window.removePlFile = function(index) {
             plSelectedFiles.splice(index, 1);
             renderPlFiles();
         };
-
+        
         document.getElementById('assetForm').addEventListener('submit', function(e) {
             if (plSelectedFiles.length > 0) {
                 const dt = new DataTransfer();
@@ -623,7 +678,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Hapus file via AJAX
-window.deleteFile = function(assetId, documentId, filePath) {
+window.deleteFile = function (assetId, documentId, filePath) {
     if (!confirm('Yakin ingin menghapus file ini?')) {
         return;
     }

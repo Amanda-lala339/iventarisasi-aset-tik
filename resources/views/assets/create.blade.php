@@ -1,4 +1,5 @@
 @extends('layouts.app')
+
 @section('title', 'Tambah Aset')
 @section('page', 'Tambah Aset')
 
@@ -8,11 +9,13 @@
     $categories = $categories ?? \App\Models\AssetCategory::all();
 @endphp
 
-<a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition">← Kembali</a>
+<a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition">
+    ← Kembali
+</a>
 
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md mt-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Tambah Aset Baru</h2>
-
+    
     @if ($errors->any())
         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             <p class="font-semibold">Terjadi kesalahan:</p>
@@ -28,7 +31,7 @@
 
     <form method="POST" action="{{ route('assets.store') }}" enctype="multipart/form-data" id="assetForm">
         @csrf
-
+        
         {{-- Kategori & Kode --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <div>
@@ -85,7 +88,6 @@
                     </select>
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -122,7 +124,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Kritikalitas Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -155,9 +156,8 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($criticalityLevels['DI'] ?? [] as $opt)
@@ -262,21 +262,21 @@
                     </select>
                 </div>
             </div>
-
+            
+            {{-- PERUBAHAN: Upload Dokumen dengan Validasi 5MB & Format Tertentu --}}
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Maks. 5MB, Format: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX)</span></label>
-                
-                {{-- PERUBAHAN 1: Atribut accept diperketat --}}
-                <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Maks. 5MB, Format: PDF, Word, Excel, & Gambar)</span>
+                </label>
+                <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp"
                     class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 
-                {{-- PERUBAHAN 2: Tempat menampilkan error validasi --}}
                 <div id="pl-file-error" class="text-red-600 text-xs mt-2 hidden"></div>
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
 
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($criticalityLevels['PL'] ?? [] as $opt)
@@ -312,7 +312,6 @@
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -345,7 +344,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                 <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -355,9 +353,8 @@
                     @endforeach
                 </select>
             </div>
-
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($criticalityLevels['PK'] ?? [] as $opt)
@@ -393,7 +390,6 @@
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -426,7 +422,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                 <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -436,9 +431,8 @@
                     @endforeach
                 </select>
             </div>
-
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset <span class="text-xs text-gray-500 font-normal"></span></label>
+                <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
                 <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($criticalityLevels['SP'] ?? [] as $opt)
@@ -479,7 +473,6 @@
                     <input type="text" name="nip" value="{{ old('nip') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -498,7 +491,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
                 <input type="text" name="position" value="{{ old('position') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
@@ -517,13 +509,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const categorySelect = document.getElementById('asset_category_id');
     const fields = document.querySelectorAll('.category-fields');
     const assetCodeInput = document.getElementById('asset_code_input');
-
     const lastCodes = @json($lastCodes ?? []);
 
     function showFields() {
         const selected = categorySelect.options[categorySelect.selectedIndex];
         const code = selected.getAttribute('data-code');
-
         fields.forEach(f => {
             f.classList.add('hidden');
             f.querySelectorAll('input, select, textarea').forEach(el => {
@@ -531,7 +521,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 el.removeAttribute('required');
             });
         });
-
         const target = document.getElementById('fields-' + code);
         if (target) {
             target.classList.remove('hidden');
@@ -544,9 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateAssetCode(categoryCode) {
         const input = document.getElementById('asset_code_input');
         const preview = document.getElementById('asset_code_preview');
-
         if (!input) return;
-
         if (lastCodes[categoryCode]) {
             const newCode = lastCodes[categoryCode];
             input.value = newCode;
@@ -564,57 +551,47 @@ document.addEventListener('DOMContentLoaded', function () {
         const code = selected.getAttribute('data-code') || 'DI';
         updateAssetCode(code);
     });
-
     showFields();
 
     // Upload bertahap PL
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
-    const plFileError = document.getElementById('pl-file-error'); // Elemen error
+    const plFileError = document.getElementById('pl-file-error');
     let plSelectedFiles = [];
     
-    // PERUBAHAN 3: Konfigurasi validasi file
-    const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xls', 'xlsx'];
+    // PERUBAHAN: Konfigurasi validasi file (Maks 5MB & Format Tertentu)
+    const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
     const maxSizeBytes = 5 * 1024 * 1024; // 5MB
 
     if (plFileInput && plFileListContainer) {
         plFileInput.addEventListener('change', function () {
-            // Reset pesan error
             plFileError.classList.add('hidden');
             plFileError.textContent = '';
             let errorMessages = [];
-
+            
             Array.from(this.files).forEach(file => {
                 const ext = file.name.split('.').pop().toLowerCase();
                 
-                // Cek ekstensi
                 if (!allowedExtensions.includes(ext)) {
-                    errorMessages.push(`"${file.name}" (ekstensi tidak diizinkan)`);
-                } 
-                // Cek ukuran (5MB)
-                else if (file.size > maxSizeBytes) {
+                    errorMessages.push(`"${file.name}" (format tidak diizinkan)`);
+                } else if (file.size > maxSizeBytes) {
                     errorMessages.push(`"${file.name}" (melebihi batas 5MB)`);
-                } 
-                // Lolos validasi
-                else {
+                } else {
                     plSelectedFiles.push(file);
                 }
             });
 
-            // Tampilkan error jika ada file yang ditolak
             if (errorMessages.length > 0) {
                 plFileError.textContent = 'Gagal menambahkan: ' + errorMessages.join(', ');
                 plFileError.classList.remove('hidden');
             }
-
-            this.value = ''; // Reset input agar bisa memilih file yang sama lagi jika perlu
+            this.value = ''; 
             renderPlFiles();
         });
-
+        
         function renderPlFiles() {
             plFileListContainer.innerHTML = '';
             if (plSelectedFiles.length === 0) return;
-
             plSelectedFiles.forEach((file, index) => {
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between p-2.5 bg-green-50 border border-green-200 rounded-lg text-xs';
@@ -632,18 +609,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
                 plFileListContainer.appendChild(div);
             });
-
             const totalDiv = document.createElement('div');
             totalDiv.className = 'text-xs text-gray-500 text-right mt-1';
             totalDiv.textContent = `Total: ${plSelectedFiles.length} file akan diupload`;
             plFileListContainer.appendChild(totalDiv);
         }
-
+        
         window.removePlFile = function(index) {
             plSelectedFiles.splice(index, 1);
             renderPlFiles();
         };
-
+        
         document.getElementById('assetForm').addEventListener('submit', function(e) {
             if (plSelectedFiles.length > 0) {
                 const dt = new DataTransfer();
@@ -652,8 +628,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
-    // ⭐ AUTO-FILL KRITIKALITAS DIHAPUS - user pilih manual
 });
 </script>
-@endsection 
+@endsection

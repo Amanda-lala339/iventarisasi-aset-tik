@@ -240,7 +240,7 @@ class AssetController extends Controller
             'nip'                  => 'nullable|string|max:255',
             'personnel_category'   => 'nullable|string|max:255',
             'data_classification'  => 'nullable|string|max:255',
-            'document_files.*'     => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip,rar|max:10240',
+            'document_files.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,webp|max:5120',
         ]);
 
         $assetData = collect($validated)->except(['document_files'])->toArray();
