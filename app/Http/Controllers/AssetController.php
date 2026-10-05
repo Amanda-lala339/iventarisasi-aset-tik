@@ -27,8 +27,7 @@ use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\AssetsImport;
+use Illuminate\Support\Facades\Crypt;
 
 class AssetController extends Controller
 {
@@ -219,6 +218,11 @@ class AssetController extends Controller
             'integrity'            => 'nullable|string|max:255',
             'availability'         => 'nullable|string|max:255',
             'specification'        => 'nullable|string',
+            'cpu'                  => 'nullable|string|max:255',
+            'memory'               => 'nullable|string|max:255',
+            'storage'              => 'nullable|string|max:255',
+            'username'             => 'nullable|string|max:255',
+            'password' => $request->filled('password') ? Crypt::encryptString($request->password) : null,
             'ip_address'           => 'nullable|string|max:255',
             'ip_public_internal'   => 'nullable|string|max:255',
             'platform'             => 'nullable|string|max:255',
@@ -306,6 +310,11 @@ class AssetController extends Controller
             'integrity'            => 'nullable|string|max:255',
             'availability'         => 'nullable|string|max:255',
             'specification'        => 'nullable|string',
+            'cpu'                  => 'nullable|string|max:255',
+            'memory'               => 'nullable|string|max:255',
+            'storage'              => 'nullable|string|max:255',
+            'username'             => 'nullable|string|max:255',
+            'password' => $request->filled('password') ? Crypt::encryptString($request->password) : null,
             'ip_address'           => 'nullable|string|max:255',
             'ip_public_internal'   => 'nullable|string|max:255',
             'platform'             => 'nullable|string|max:255',
@@ -409,16 +418,6 @@ class AssetController extends Controller
         return back()->with('success', 'Dokumen berhasil dihapus.');
     }
 
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
-        ]);
-
-        Excel::import(new AssetsImport, $request->file('file'));
-
-        return back()->with('success', 'Data aset berhasil diimpor dari Excel.');
-    }
 
     private function getCategoryAssets($categoryCode, $pageTitle, Request $request)
     {

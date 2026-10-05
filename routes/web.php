@@ -26,7 +26,6 @@ Route::middleware('auth')->group(function () {
     Route::get('assets/category/perangkat-keras', [AssetController::class, 'perangkatKeras'])->name('assets.category.pk');
     Route::get('assets/category/sarana-pendukung', [AssetController::class, 'saranaPendukung'])->name('assets.category.sp');
     Route::get('assets/category/sdm-pihak-ketiga', [AssetController::class, 'sdmPihakKetiga'])->name('assets.category.ps');
-    Route::post('assets/import', [AssetController::class, 'import'])->name('assets.import');
     Route::resource('assets', AssetController::class);
     Route::get('assets/category/{category}', [AssetController::class, 'category'])->name('assets.category');
        Route::post('/assets/documents/{documentId}/delete', [AssetController::class, 'deleteDocumentAjax'])->name('assets.documents.delete-ajax');

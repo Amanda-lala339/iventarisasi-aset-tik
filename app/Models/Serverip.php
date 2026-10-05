@@ -9,7 +9,7 @@ class ServerIp extends Model
     public const TYPES = ['Publik', 'Internal', 'Lainnya'];
 
     protected $fillable = [
-        'server_id', 'ip_address', 'type', 'is_primary', 'is_active',
+        'server_id', 'subnet_id', 'ip_address', 'type', 'is_primary', 'is_active',
     ];
 
     protected $casts = [
@@ -26,9 +26,13 @@ public function subdomains()
 {
     return $this->belongsToMany(
         Subdomain::class,
-        'server_ip_subdomain',   
+        'subdomain_server_ip',   
         'server_ip_id',          
         'subdomain_id'           
     );
+}
+public function subnet()
+{
+    return $this->belongsTo(Subnet::class);
 }
 }

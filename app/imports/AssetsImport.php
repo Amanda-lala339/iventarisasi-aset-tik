@@ -16,6 +16,7 @@ class AssetsImport implements WithMultipleSheets
             'Data dan Informasi' => new DataInfoImport(),
             'Perangkat Lunak' => new SoftwareImport(),
             'Perangkat Keras' => new HardwareImport(),
+            'Server Block' => new HardwareImport(),
             'Sarana Pendukung' => new SupportImport(),
             'SDM & Pihak Ketiga' => new PersonnelImport(),
         ];
@@ -88,6 +89,9 @@ class HardwareImport implements ToModel, WithHeadingRow
             ['name' => 'Perangkat Keras']
         );
 
+        $username = $row['credentials'] ?? null;
+        $password = $row['notes'] ?? null;
+
         return new Asset([
             'asset_category_id' => $category->id,
             'asset_code' => $row['kode_aset'] ?? null,
@@ -100,6 +104,11 @@ class HardwareImport implements ToModel, WithHeadingRow
             'status' => $row['kondisi_aset'] ?? null,
             'category' => $row['kategori'] ?? null,
             'criticality' => $row['kritikalitas_aset'] ?? null,
+            'cpu' => $row['cpu'] ?? null,
+            'memory' => $row['memory'] ?? null,
+            'storage' => $row['storage'] ?? null,
+            'username' => $username,
+            'password' => $password,
         ]);
     }
 }

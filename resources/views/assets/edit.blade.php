@@ -63,7 +63,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Dokumen</label>
-                    <input type="text" name="document_number" value="{{ old('document_number', $asset->document_number) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: HR-001">
+                    <input type="text" name="document_number" value="{{ old('document_number', $asset->document_number) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Penyusunan/Pengesahan</label>
@@ -112,7 +112,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Retensi Aset</label>
-                        <input type="text" name="retention" value="{{ old('retention', $asset->retention) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: 1 Tahun">
+                        <input type="text" name="retention" value="{{ old('retention', $asset->retention) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                     </div>
                 </div>
             </div>
@@ -205,7 +205,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Aplikasi IP Publik/Internal <span class="text-xs text-gray-400 ml-1"></span></label>
-                    <input type="text" name="ip_public_internal" value="{{ old('ip_public_internal', $asset->ip_public_internal) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono" placeholder="Contoh: 103.144.82.141">
+                    <input type="text" name="ip_public_internal" value="{{ old('ip_public_internal', $asset->ip_public_internal) }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
@@ -317,7 +317,7 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Spesifikasi Aset</label>
-                    <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: Merk, Tipe, Storage, RAM, Prosesor">{{ old('specification', $asset->specification) }}</textarea>
+                    <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ old('specification', $asset->specification) }}</textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Pengadaan</label>
@@ -398,7 +398,7 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Spesifikasi Aset</label>
-                    <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Contoh: Kapasitas, Merk, Tipe">{{ old('specification', $asset->specification) }}</textarea>
+                    <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ old('specification', $asset->specification) }}</textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Pengadaan</label>
