@@ -29,7 +29,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500"></span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500">*</span></label>
                 <select name="asset_category_id" id="asset_category_id" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" data-code="{{ $cat->code }}" {{ old('asset_category_id', $asset->asset_category_id) == $cat->id ? 'selected' : '' }}>
@@ -39,7 +39,7 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500"></span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500">*</span></label>
                 <input type="text" name="asset_code" value="{{ old('asset_code', $asset->asset_code) }}" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: DI-001">
             </div>
         </div>
@@ -259,7 +259,7 @@
 
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold"></span>
+                    Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Hanya PDF, Word, Excel, & Gambar)</span>
                 </label>
                 @if($asset->documents && $asset->documents->count() > 0)
                     <div class="mb-3 space-y-2">
@@ -282,7 +282,9 @@
                         @endforeach
                     </div>
                 @endif
-                <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png"
+                
+                <!-- PERUBAHAN 1: Atribut accept diperbarui -->
+                <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp"
                     class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
@@ -557,11 +559,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
     let plSelectedFiles = [];
+    
+    // PERUBAHAN 2: Tambahkan array ekstensi yang diizinkan
+    const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     if (plFileInput && plFileListContainer) {
         plFileInput.addEventListener('change', function () {
             Array.from(this.files).forEach(file => {
-                plSelectedFiles.push(file);
+                const ext = file.name.split('.').pop().toLowerCase();
+                
+                // PERUBAHAN 3: Validasi ekstensi file sebelum dimasukkan ke array
+                if (allowedExtensions.includes(ext)) {
+                    plSelectedFiles.push(file);
+                } else {
+                    alert(`File "${file.name}" tidak diizinkan.\nHanya format PDF, Word, Excel, dan Gambar yang diperbolehkan.`);
+                }
             });
             this.value = '';
             renderPlFiles();
@@ -608,8 +620,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
-    // ⭐ AUTO-FILL KRITIKALITAS DIHAPUS - user pilih manual
 });
 
 // Hapus file via AJAX

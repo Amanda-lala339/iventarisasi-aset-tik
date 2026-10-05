@@ -32,7 +32,7 @@
         {{-- Kategori & Kode --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500"></span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Aset <span class="text-red-500">*</span></label>
                 <select name="asset_category_id" id="asset_category_id" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" data-code="{{ $cat->code }}" {{ (old('asset_category_id') == $cat->id || ($code == $cat->code && !old('asset_category_id'))) ? 'selected' : '' }}>
@@ -42,7 +42,7 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500"></span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Aset <span class="text-red-500">*</span></label>
                 <input type="text" name="asset_code" id="asset_code_input"
                     value="{{ old('asset_code', $generatedCode) }}"
                     required
@@ -264,9 +264,14 @@
             </div>
 
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold"></span></label>
-                <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png"
+                <label class="block text-sm font-medium text-gray-700 mb-1">Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Maks. 5MB, Format: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX)</span></label>
+                
+                {{-- PERUBAHAN 1: Atribut accept diperketat --}}
+                <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
                     class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                
+                {{-- PERUBAHAN 2: Tempat menampilkan error validasi --}}
+                <div id="pl-file-error" class="text-red-600 text-xs mt-2 hidden"></div>
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
 
@@ -565,14 +570,44 @@ document.addEventListener('DOMContentLoaded', function () {
     // Upload bertahap PL
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
+    const plFileError = document.getElementById('pl-file-error'); // Elemen error
     let plSelectedFiles = [];
+    
+    // PERUBAHAN 3: Konfigurasi validasi file
+    const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xls', 'xlsx'];
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
 
     if (plFileInput && plFileListContainer) {
         plFileInput.addEventListener('change', function () {
+            // Reset pesan error
+            plFileError.classList.add('hidden');
+            plFileError.textContent = '';
+            let errorMessages = [];
+
             Array.from(this.files).forEach(file => {
-                plSelectedFiles.push(file);
+                const ext = file.name.split('.').pop().toLowerCase();
+                
+                // Cek ekstensi
+                if (!allowedExtensions.includes(ext)) {
+                    errorMessages.push(`"${file.name}" (ekstensi tidak diizinkan)`);
+                } 
+                // Cek ukuran (5MB)
+                else if (file.size > maxSizeBytes) {
+                    errorMessages.push(`"${file.name}" (melebihi batas 5MB)`);
+                } 
+                // Lolos validasi
+                else {
+                    plSelectedFiles.push(file);
+                }
             });
-            this.value = '';
+
+            // Tampilkan error jika ada file yang ditolak
+            if (errorMessages.length > 0) {
+                plFileError.textContent = 'Gagal menambahkan: ' + errorMessages.join(', ');
+                plFileError.classList.remove('hidden');
+            }
+
+            this.value = ''; // Reset input agar bisa memilih file yang sama lagi jika perlu
             renderPlFiles();
         });
 
@@ -621,4 +656,4 @@ document.addEventListener('DOMContentLoaded', function () {
     // ⭐ AUTO-FILL KRITIKALITAS DIHAPUS - user pilih manual
 });
 </script>
-@endsection
+@endsection 
