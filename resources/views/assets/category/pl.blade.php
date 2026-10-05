@@ -13,6 +13,7 @@
     .sticky-col { position: sticky; right: 0; background: white; box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.05); z-index: 10; }
     thead .sticky-col { background: #eff6ff; }
     tbody tr:hover .sticky-col { background: #f9fafb; }
+    [x-cloak] { display: none !important; }
 </style>
 
 @php
@@ -60,6 +61,15 @@
 
 <div x-data="{
     search: '{{ request('search', '') }}',
+    showModal: false,
+    previewUrl: '',
+    previewName: '',
+    zoomScale: 1,
+    panX: 0,
+    panY: 0,
+    isDragging: false,
+    startX: 0,
+    startY: 0,
     matches(code, name, url, ip, platform) {
         const q = (this.search || '').trim().toLowerCase();
         if (q === '') return true;
@@ -69,7 +79,63 @@
             || (ip || '').toString().toLowerCase().includes(q)
             || (platform || '').toString().toLowerCase().includes(q);
     },
-    resetFilters() { this.search = ''; }
+    resetFilters() { this.search = ''; },
+    openPreview(url, name) {
+        this.previewUrl = url;
+        this.previewName = name;
+        this.resetZoom();
+        this.showModal = true;
+    },
+    closePreview() {
+        this.showModal = false;
+        this.previewUrl = '';
+        this.previewName = '';
+        this.resetZoom();
+    },
+    isImage(url) {
+        return /\.(jpg|jpeg|png|gif|webp|svg)($|\?)/i.test(url);
+    },
+    resetZoom() {
+        this.zoomScale = 1;
+        this.panX = 0;
+        this.panY = 0;
+        this.isDragging = false;
+    },
+    zoomIn() {
+        if (this.zoomScale < 5) this.zoomScale = Math.round((this.zoomScale + 0.15) * 100) / 100;
+    },
+    zoomOut() {
+        if (this.zoomScale > 1) {
+            this.zoomScale = Math.max(1, Math.round((this.zoomScale - 0.15) * 100) / 100);
+            if (this.zoomScale === 1) { this.panX = 0; this.panY = 0; }
+        }
+    },
+    handleWheel(e) {
+        if (!this.isImage(this.previewUrl)) return;
+        const step = 0.10;
+        if (e.deltaY < 0) {
+            if (this.zoomScale < 5) this.zoomScale = Math.round((this.zoomScale + step) * 100) / 100;
+        } else {
+            if (this.zoomScale > 1) {
+                this.zoomScale = Math.max(1, Math.round((this.zoomScale - step) * 100) / 100);
+                if (this.zoomScale === 1) { this.panX = 0; this.panY = 0; }
+            }
+        }
+    },
+    startDrag(e) {
+        if (this.zoomScale <= 1) return;
+        this.isDragging = true;
+        this.startX = e.clientX - this.panX;
+        this.startY = e.clientY - this.panY;
+    },
+    drag(e) {
+        if (!this.isDragging) return;
+        this.panX = e.clientX - this.startX;
+        this.panY = e.clientY - this.startY;
+    },
+    endDrag() {
+        this.isDragging = false;
+    }
 }">
 <div class="bg-white rounded-lg border border-gray-200 shadow-lg shadow-blue-500/10">
     <div class="flex items-center justify-between p-4 border-b border-gray-200">
@@ -158,16 +224,14 @@
                         @endif
                     </td>
 
-                    {{-- KOLOM: Dokumen File (Horizontal - Compact & Rapi) --}}
+                    {{-- KOLOM: Dokumen File --}}
                     <td class="px-3 py-2.5">
                         @php
-                            // 1. Prioritas Utama: Ambil dari relasi 'documents'
                             $docs = $asset->documents ?? collect();
                             $files = $docs->isNotEmpty() 
                                 ? $docs->pluck('file_path')->toArray() 
                                 : [];
 
-                            // 2. Fallback: Cek kolom JSON 'document_files'
                             if (empty($files)) {
                                 $jsonFiles = is_array($asset->document_files) ? $asset->document_files : (is_string($asset->document_files) ? json_decode($asset->document_files, true) : []);
                                 if (!empty($jsonFiles)) {
@@ -175,7 +239,6 @@
                                 }
                             }
 
-                            // 3. Fallback: Cek kolom string 'document_file'
                             if (empty($files) && !empty($asset->document_file)) {
                                 $files = [$asset->document_file];
                             }
@@ -184,14 +247,16 @@
                         @if(!empty($files))
                             <div class="flex items-center gap-1 flex-nowrap overflow-x-auto max-w-xs no-scrollbar">
                                 @foreach($files as $file)
-                                    <a href="{{ asset('storage/' . $file) }}" target="_blank" 
-                                       class="inline-flex items-center gap-1 px-2 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100 text-[10px] font-medium transition-colors whitespace-nowrap"
-                                       title="{{ basename($file) }}">
+                                    <button type="button" 
+                                            @click="openPreview('{{ asset('storage/' . $file) }}', '{{ basename($file) }}')"
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100 text-[10px] font-medium transition-colors whitespace-nowrap cursor-pointer"
+                                            title="Klik untuk melihat {{ basename($file) }}">
                                         <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
                                         <span class="truncate max-w-[80px]">{{ Str::limit(basename($file), 12) }}</span>
-                                    </a>
+                                    </button>
                                 @endforeach
                             </div>
                         @else
@@ -247,5 +312,86 @@
         {{ $assets->appends(request()->query())->links() }}
     </div>
 </div>
+
+{{-- MODAL PREVIEW DOKUMEN (KOTAK LEBIH BESAR + ZOOM MINIMAL PAS KOTAK) --}}
+<div x-show="showModal" 
+     x-cloak
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0 scale-95"
+     x-transition:enter-end="opacity-100 scale-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100 scale-100"
+     x-transition:leave-end="opacity-0 scale-95"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    
+    {{-- Kotak modal diperbesar menjadi max-w-5xl --}}
+    <div class="bg-white rounded-2xl max-w-5xl w-full p-5 relative shadow-2xl flex flex-col max-h-[92vh] border border-gray-100" 
+         @click.outside="closePreview()">
+        
+        <!-- Header Modal & Toolbar -->
+        <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-100 gap-2">
+            <div class="flex items-center gap-3 min-w-0 pr-2">
+                <div class="p-2 rounded-xl bg-blue-50 text-blue-600 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="font-semibold text-gray-800 text-sm truncate" x-text="previewName || 'Preview Dokumen'"></h3>
+                    <p class="text-[11px] text-gray-400" x-show="isImage(previewUrl)">Scroll mouse untuk zoom, klik & tahan untuk menggeser gambar</p>
+                    <p class="text-[11px] text-gray-400" x-show="!isImage(previewUrl)">Pratinjau berkas dokumen</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 flex-shrink-0">
+                {{-- Tombol Zoom Manual --}}
+                <template x-if="isImage(previewUrl)">
+                    <div class="flex items-center bg-gray-100 border border-gray-200 rounded-lg p-0.5 mr-1">
+                        <button type="button" @click="zoomOut()" title="Zoom Out" class="p-1 text-gray-600 hover:text-blue-600 hover:bg-white rounded transition-colors" :disabled="zoomScale <= 1" :class="{'opacity-40 cursor-not-allowed': zoomScale <= 1}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                        </button>
+                        <button type="button" @click="resetZoom()" title="Reset Zoom" class="px-2 py-0.5 text-[11px] font-mono font-medium text-gray-700 hover:text-blue-600 hover:bg-white rounded transition-colors" x-text="Math.round(zoomScale * 100) + '%'"></button>
+                        <button type="button" @click="zoomIn()" title="Zoom In" class="p-1 text-gray-600 hover:text-blue-600 hover:bg-white rounded transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        </button>
+                    </div>
+                </template>
+
+                <a :href="previewUrl" download class="text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3"/></svg>
+                    Unduh
+                </a>
+                <button type="button" @click="closePreview()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Area Kotak Preview Gambar (Tinggi ditingkatkan ke 600px) -->
+        <div class="flex-1 overflow-hidden rounded-xl bg-slate-900/5 border border-gray-100 mt-3 p-2 flex items-center justify-center h-[600px] relative select-none"
+             @wheel.prevent="handleWheel($event)">
+            
+            {{-- Gambar Interaktif --}}
+            <template x-if="isImage(previewUrl)">
+                <div class="w-full h-full flex items-center justify-center overflow-hidden"
+                     @mousedown="startDrag($event)"
+                     @mousemove="drag($event)"
+                     @mouseup="endDrag()"
+                     @mouseleave="endDrag()">
+                    <img :src="previewUrl" 
+                         :style="'transform: translate3d(' + panX + 'px, ' + panY + 'px, 0px) scale(' + zoomScale + '); transition: ' + (isDragging ? 'none' : 'transform 0.12s ease-out') + '; cursor: ' + (zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default')"
+                         class="max-h-full max-w-full object-contain rounded-lg shadow-sm pointer-events-auto">
+                </div>
+            </template>
+            
+            {{-- PDF / Berkas Dokumen --}}
+            <template x-if="!isImage(previewUrl)">
+                <iframe :src="previewUrl" class="w-full h-full rounded-lg" frameborder="0"></iframe>
+            </template>
+        </div>
+    </div>
+</div>
+
 </div>
 @endsection
