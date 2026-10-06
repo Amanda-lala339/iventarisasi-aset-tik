@@ -27,7 +27,7 @@
 @endphp
 
 {{-- ============ HEADER ============ --}}
-<a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-50 transition-colors">← Kembali ke Dashboard</a>
+<a href="{{ route('dashboard') }}" class="px-4 py-2 border border-blue-500 rounded text-sm text-blue-800 hover:bg-blue-100 transition-colors">← Kembali ke Dashboard</a>
 <br><br>
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-3 border-b border-gray-200 gap-4">
     <div>

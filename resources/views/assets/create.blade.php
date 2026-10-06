@@ -305,7 +305,7 @@
             
             {{-- ⭐ BARU: SPESIFIKASI HARDWARE MENDALAM --}}
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Spesifikasi Hardware (Untuk Kalkulasi Dashboard)</h4>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Spesifikasi Hardware</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Prosessor</label>
@@ -345,7 +345,7 @@
                             <input type="password" :name="`credentials[${index}][password]`" x-model="cred.password" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" placeholder="••••••••">
                         </div>
                         <div class="col-span-3">
-                            <label class="text-xs text-gray-600">Role / Keterangan</label>
+                            <label class="text-xs text-gray-600">Role</label>
                             <input type="text" :name="`credentials[${index}][role]`" x-model="cred.role" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" placeholder="Admin / Root">
                         </div>
                         <div class="col-span-1">

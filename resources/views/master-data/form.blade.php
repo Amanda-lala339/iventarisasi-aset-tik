@@ -31,7 +31,7 @@
 
 <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-200">
     <div>
-        <a href="{{ route('master-data.index', $type) }}" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1.5 mb-1">
+        <a href="{{ route('master-data.index', $type) }}" class="px-4 py-2 border border-blue-500 rounded text-sm text-blue-800 hover:bg-blue-100 transition-colors">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
