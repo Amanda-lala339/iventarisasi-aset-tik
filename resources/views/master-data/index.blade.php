@@ -181,6 +181,9 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-blue-50">
                     <tr>
+                        @if($type === 'ip_address')
+    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-56">Alokasi IP</th>
+@endif
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
                         @foreach($displayFields as $field => $fieldConfig)
                             @if(!in_array($field, ['description', 'is_active', 'color', 'icon', 'order', 'code']))
@@ -198,6 +201,29 @@
                         <tr class="hover:bg-gray-50 transition-colors"
                             x-show="matches(@js($item->toArray()), @js((bool) $item->is_active), @js($item->asset_category_code ?? ''))">
 
+                    @if($type === 'ip_address')
+    <td class="px-6 py-3.5 text-sm text-gray-800">
+        @php
+            $total   = $item->total_ips;
+            $used    = $item->used_ips;
+            $free    = $item->free_ips;
+            $percent = $total > 0 ? min(100, round(($used / $total) * 100, 1)) : 0;
+            $color   = $percent > 90 ? 'bg-red-500' : ($percent > 70 ? 'bg-yellow-500' : 'bg-blue-600');
+        @endphp
+        <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+                <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div class="{{ $color }} h-2 rounded-full transition-all" style="width: {{ $percent }}%"></div>
+                </div>
+                <span class="text-xs font-semibold text-gray-700 whitespace-nowrap">{{ $used }} / {{ $total }}</span>
+            </div>
+            <div class="flex justify-between text-[10px] text-gray-500">
+                <span>Terpakai: <b class="text-gray-700">{{ $used }}</b></span>
+                <span>Kosong: <b class="text-green-600">{{ $free }}</b></span>
+            </div>
+        </div>
+    </td>
+@endif
                             <td class="px-6 py-3.5 text-sm text-gray-400">
                                 {{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}
                             </td>

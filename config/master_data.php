@@ -510,50 +510,52 @@ return [
         ],
     ],
 
-    // ===== KATEGORI BARU: IP ADDRESS =====
-    // Ini sejajar dengan kategori lain di atas (bukan nested di dalam fields siapa pun).
+        // ===== KATEGORI BARU: SUBNET / POOL IP =====
     'ip_address' => [
-        'label' => 'IP Address',
-        'model' => \App\Models\ServerIp::class,
-        'icon' => 'fas fa-network-wired',
+        'label' => 'Subnet',
+        'model' => \App\Models\Subnet::class,
+        'icon'  => 'fas fa-network-wired',
         'group' => 'Teknologi',
         'fields' => [
-            'server_id' => [
-                'label' => 'Server',
-                'type' => 'select',
+            'name' => [
+                'label'    => 'Nama Subnet',
+                'type'     => 'text',
                 'required' => true,
-                'options_source' => 'servers',
-                'rules' => ['required', 'exists:servers,id'],
             ],
-            'ip_address' => [
-                'label' => 'Alamat IP',
-                'type' => 'text',
+            'start_ip' => [
+                'label'    => 'IP Awal',
+                'type'     => 'text',
                 'required' => true,
+                'rules'    => ['required', 'ip'],
+            ],
+            'end_ip' => [
+                'label'    => 'IP Akhir',
+                'type'     => 'text',
+                'required' => true,
+                'rules'    => ['required', 'ip'],
             ],
             'type' => [
-                'label' => 'Tipe',
-                'type' => 'select',
+                'label'    => 'Tipe',
+                'type'     => 'select',
                 'required' => true,
-                'options' => [
-                    'Publik' => 'Publik',
+                'options'  => [
+                    'Publik'   => 'Publik',
                     'Internal' => 'Internal',
-                    'Lainnya' => 'Lainnya',
+                    'Lainnya'  => 'Lainnya',
                 ],
-                'rules' => ['required', 'in:Publik,Internal,Lainnya'],
             ],
-            'is_primary' => [
-                'label' => 'Jadikan IP Utama',
-                'type' => 'checkbox',
-                'default' => false,
+            'description' => [
+                'label'    => 'Deskripsi',
+                'type'     => 'textarea',
+                'required' => false,
             ],
             'is_active' => [
-                'label' => 'Aktif',
-                'type' => 'checkbox',
+                'label'   => 'Aktif',
+                'type'    => 'checkbox',
                 'default' => true,
             ],
         ],
     ],
-        // ... kode existing lainnya ...
     
     'locations' => [
         'label' => 'Lokasi Keberadaan Aset',

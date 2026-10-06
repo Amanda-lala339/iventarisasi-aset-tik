@@ -9,12 +9,17 @@ class ServerIp extends Model
     public const TYPES = ['Publik', 'Internal', 'Lainnya'];
 
     protected $fillable = [
-        'server_id', 'subnet_id', 'ip_address', 'type', 'is_primary', 'is_active',
+        'server_id',
+        'subnet_id',
+        'ip_address',
+        'type',
+        'is_primary',
+        'is_active',
     ];
 
     protected $casts = [
         'is_primary' => 'boolean',
-        'is_active' => 'boolean',
+        'is_active'  => 'boolean',
     ];
 
     public function server()
@@ -22,17 +27,18 @@ class ServerIp extends Model
         return $this->belongsTo(Server::class);
     }
 
-public function subdomains()
-{
-    return $this->belongsToMany(
-        Subdomain::class,
-        'subdomain_server_ip',   
-        'server_ip_id',          
-        'subdomain_id'           
-    );
-}
-public function subnet()
-{
-    return $this->belongsTo(Subnet::class);
-}
+    public function subdomains()
+    {
+        return $this->belongsToMany(
+            Subdomain::class,
+            'subdomain_server_ip',
+            'server_ip_id',
+            'subdomain_id'
+        );
+    }
+
+    public function subnet()
+    {
+        return $this->belongsTo(Subnet::class);
+    }
 }
