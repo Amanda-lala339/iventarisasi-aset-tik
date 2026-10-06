@@ -11,7 +11,7 @@
 </a>
 <div class="max-w-4xl mx-auto bg-white rounded-lg border border-blue-300 p-6 shadow-md mt-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Tambah Aset Baru</h2>
-    
+
     @if ($errors->any())
         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             <p class="font-semibold">Terjadi kesalahan:</p>
@@ -25,7 +25,7 @@
     @endif
     <form method="POST" action="{{ route('assets.store') }}" enctype="multipart/form-data" id="assetForm">
         @csrf
-        
+
         {{-- Kategori & Kode --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <div>
@@ -46,6 +46,7 @@
                     class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
         </div>
+
         {{-- 1. DATA & INFORMASI (DI) --}}
         <div id="fields-DI" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Data & Informasi</h3>
@@ -71,7 +72,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Penyusunan/Pengesahan</label>
                     <input type="number" name="year" value="{{ old('year') }}" min="1900" max="{{ date('Y') + 10 }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status Aset</label>
                     <select name="status" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="" selected disabled>Pilih...</option>
@@ -117,41 +118,62 @@
                     </div>
                 </div>
             </div>
+
+            {{-- CIA TRIAD (dengan data-value untuk auto-kritikalitas) --}}
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Kritikalitas Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kerahasiaan</label>
-                        <select name="confidentiality" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="confidentiality" id="cia-confidentiality" class="cia-select w-full border border-gray-300 rounded px-3 py-2 text-sm">
                             <option value="" selected disabled>Pilih...</option>
                             @foreach($confidentialityLevels['DI'] ?? [] as $opt)
-                                <option value="{{ $opt->name }}" @selected(old('confidentiality') == $opt->name)>{{ $opt->name }}</option>
+                                @php
+                                    $name = strtolower($opt->name);
+                                    $val = str_contains($name, 'terbuka') || str_contains($name, 'publik') ? 1
+                                          : (str_contains($name, 'terbatas') ? 2
+                                          : (str_contains($name, 'strategis') || str_contains($name, 'rahasia') ? 3 : 0));
+                                @endphp
+                                <option value="{{ $opt->name }}" data-value="{{ $val }}" @selected(old('confidentiality') == $opt->name)>{{ $opt->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Integritas</label>
-                        <select name="integrity" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="integrity" id="cia-integrity" class="cia-select w-full border border-gray-300 rounded px-3 py-2 text-sm">
                             <option value="" selected disabled>Pilih...</option>
                             @foreach($integrityLevels['DI'] ?? [] as $opt)
-                                <option value="{{ $opt->name }}" @selected(old('integrity') == $opt->name)>{{ $opt->name }}</option>
+                                @php
+                                    $name = strtolower($opt->name);
+                                    $val = str_contains($name, 'penunjang') || str_contains($name, 'umum') ? 1
+                                          : (str_contains($name, 'administrasi') || str_contains($name, 'proses') ? 2
+                                          : (str_contains($name, 'vital') || str_contains($name, 'keputusan') ? 3 : 0));
+                                @endphp
+                                <option value="{{ $opt->name }}" data-value="{{ $val }}" @selected(old('integrity') == $opt->name)>{{ $opt->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Ketersediaan</label>
-                        <select name="availability" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        <select name="availability" id="cia-availability" class="cia-select w-full border border-gray-300 rounded px-3 py-2 text-sm">
                             <option value="" selected disabled>Pilih...</option>
                             @foreach($availabilityLevels['DI'] ?? [] as $opt)
-                                <option value="{{ $opt->name }}" @selected(old('availability') == $opt->name)>{{ $opt->name }}</option>
+                                @php
+                                    $name = strtolower($opt->name);
+                                    $val = str_contains($name, 'fleksibel') || str_contains($name, 'non-kritis') || str_contains($name, 'non kritis') ? 1
+                                          : (str_contains($name, 'rutin') || str_contains($name, 'terjadwal') ? 2
+                                          : (str_contains($name, 'seketika') || str_contains($name, 'real-time') || str_contains($name, 'realtime') ? 3 : 0));
+                                @endphp
+                                <option value="{{ $opt->name }}" data-value="{{ $val }}" @selected(old('availability') == $opt->name)>{{ $opt->name }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
             </div>
+
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
-                <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                <select name="criticality" class="criticality-select w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($criticalityLevels['DI'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
@@ -159,6 +181,7 @@
                 </select>
             </div>
         </div>
+
         {{-- 2. PERANGKAT LUNAK (PL) --}}
         <div id="fields-PL" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Lunak</h3>
@@ -254,21 +277,19 @@
                     </select>
                 </div>
             </div>
-            
-            {{-- PERUBAHAN: Upload Dokumen dengan Validasi 5MB & Format Tertentu --}}
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
                     Upload Dokumen Pendukung <span class="text-xs text-blue-600 font-semibold">(Maks. 5MB, Format: PDF, Word, Excel, & Gambar)</span>
                 </label>
                 <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp"
                     class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                
                 <div id="pl-file-error" class="text-red-600 text-xs mt-2 hidden"></div>
                 <div id="pl-file-list" class="file-list mt-3 space-y-2"></div>
             </div>
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
-                <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                <select name="criticality" class="criticality-select w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($criticalityLevels['PL'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
@@ -276,6 +297,7 @@
                 </select>
             </div>
         </div>
+
         {{-- 3. PERANGKAT KERAS (PK) --}}
         <div id="fields-PK" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Perangkat Keras</h3>
@@ -297,13 +319,12 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Spesifikasi Aset</label>
                     <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ old('specification') }}</textarea>
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Pengadaan</label>
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
             </div>
-            
-            {{-- ⭐ BARU: SPESIFIKASI HARDWARE MENDALAM --}}
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Spesifikasi Hardware</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -325,15 +346,13 @@
                     </div>
                 </div>
             </div>
-            
-            {{-- ⭐ BARU: MULTI USERNAME & PASSWORD (Server, NAS, Access Point) --}}
+
             <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md" x-data="credentialManager()">
                 <h4 class="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
                     Kredensial Akses (Server / NAS / Access Point)
                 </h4>
                 <p class="text-xs text-gray-500 mb-3">Kredensial akan dienkripsi end-to-end di database.</p>
-
                 <template x-for="(cred, index) in credentials" :key="index">
                     <div class="grid grid-cols-12 gap-2 mb-2 items-end bg-white p-2 rounded border border-gray-200">
                         <div class="col-span-4">
@@ -355,13 +374,12 @@
                         </div>
                     </div>
                 </template>
-
                 <button type="button" @click="addCred()" class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Tambah Akun Akses
                 </button>
             </div>
-            
+
             <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Identifikasi Keberadaan Aset</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -396,16 +414,22 @@
             </div>
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select name="asset_type_category" id="pk-asset-type" class="category-level-select w-full border border-gray-300 rounded px-3 py-2 text-sm">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($assetTypeCategories['PK'] ?? [] as $opt)
-                        <option value="{{ $opt->name }}" @selected(old('asset_type_category') == $opt->name)>{{ $opt->name }}</option>
+                        @php
+                            $name = strtolower($opt->name);
+                            $level = str_contains($name, 'strategis') ? 'Tinggi'
+                                   : (str_contains($name, 'operasional') || str_contains($name, 'utama') ? 'Sedang'
+                                   : 'Rendah');
+                        @endphp
+                        <option value="{{ $opt->name }}" data-level="{{ $level }}" @selected(old('asset_type_category') == $opt->name)>{{ $opt->name }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
-                <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                <select name="criticality" class="criticality-select w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($criticalityLevels['PK'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
@@ -413,6 +437,7 @@
                 </select>
             </div>
         </div>
+
         {{-- 4. SARANA PENDUKUNG (SP) --}}
         <div id="fields-SP" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">Sarana Pendukung</h3>
@@ -434,7 +459,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Spesifikasi Aset</label>
                     <textarea name="specification" rows="3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ old('specification') }}</textarea>
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Pengadaan</label>
                     <input type="number" name="year" value="{{ old('year') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                 </div>
@@ -473,16 +498,22 @@
             </div>
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <select name="asset_type_category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select name="asset_type_category" id="sp-asset-type" class="category-level-select w-full border border-gray-300 rounded px-3 py-2 text-sm">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($assetTypeCategories['SP'] ?? [] as $opt)
-                        <option value="{{ $opt->name }}" @selected(old('asset_type_category') == $opt->name)>{{ $opt->name }}</option>
+                        @php
+                            $name = strtolower($opt->name);
+                            $level = str_contains($name, 'strategis') ? 'Tinggi'
+                                   : (str_contains($name, 'operasional') || str_contains($name, 'utama') ? 'Sedang'
+                                   : 'Rendah');
+                        @endphp
+                        <option value="{{ $opt->name }}" data-level="{{ $level }}" @selected(old('asset_type_category') == $opt->name)>{{ $opt->name }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                 <label class="block text-sm font-semibold text-blue-800 mb-1">Kritikalitas Aset</label>
-                <select name="criticality" class="w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
+                <select name="criticality" class="criticality-select w-full border border-blue-300 rounded px-3 py-2 text-sm bg-white font-medium">
                     <option value="" selected disabled>Pilih...</option>
                     @foreach($criticalityLevels['SP'] ?? [] as $opt)
                         <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
@@ -490,6 +521,7 @@
                 </select>
             </div>
         </div>
+
         {{-- 5. SDM & PIHAK KETIGA (PS) --}}
         <div id="fields-PS" class="category-fields hidden space-y-4">
             <h3 class="text-sm font-semibold text-blue-600 border-b pb-2">SDM & Pihak Ketiga</h3>
@@ -544,21 +576,65 @@
                 <input type="text" name="position" value="{{ old('position') }}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
             </div>
         </div>
+
         <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
             <a href="{{ url()->previous() }}" class="px-5 py-2.5 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Batal</a>
             <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition shadow-sm">Simpan Aset</button>
         </div>
     </form>
 </div>
+
 <script>
 function credentialManager() {
     return {
         credentials: [{ username: '', password: '', role: '' }],
         addCred() { this.credentials.push({ username: '', password: '', role: '' }); },
-        removeCred(index) { 
-            this.credentials.splice(index, 1); 
-            if(this.credentials.length === 0) this.addCred(); 
+        removeCred(index) {
+            this.credentials.splice(index, 1);
+            if (this.credentials.length === 0) this.addCred();
         }
+    }
+}
+
+/* ============================================================
+   AUTO-CALCULATE KRITIKALITAS (TANPA BADGE VISUAL)
+   ============================================================ */
+function selectCriticality(selectEl, level) {
+    if (!selectEl) return;
+    for (let option of selectEl.options) {
+        if (option.value === level || option.textContent.trim() === level) {
+            option.selected = true;
+            selectEl.dispatchEvent(new Event('change'));
+            break;
+        }
+    }
+}
+
+function calculateDICriticality() {
+    const cSelect = document.getElementById('cia-confidentiality');
+    const iSelect = document.getElementById('cia-integrity');
+    const aSelect = document.getElementById('cia-availability');
+    const critSelect = document.querySelector('#fields-DI .criticality-select');
+
+    if (!cSelect || !iSelect || !aSelect || !critSelect) return;
+
+    const cVal = parseInt(cSelect.selectedOptions[0]?.dataset?.value || 0);
+    const iVal = parseInt(iSelect.selectedOptions[0]?.dataset?.value || 0);
+    const aVal = parseInt(aSelect.selectedOptions[0]?.dataset?.value || 0);
+
+    if (cVal && iVal && aVal) {
+        const sum = cVal + iVal + aVal;
+        let targetLevel = sum >= 7 ? 'Tinggi' : (sum >= 4 ? 'Sedang' : 'Rendah');
+        selectCriticality(critSelect, targetLevel);
+    }
+}
+
+function setCategoryCriticality(selectEl, categoryCode) {
+    const critSelect = document.querySelector(`#fields-${categoryCode} .criticality-select`);
+    if (!selectEl || !critSelect) return;
+    const level = selectEl.selectedOptions[0]?.dataset?.level;
+    if (level) {
+        selectCriticality(critSelect, level);
     }
 }
 
@@ -567,6 +643,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fields = document.querySelectorAll('.category-fields');
     const assetCodeInput = document.getElementById('asset_code_input');
     const lastCodes = @json($lastCodes ?? []);
+
     function showFields() {
         const selected = categorySelect.options[categorySelect.selectedIndex];
         const code = selected.getAttribute('data-code');
@@ -585,6 +662,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+
     function updateAssetCode(categoryCode) {
         const input = document.getElementById('asset_code_input');
         const preview = document.getElementById('asset_code_preview');
@@ -599,6 +677,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (preview) preview.textContent = fallback;
         }
     }
+
     categorySelect.addEventListener('change', function () {
         showFields();
         const selected = categorySelect.options[categorySelect.selectedIndex];
@@ -606,24 +685,35 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAssetCode(code);
     });
     showFields();
+
+    // === AUTO KRITIKALITAS EVENT LISTENERS ===
+    ['cia-confidentiality', 'cia-integrity', 'cia-availability'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', calculateDICriticality);
+    });
+
+    const pkType = document.getElementById('pk-asset-type');
+    if (pkType) pkType.addEventListener('change', function () { setCategoryCriticality(this, 'PK'); });
+
+    const spType = document.getElementById('sp-asset-type');
+    if (spType) spType.addEventListener('change', function () { setCategoryCriticality(this, 'SP'); });
+
     // Upload bertahap PL
     const plFileInput = document.getElementById('pl-file-input');
     const plFileListContainer = document.getElementById('pl-file-list');
     const plFileError = document.getElementById('pl-file-error');
     let plSelectedFiles = [];
-    
-    // PERUBAHAN: Konfigurasi validasi file (Maks 5MB & Format Tertentu)
+
     const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
-    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+    const maxSizeBytes = 5 * 1024 * 1024;
     if (plFileInput && plFileListContainer) {
         plFileInput.addEventListener('change', function () {
             plFileError.classList.add('hidden');
             plFileError.textContent = '';
             let errorMessages = [];
-            
+
             Array.from(this.files).forEach(file => {
                 const ext = file.name.split('.').pop().toLowerCase();
-                
                 if (!allowedExtensions.includes(ext)) {
                     errorMessages.push(`"${file.name}" (format tidak diizinkan)`);
                 } else if (file.size > maxSizeBytes) {
@@ -636,10 +726,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 plFileError.textContent = 'Gagal menambahkan: ' + errorMessages.join(', ');
                 plFileError.classList.remove('hidden');
             }
-            this.value = ''; 
+            this.value = '';
             renderPlFiles();
         });
-        
+
         function renderPlFiles() {
             plFileListContainer.innerHTML = '';
             if (plSelectedFiles.length === 0) return;
@@ -665,13 +755,13 @@ document.addEventListener('DOMContentLoaded', function () {
             totalDiv.textContent = `Total: ${plSelectedFiles.length} file akan diupload`;
             plFileListContainer.appendChild(totalDiv);
         }
-        
-        window.removePlFile = function(index) {
+
+        window.removePlFile = function (index) {
             plSelectedFiles.splice(index, 1);
             renderPlFiles();
         };
-        
-        document.getElementById('assetForm').addEventListener('submit', function(e) {
+
+        document.getElementById('assetForm').addEventListener('submit', function (e) {
             if (plSelectedFiles.length > 0) {
                 const dt = new DataTransfer();
                 plSelectedFiles.forEach(file => dt.items.add(file));
