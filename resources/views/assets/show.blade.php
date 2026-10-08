@@ -2,437 +2,352 @@
 @section('title', 'Detail Aset')
 @section('page', 'Detail Aset')
 @section('content')
-<style>
-    [x-cloak] { display: none !important; }
-</style>
-<div class="max-w-6xl mx-auto pb-10" x-data="{ 
-    showModal: false, previewUrl: '', previewName: '', zoomScale: 1, panX: 0, panY: 0, isDragging: false, startX: 0, startY: 0,
-    isImage(url) { return /\.(jpg|jpeg|png|gif|webp|svg)($|\?)/i.test(url); },
-    resetZoom() { this.zoomScale = 1; this.panX = 0; this.panY = 0; this.isDragging = false; },
-    zoomIn() { if (this.zoomScale < 5) this.zoomScale = Math.round((this.zoomScale + 0.15) * 100) / 100; },
-    zoomOut() { if (this.zoomScale > 1) { this.zoomScale = Math.max(1, Math.round((this.zoomScale - 0.15) * 100) / 100); if (this.zoomScale === 1) { this.panX = 0; this.panY = 0; } } },
-    handleWheel(e) { if (!this.isImage(this.previewUrl)) return; const step = 0.10; if (e.deltaY < 0) { if (this.zoomScale < 5) this.zoomScale = Math.round((this.zoomScale + step) * 100) / 100; } else { if (this.zoomScale > 1) { this.zoomScale = Math.max(1, Math.round((this.zoomScale - step) * 100) / 100); if (this.zoomScale === 1) { this.panX = 0; this.panY = 0; } } } },
-    startDrag(e) { if (this.zoomScale <= 1) return; this.isDragging = true; this.startX = e.clientX - this.panX; this.startY = e.clientY - this.panY; },
-    drag(e) { if (!this.isDragging) return; this.panX = e.clientX - this.startX; this.panY = e.clientY - this.startY; },
-    endDrag() { this.isDragging = false; }
-}">
-    {{-- ============================================= --}}
-    {{-- HELPERS: badge status mapping --}}
-    {{-- ============================================= --}}
-    @php
-        $badgeStatus = function ($value, array $map, $default = 'status-warning') {
-            return $map[$value] ?? $default;
-        };
-        $criticalityStatus = $badgeStatus($asset->criticality ?? null, [
-            'Tinggi' => 'status-offline',
-            'Sedang' => 'status-warning',
-            'Rendah' => 'status-active',
-        ]);
-        $statusDI = $badgeStatus($asset->status ?? null, [
-            'Sudah Disahkan' => 'status-active',
-            'Draft'          => 'status-warning',
-        ]);
-        $statusPL = $badgeStatus($asset->status ?? null, [
-            'Aktif'              => 'status-active',
-            'Dalam Pemeliharaan' => 'status-warning',
-        ], 'status-offline');
-        $conditionStatus = $badgeStatus($asset->condition ?? null, [
-            'Layak'           => 'status-active',
-            'Perlu Perbaikan' => 'status-warning',
-        ], 'status-offline');
-        $categoryBadge = function () use ($asset, $code) {
-            if (is_object($asset->category)) {
-                return '<span class="badge badge-physical">' . e($asset->category->code) . ' &middot; ' . e($asset->category->name) . '</span>';
-            }
-            return '<span class="badge bg-gray-100 text-gray-500">' . e($code ?? 'Tidak Dikenali') . '</span>';
-        };
-    @endphp
+<style>[x-cloak] { display: none !important; }</style>
 
-    {{-- ============================================= --}}
+@php
+    $categoryNames = [
+        'DI' => 'Data & Informasi',
+        'PL' => 'Perangkat Lunak',
+        'PK' => 'Perangkat Keras',
+        'SP' => 'Sarana Pendukung',
+        'PS' => 'SDM & Pihak Ketiga',
+    ];
+    $displayName = $categoryNames[$code] ?? 'Aset';
+    $backRoute = in_array(strtolower($code), ['di', 'pl', 'pk', 'sp', 'ps'])
+        ? route('assets.category.' . strtolower($code))
+        : route('assets.index');
+
+    $pill = [
+        'green'  => 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+        'amber'  => 'bg-amber-50 text-amber-700 border border-amber-100',
+        'red'    => 'bg-red-50 text-red-700 border border-red-100',
+        'gray'   => 'bg-gray-50 text-gray-500 border border-gray-100',
+    ];
+    $badge = function ($value, array $map, $default = 'amber') use ($pill) {
+        if ($value === null || $value === '') return '<span class="text-gray-400">-</span>';
+        $tone = $map[$value] ?? $default;
+        return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ' . $pill[$tone] . '">' . e($value) . '</span>';
+    };
+    $statusDI  = fn ($v) => $badge($v, ['Sudah Disahkan' => 'green', 'Draft' => 'amber']);
+    $statusPL  = fn ($v) => $badge($v, ['Aktif' => 'green', 'Dalam Pemeliharaan' => 'amber'], 'red');
+    $condition = fn ($v) => $badge($v, ['Layak' => 'green', 'Perlu Perbaikan' => 'amber'], 'red');
+
+    $crit = $asset->criticality ?? null;
+    $critTone = match ($crit) {
+        'Tinggi' => ['chip' => 'bg-red-500/90 text-white',     'hint' => 'Gangguan berdampak besar pada operasional'],
+        'Sedang' => ['chip' => 'bg-amber-400 text-amber-950',  'hint' => 'Gangguan berdampak sedang pada operasional'],
+        'Rendah' => ['chip' => 'bg-emerald-400 text-emerald-950', 'hint' => 'Gangguan berdampak kecil pada operasional'],
+        default  => ['chip' => 'bg-white/20 text-white',       'hint' => 'Tingkat kepentingan belum ditentukan'],
+    };
+
+    $row = function ($label, $value, $opts = []) {
+        $mono = !empty($opts['mono']) ? 'font-mono' : '';
+        $raw  = !empty($opts['raw']);
+        $out  = $raw ? $value : (($value === null || $value === '') ? '<span class="text-gray-400">-</span>' : e($value));
+        return '<div class="flex flex-col sm:flex-row sm:gap-6 py-2.5">'
+             . '<dt class="sm:w-56 shrink-0 text-gray-500">' . e($label) . '</dt>'
+             . '<dd class="text-gray-900 ' . $mono . ' break-words min-w-0">' . $out . '</dd></div>';
+    };
+
+    $sectionIcons = [
+        'DI' => 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4',
+        'PL' => 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
+        'PK' => 'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2',
+        'SP' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+        'PS' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+    ];
+
+    $docs  = $asset->documents ?? collect();
+    $files = $docs->isNotEmpty() ? $docs->pluck('file_path')->toArray() : [];
+    if (empty($files) && !empty($asset->document_file)) $files = [$asset->document_file];
+
+    $nameLabel = $code === 'PS' ? 'Nama Personil' : 'Nama Aset';
+@endphp
+
+<div class="max-w-6xl mx-auto pb-10 space-y-4" x-data="docPreview()">
+
     {{-- BACK LINK --}}
-    {{-- ============================================= --}}
-    @php
-        $categoryNames = [
-            'DI' => 'Data & Informasi',
-            'PL' => 'Perangkat Lunak',
-            'PK' => 'Perangkat Keras',
-            'SP' => 'Sarana Pendukung',
-            'PS' => 'SDM & Pihak Ketiga',
-        ];
-        $displayName = $categoryNames[$code] ?? 'Aset';
-        $backRoute = in_array(strtolower($code), ['di', 'pl', 'pk', 'sp', 'ps'])
-            ? route('assets.category.' . strtolower($code))
-            : route('assets.index');
-    @endphp
-    <a href="{{ $backRoute }}" class="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-800 transition-colors mb-5">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-        </svg>
+    <a href="{{ $backRoute }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-50 hover:border-blue-300 transition-all shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
         Kembali ke Daftar {{ $displayName }}
     </a>
 
-    {{-- ============================================= --}}
-    {{-- HEADER --}}
-    {{-- ============================================= --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div>
-            <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-bold text-blue-600 tracking-tight">{{ $asset->asset_code }}</h1>
-                {!! $categoryBadge() !!}
+    {{-- HEADER BANNER --}}
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 px-6 py-6 shadow-lg shadow-blue-600/30">
+        <div class="absolute -right-10 -top-16 w-64 h-64 rounded-full bg-white/10"></div>
+        <div class="absolute right-24 -bottom-24 w-56 h-56 rounded-full bg-white/10"></div>
+        <div class="relative flex flex-wrap items-center justify-between gap-4">
+            <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/15 border border-white/30 text-xs font-semibold text-white">
+                        <svg class="w-3.5 h-3.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $sectionIcons[$code] ?? $sectionIcons['DI'] }}" /></svg>
+                        {{ is_object($asset->category) ? $asset->category->code . ' · ' . $asset->category->name : ($code ?? 'Tidak Dikenali') }}
+                    </span>
+                </div>
+                <h1 class="mt-2 text-2xl md:text-3xl font-bold text-white tracking-tight font-mono">{{ $asset->asset_code }}</h1>
+                <p class="mt-1 text-sm text-blue-100 truncate">{{ $asset->name ?? 'Detail lengkap informasi aset' }}</p>
             </div>
-            <p class="text-sm text-gray-500 mt-1">Detail lengkap informasi aset</p>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-            <a href="{{ route('assets.edit', $asset) }}" class="inline-flex items-center gap-1.5 bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-400 transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
-                </svg>
-                Edit
-            </a>
-            <form method="POST" action="{{ route('assets.destroy', $asset) }}" onsubmit="return confirm('Yakin hapus aset ini?')">
-                @csrf @method('DELETE')
-                <button type="submit" class="inline-flex items-center gap-1.5 bg-red-600 text-white px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                    </svg>
-                    Hapus
-                </button>
-            </form>
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ route('assets.edit', $asset) }}" class="bg-white hover:bg-blue-50 text-blue-700 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold transition-colors shadow-md shadow-blue-900/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
+                    Edit
+                </a>
+                <form method="POST" action="{{ route('assets.destroy', $asset) }}" onsubmit="return confirm('Yakin hapus aset ini?')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="bg-white/15 hover:bg-red-600 border border-white/30 hover:border-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                        Hapus
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
-    {{-- ============================================= --}}
     {{-- INFO UMUM + KRITIKALITAS --}}
-    {{-- ============================================= --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Informasi Umum</h3>
-            <dl class="divide-y divide-gray-100 text-sm">
-                <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                    <dt class="sm:w-56 shrink-0 text-gray-500">Kode Aset</dt>
-                    <dd class="font-mono font-medium text-gray-900">{{ $asset->asset_code }}</dd>
-                </div>
-                <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                    <dt class="sm:w-56 shrink-0 text-gray-500">Kategori</dt>
-                    <dd>{!! $categoryBadge() !!}</dd>
-                </div>
-                <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                    <dt class="sm:w-56 shrink-0 text-gray-500">Sub Klasifikasi</dt>
-                    <dd class="text-gray-900">{{ $asset->sub_classification ?? '-' }}</dd>
-                </div>
-                <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                    <dt class="sm:w-56 shrink-0 text-gray-500">{{ $code === 'PS' ? 'Nama Personil' : 'Nama Aset' }}</dt>
-                    <dd class="font-medium text-gray-900">{{ $asset->name ?? '-' }}</dd>
-                </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="{{ $code === 'PS' ? 'lg:col-span-3' : 'lg:col-span-2' }} bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 overflow-hidden">
+            <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Informasi Umum</h3>
+            </div>
+            <dl class="divide-y divide-gray-100 text-sm px-5 py-2">
+                {!! $row('Kode Aset', $asset->asset_code, ['mono' => true]) !!}
+                {!! $row('Kategori', is_object($asset->category) ? $asset->category->code . ' · ' . $asset->category->name : ($code ?? 'Tidak Dikenali')) !!}
+                {!! $row('Sub Klasifikasi', $asset->sub_classification) !!}
+                {!! $row($nameLabel, $asset->name) !!}
                 @if($code === 'PL')
-                <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                    <dt class="sm:w-56 shrink-0 text-gray-500">Klasifikasi Data</dt>
-                    <dd class="text-gray-900">{{ $asset->data_classification ?? '-' }}</dd>
-                </div>
+                    {!! $row('Klasifikasi Data', $asset->data_classification) !!}
                 @endif
             </dl>
         </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Kritikalitas Aset</h3>
-            <div class="flex-1 flex flex-col items-center justify-center text-center gap-2">
-                <span class="badge {{ $criticalityStatus }} text-sm px-3 py-1">
-                    {{ $asset->criticality ?? '-' }}
-                </span>
-                <p class="text-xs text-gray-400">Tingkat kepentingan aset ini bagi operasional</p>
+
+        @if($code !== 'PS')
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 p-5 text-white shadow-lg shadow-blue-500/20 flex flex-col">
+            <div class="absolute -right-8 -bottom-10 w-40 h-40 rounded-full bg-white/10"></div>
+            <h3 class="relative flex items-center gap-2 text-xs font-bold text-blue-100 uppercase tracking-wider">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                Kritikalitas Aset
+            </h3>
+            <div class="relative flex-1 flex flex-col items-center justify-center text-center gap-3 py-4">
+                <span class="inline-flex items-center px-5 py-1.5 rounded-full text-lg font-bold shadow-md {{ $critTone['chip'] }}">{{ $crit ?? 'Belum diisi' }}</span>
+                <p class="text-xs text-blue-100 max-w-[14rem]">{{ $critTone['hint'] }}</p>
             </div>
         </div>
+        @endif
     </div>
 
-    {{-- ============================================= --}}
-    {{-- DATA & INFORMASI (DI) --}}
-    {{-- ============================================= --}}
+    {{-- ============ DATA & INFORMASI ============ --}}
     @if($code === 'DI')
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
-        <h3 class="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-4 pb-3 border-b border-gray-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.07-3.694 3.75-8.25 3.75s-8.25-1.68-8.25-3.75S7.444 2.625 12 2.625s8.25 1.68 8.25 3.75Z M3.75 6.375v11.25C3.75 19.694 7.444 21.375 12 21.375s8.25-1.68 8.25-3.75V6.375" />
-            </svg>
-            Detail Data & Informasi
-        </h3>
-        <dl class="divide-y divide-gray-100 text-sm">
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Nomor Dokumen</dt><dd class="font-mono text-gray-900">{{ $asset->document_number ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Tahun Penyusunan / Pengesahan</dt><dd class="text-gray-900">{{ $asset->year ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Status Aset</dt><dd><span class="badge {{ $statusDI }}">{{ $asset->status ?? '-' }}</span></dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Lokasi Keberadaan</dt><dd class="text-gray-900">{{ $asset->location ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Format Penyimpanan</dt><dd class="text-gray-900">{{ $asset->storage_format ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Pemilik Aset</dt><dd class="text-gray-900">{{ $asset->owner ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Retensi Aset</dt><dd class="text-gray-900">{{ $asset->retention ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kerahasiaan</dt><dd class="text-gray-900">{{ $asset->confidentiality ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Integritas</dt><dd class="text-gray-900">{{ $asset->integrity ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Ketersediaan</dt><dd class="text-gray-900">{{ $asset->availability ?? '-' }}</dd></div>
+    <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 overflow-hidden">
+        <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $sectionIcons['DI'] }}" /></svg>
+            <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Detail Data & Informasi</h3>
+        </div>
+        <dl class="divide-y divide-gray-100 text-sm px-5 py-2">
+            {!! $row('Nomor Dokumen', $asset->document_number, ['mono' => true]) !!}
+            {!! $row('Tahun Penyusunan / Pengesahan', $asset->year) !!}
+            {!! $row('Status Aset', $statusDI($asset->status), ['raw' => true]) !!}
+            {!! $row('Lokasi Keberadaan', $asset->location) !!}
+            {!! $row('Format Penyimpanan', $asset->storage_format) !!}
+            {!! $row('Pemilik Aset', $asset->owner) !!}
+            {!! $row('Retensi Aset', $asset->retention) !!}
         </dl>
-    </div>
-    @endif
 
-    {{-- ============================================= --}}
-    {{-- PERANGKAT LUNAK (PL) --}}
-    {{-- ============================================= --}}
-    @if($code === 'PL')
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
-        <h3 class="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-4 pb-3 border-b border-gray-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
-            </svg>
-            Detail Perangkat Lunak
-        </h3>
-        <dl class="divide-y divide-gray-100 text-sm">
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Tahun Rilis</dt><dd class="text-gray-900">{{ $asset->year ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Platform</dt><dd class="text-gray-900">{{ $asset->platform ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Uraian Singkat Aplikasi</dt><dd class="text-gray-900">{{ $asset->app_description ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Alamat Aplikasi/URL</dt><dd class="text-gray-900 break-all">@if($asset->app_url)<a href="{{ $asset->app_url }}" target="_blank" class="text-blue-600 hover:text-blue-700 hover:underline">{{ $asset->app_url }}</a>@else-@endif</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Alamat IP</dt><dd class="font-mono text-gray-900">{{ $asset->ip_address ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Aplikasi IP Publik/Internal</dt><dd class="font-mono text-gray-900">{{ $asset->ip_public_internal ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Sistem Operasi Server</dt><dd class="text-gray-900">{{ $asset->os_server ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Pemilik Aset (OPD)</dt><dd class="text-gray-900">{{ $asset->owner ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Data Center</dt><dd class="text-gray-900">{{ $asset->data_center ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kontak Pengelola/PIC</dt><dd class="text-gray-900">{{ $asset->contact_pic ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Status</dt><dd><span class="badge {{ $statusPL }}">{{ $asset->status ?? '-' }}</span></dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kategori SE</dt><dd class="text-gray-900">{{ $asset->se_category ?? '-' }}</dd></div>
-            
-            {{-- DOKUMEN PENDUKUNG (KHUSUS PL) --}}
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                <dt class="sm:w-56 shrink-0 text-gray-500">Dokumen Pendukung</dt>
-                <dd class="text-gray-900">
-                    @php
-                        $docs = $asset->documents ?? collect();
-                        $files = $docs->isNotEmpty() ? $docs->pluck('file_path')->toArray() : [];
-                        if (empty($files) && !empty($asset->document_file)) {
-                            $files = [$asset->document_file];
-                        }
-                    @endphp
-                    @if(!empty($files))
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($files as $file)
-                                <button type="button"  
-                                        @click="showModal = true; previewUrl = '{{ asset('storage/' . $file) }}'; previewName = '{{ addslashes(basename($file)) }}'; resetZoom();"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-medium transition-colors cursor-pointer">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                    {{ basename($file) }}
-                                </button>
-                            @endforeach
-                        </div>
-                    @else
-                        <span class="text-gray-400">-</span>
-                    @endif
-                </dd>
-            </div>
-        </dl>
-    </div>
-    @endif
-
-    {{-- ============================================= --}}
-    {{-- PERANGKAT KERAS (PK) --}}
-    {{-- ============================================= --}}
-    @if($code === 'PK')
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
-        <h3 class="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-4 pb-3 border-b border-gray-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
-            </svg>
-            Detail Perangkat Keras
-        </h3>
-        <dl class="divide-y divide-gray-100 text-sm">
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Spesifikasi Aset</dt><dd class="text-gray-900">{{ $asset->specification ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Tahun Pengadaan</dt><dd class="text-gray-900">{{ $asset->year ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Lokasi Keberadaan</dt><dd class="text-gray-900">{{ $asset->location ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Pemilik Aset</dt><dd class="text-gray-900">{{ $asset->owner ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kondisi Aset</dt><dd><span class="badge {{ $conditionStatus }}">{{ $asset->condition ?? '-' }}</span></dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kategori Tipe</dt><dd class="text-gray-900">{{ $asset->asset_type_category ?? '-' }}</dd></div>
-            
-            {{-- ⭐ SPESIFIKASI HARDWARE MENDALAM --}}
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                <dt class="sm:w-56 shrink-0 text-gray-500">Jenis Prosessor</dt>
-                <dd class="text-gray-900 font-medium">{{ $asset->cpu_type ?? '-' }}</dd>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                <dt class="sm:w-56 shrink-0 text-gray-500">Jumlah Core (CPU)</dt>
-                <dd class="text-gray-900 font-mono">{{ $asset->cpu_cores ? $asset->cpu_cores . ' Cores' : '-' }}</dd>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                <dt class="sm:w-56 shrink-0 text-gray-500">Kapasitas RAM</dt>
-                <dd class="text-gray-900 font-mono">
-                    @if($asset->ram_gb)
-                        {{ $asset->ram_gb >= 1024 ? number_format($asset->ram_gb / 1024, 2) . ' TB' : $asset->ram_gb . ' GB' }}
-                    @else
-                        -
-                    @endif
-                </dd>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2">
-                <dt class="sm:w-56 shrink-0 text-gray-500">Kapasitas Storage</dt>
-                <dd class="text-gray-900 font-mono">
-                    @if($asset->storage_gb)
-                        {{ $asset->storage_gb >= 1000 ? number_format($asset->storage_gb / 1000, 2) . ' TB' : $asset->storage_gb . ' GB' }}
-                    @else
-                        -
-                    @endif
-                </dd>
-            </div>
-        </dl>
-    </div>
-
-    {{-- ============================================= --}}
-    {{-- KREDENSIAL AKSES (HANYA USERNAME, PASSWORD DISEMBUNYIKAN) --}}
-    {{-- ============================================= --}}
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
-        <h3 class="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-4 pb-3 border-b border-gray-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Kredensial Akses (Terenkripsi)
-        </h3>
-        
-        @if($asset->credentials && $asset->credentials->isNotEmpty())
-            <div class="space-y-2">
-                @foreach($asset->credentials as $cred)
-                    <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm">
-                        <div class="flex items-center gap-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                {{ $cred->role ?? 'User' }}
-                            </span>
-                            <div class="flex flex-col">
-                                <span class="text-[10px] text-gray-500 uppercase tracking-wider">Username</span>
-                                <span class="font-mono text-gray-800 font-medium">{{ $cred->username }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center gap-2 text-gray-500">
-                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                            </svg>
-                            <span class="text-xs font-medium">Password Terenkripsi</span>
-                        </div>
+        <div class="px-5 pb-5">
+            <h4 class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                Identifikasi Kritikalitas (CIA Triad)
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                @foreach([['Kerahasiaan', $asset->confidentiality], ['Integritas', $asset->integrity], ['Ketersediaan', $asset->availability]] as [$ciaLabel, $ciaValue])
+                    <div class="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/60 to-white p-4">
+                        <div class="text-xs font-medium text-blue-600 mb-1">{{ $ciaLabel }}</div>
+                        <div class="text-sm font-bold text-gray-900">{{ $ciaValue ?: '-' }}</div>
                     </div>
                 @endforeach
             </div>
-            
-            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-lg flex items-start gap-2">
-                <svg class="w-4 h-4 text-yellow-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <p class="text-[11px] text-yellow-800">
-                    <strong>Kebijakan Keamanan:</strong> Password disimpan secara terenkripsi di database untuk kepatuhan audit inventaris. 
-                    Untuk keperluan akses teknis, silakan hubungi Administrator Infrastruktur atau gunakan Password Manager resmi instansi.
-                </p>
-            </div>
-        @else
-            <div class="text-center py-8 text-gray-400">
-                <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                </svg>
-                <p class="text-sm">Tidak ada kredensial yang dicatat untuk perangkat ini.</p>
-            </div>
-        @endif
-    </div>
-    @endif
-
-    {{-- ============================================= --}}
-    {{-- SARANA PENDUKUNG (SP) --}}
-    {{-- ============================================= --}}
-    @if($code === 'SP')
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
-        <h3 class="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-4 pb-3 border-b border-gray-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25 2.25l-3.276-3.276c.256.886.433 1.815.528 2.758zm-3.824 4.673l-.213.265" />
-            </svg>
-            Detail Sarana Pendukung
-        </h3>
-        <dl class="divide-y divide-gray-100 text-sm">
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Spesifikasi Aset</dt><dd class="text-gray-900">{{ $asset->specification ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Tahun Pengadaan</dt><dd class="text-gray-900">{{ $asset->year ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Lokasi Keberadaan</dt><dd class="text-gray-900">{{ $asset->location ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Pemilik Aset</dt><dd class="text-gray-900">{{ $asset->owner ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kondisi Aset</dt><dd><span class="badge {{ $conditionStatus }}">{{ $asset->condition ?? '-' }}</span></dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kategori Tipe</dt><dd class="text-gray-900">{{ $asset->asset_type_category ?? '-' }}</dd></div>
-        </dl>
-    </div>
-    @endif
-
-    {{-- ============================================= --}}
-    {{-- SDM & PIHAK KETIGA (PS) --}}
-    {{-- ============================================= --}}
-    @if($code === 'PS')
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
-        <h3 class="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-4 pb-3 border-b border-gray-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-            </svg>
-            Informasi Personil
-        </h3>
-        <dl class="divide-y divide-gray-100 text-sm">
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Kategori Aset</dt><dd class="text-gray-900">{{ $asset->personnel_category ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">NIP/NIK</dt><dd class="font-mono text-gray-900">{{ $asset->nip ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Fungsi</dt><dd class="text-gray-900">{{ $asset->function ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Unit</dt><dd class="text-gray-900">{{ $asset->unit ?? '-' }}</dd></div>
-            <div class="flex flex-col sm:flex-row sm:gap-6 py-2"><dt class="sm:w-56 shrink-0 text-gray-500">Jabatan</dt><dd class="text-gray-900">{{ $asset->position ?? '-' }}</dd></div>
-        </dl>
-    </div>
-    @endif
-
-    {{-- ============================================= --}}
-    {{-- Fallback --}}
-    {{-- ============================================= --}}
-    @if(!in_array($code, ['DI', 'PL', 'PK', 'SP', 'PS']))
-    <div class="bg-white rounded-xl border border-gray-200 p-8 shadow-sm mb-4 text-center">
-        <svg class="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75c0-1.03.84-1.875 1.875-1.875h.75c1.036 0 1.875.845 1.875 1.875 0 .719-.397 1.336-.976 1.652-.605.331-1.024.958-1.024 1.696V13.5m0 3.75h.008v.008h-.008V17.25ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-        </svg>
-        <p class="text-sm text-gray-500">
-            Kategori aset tidak dikenali ({{ $code ?? 'null' }}), tidak ada detail tambahan untuk ditampilkan.
-        </p>
-    </div>
-    @endif
-
-    {{-- ============================================= --}}
-    {{-- MODAL PREVIEW DOKUMEN (GLOBAL) --}}
-    {{-- ============================================= --}}
-    <div x-show="showModal" x-cloak x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" @click.outside="showModal = false">
-        <div class="bg-white rounded-2xl max-w-5xl w-full p-5 relative shadow-2xl flex flex-col max-h-[92vh] border border-gray-100">
-            <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-100 gap-2">
-                <div class="min-w-0">
-                    <h3 class="font-semibold text-gray-800 text-sm truncate" x-text="previewName || 'Preview Dokumen'"></h3>
-                    <p class="text-[11px] text-gray-400" x-show="isImage(previewUrl)">Scroll mouse untuk zoom, klik & tahan untuk geser</p>
-                </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <template x-if="isImage(previewUrl)">
-                        <div class="flex items-center bg-gray-100 border border-gray-200 rounded-lg p-0.5 mr-1">
-                            <button type="button" @click="zoomOut()" class="p-1 text-gray-600 hover:text-blue-600 hover:bg-white rounded" :disabled="zoomScale <= 1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
-                            </button>
-                            <button type="button" @click="resetZoom()" class="px-2 py-0.5 text-[11px] font-mono font-medium text-gray-700 hover:text-blue-600 hover:bg-white rounded" x-text="Math.round(zoomScale * 100) + '%'"></button>
-                            <button type="button" @click="zoomIn()" class="p-1 text-gray-600 hover:text-blue-600 hover:bg-white rounded">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                            </button>
-                        </div>
-                    </template>
-                    <a :href="previewUrl" download class="text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3" /></svg>
-                        Unduh
-                    </a>
-                    <button type="button" @click="showModal = false" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-            </div>
-            <div class="flex-1 overflow-hidden rounded-xl bg-slate-900/5 border border-gray-100 mt-3 p-2 flex items-center justify-center h-[600px] relative select-none" @wheel.prevent="handleWheel($event)">
-                <template x-if="isImage(previewUrl)">
-                    <div class="w-full h-full flex items-center justify-center overflow-hidden" @mousedown="startDrag($event)" @mousemove="drag($event)" @mouseup="endDrag()" @mouseleave="endDrag()">
-                        <img :src="previewUrl" :style="'transform: translate3d(' + panX + 'px, ' + panY + 'px, 0px) scale(' + zoomScale + '); transition: ' + (isDragging ? 'none' : 'transform 0.12s ease-out') + '; cursor: ' + (zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default')" class="max-h-full max-w-full object-contain rounded-lg shadow-sm">
-                    </div>
-                </template>
-                <template x-if="!isImage(previewUrl)">
-                    <iframe :src="previewUrl" class="w-full h-full rounded-lg" frameborder="0"></iframe>
-                </template>
-            </div>
         </div>
     </div>
+    @endif
+
+    {{-- ============ PERANGKAT LUNAK ============ --}}
+    @if($code === 'PL')
+    <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 overflow-hidden">
+        <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $sectionIcons['PL'] }}" /></svg>
+            <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Detail Perangkat Lunak</h3>
+        </div>
+        <dl class="divide-y divide-gray-100 text-sm px-5 py-2">
+            {!! $row('Tahun Rilis', $asset->year) !!}
+            {!! $row('Platform', $asset->platform) !!}
+            {!! $row('Uraian Singkat Aplikasi', $asset->app_description) !!}
+            {!! $row('Alamat Aplikasi / URL', $asset->app_url
+                ? '<a href="' . e($asset->app_url) . '" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 hover:underline break-all">' . e($asset->app_url) . '</a>'
+                : '<span class="text-gray-400">-</span>', ['raw' => true]) !!}
+            {!! $row('Alamat IP', $asset->ip_address, ['mono' => true]) !!}
+            {!! $row('Aplikasi IP Publik / Internal', $asset->ip_public_internal, ['mono' => true]) !!}
+            {!! $row('Sistem Operasi Server', $asset->os_server) !!}
+            {!! $row('Pemilik Aset (OPD)', $asset->owner) !!}
+            {!! $row('Data Center', $asset->data_center) !!}
+            {!! $row('Kontak Pengelola / PIC', $asset->contact_pic) !!}
+            {!! $row('Status', $statusPL($asset->status), ['raw' => true]) !!}
+            {!! $row('Kategori SE', $asset->se_category) !!}
+        </dl>
+    </div>
+
+    <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 overflow-hidden">
+        <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Dokumen Pendukung</h3>
+            <span class="ml-auto text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">{{ count($files) }} file</span>
+        </div>
+        <div class="p-5">
+            @if(!empty($files))
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    @foreach($files as $file)
+                        <button type="button"
+                                @click="openPreview('{{ asset('storage/' . $file) }}', '{{ basename($file) }}')"
+                                class="group flex items-center gap-3 p-3 text-left rounded-lg border border-blue-100 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-300 transition-colors">
+                            <span class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/30 shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block text-xs font-semibold text-gray-800 truncate">{{ basename($file) }}</span>
+                                <span class="block text-[11px] text-blue-600 group-hover:underline">Klik untuk pratinjau</span>
+                            </span>
+                        </button>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-6 text-gray-400">
+                    <svg class="w-9 h-9 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <p class="text-sm">Belum ada dokumen pendukung.</p>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- ============ PERANGKAT KERAS ============ --}}
+    @if($code === 'PK')
+    @php
+        $ramText = $asset->ram_gb ? ($asset->ram_gb >= 1024 ? number_format($asset->ram_gb / 1024, 2) . ' TB' : $asset->ram_gb . ' GB') : '-';
+        $stoText = $asset->storage_gb ? ($asset->storage_gb >= 1000 ? number_format($asset->storage_gb / 1000, 2) . ' TB' : $asset->storage_gb . ' GB') : '-';
+        $tiles = [
+            ['Prosessor', $asset->cpu_type ?: '-', 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z'],
+            ['Core CPU', $asset->cpu_cores ? $asset->cpu_cores . ' Cores' : '-', 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'],
+            ['RAM', $ramText, 'M13 10V3L4 14h7v7l9-11h-7z'],
+            ['Storage', $stoText, 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4'],
+        ];
+    @endphp
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        @foreach($tiles as [$tLabel, $tValue, $tIcon])
+            <div class="relative bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 overflow-hidden">
+                <div class="text-blue-600 text-xs font-medium mb-2">{{ $tLabel }}</div>
+                <div class="text-lg font-bold text-gray-900 break-words pr-10">{{ $tValue }}</div>
+                <div class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/40">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $tIcon }}" /></svg>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 overflow-hidden">
+        <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $sectionIcons['PK'] }}" /></svg>
+            <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Detail Perangkat Keras</h3>
+        </div>
+        <dl class="divide-y divide-gray-100 text-sm px-5 py-2">
+            {!! $row('Spesifikasi Aset', $asset->specification) !!}
+            {!! $row('Tahun Pengadaan', $asset->year) !!}
+            {!! $row('Lokasi Keberadaan', $asset->location) !!}
+            {!! $row('Pemilik Aset', $asset->owner) !!}
+            {!! $row('Kondisi Aset', $condition($asset->condition), ['raw' => true]) !!}
+            {!! $row('Kategori Tipe', $asset->asset_type_category) !!}
+        </dl>
+    </div>
+
+    <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 overflow-hidden">
+        <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Kredensial Akses (Terenkripsi)</h3>
+        </div>
+        <div class="p-5">
+            @if($asset->credentials && $asset->credentials->isNotEmpty())
+                <div class="space-y-2">
+                    @foreach($asset->credentials as $cred)
+                        <div class="flex flex-wrap items-center justify-between gap-3 p-3 bg-blue-50/40 border border-blue-100 rounded-lg text-sm">
+                            <div class="flex items-center gap-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">{{ $cred->role ?? 'User' }}</span>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-gray-500">Username</span>
+                                    <span class="font-mono text-gray-800 font-medium">{{ $cred->username }}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-emerald-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                <span class="text-xs font-medium">Password terenkripsi</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="mt-4 p-3 bg-amber-50 border border-amber-100 rounded-lg flex items-start gap-2">
+                    <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p class="text-[11px] text-amber-800"><strong>Kebijakan Keamanan:</strong> Password disimpan terenkripsi untuk kepatuhan audit inventaris. Untuk akses teknis, hubungi Administrator Infrastruktur atau gunakan Password Manager resmi instansi.</p>
+                </div>
+            @else
+                <div class="text-center py-6 text-gray-400">
+                    <svg class="w-9 h-9 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    <p class="text-sm">Tidak ada kredensial yang dicatat untuk perangkat ini.</p>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- ============ SARANA PENDUKUNG ============ --}}
+    @if($code === 'SP')
+    <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 overflow-hidden">
+        <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $sectionIcons['SP'] }}" /></svg>
+            <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Detail Sarana Pendukung</h3>
+        </div>
+        <dl class="divide-y divide-gray-100 text-sm px-5 py-2">
+            {!! $row('Spesifikasi Aset', $asset->specification) !!}
+            {!! $row('Tahun Pengadaan', $asset->year) !!}
+            {!! $row('Lokasi Keberadaan', $asset->location) !!}
+            {!! $row('Pemilik Aset', $asset->owner) !!}
+            {!! $row('Kondisi Aset', $condition($asset->condition), ['raw' => true]) !!}
+            {!! $row('Kategori Tipe', $asset->asset_type_category) !!}
+        </dl>
+    </div>
+    @endif
+
+    {{-- ============ SDM & PIHAK KETIGA ============ --}}
+    @if($code === 'PS')
+    <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 overflow-hidden">
+        <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $sectionIcons['PS'] }}" /></svg>
+            <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Informasi Personil</h3>
+        </div>
+        <dl class="divide-y divide-gray-100 text-sm px-5 py-2">
+            {!! $row('Kategori Aset', $asset->personnel_category) !!}
+            {!! $row('NIP / NIK', $asset->nip, ['mono' => true]) !!}
+            {!! $row('Fungsi', $asset->function) !!}
+            {!! $row('Unit', $asset->unit) !!}
+            {!! $row('Jabatan', $asset->position) !!}
+        </dl>
+    </div>
+    @endif
+
+    @if(!in_array($code, ['DI', 'PL', 'PK', 'SP', 'PS']))
+    <div class="bg-white rounded-xl border border-blue-100 p-8 shadow-lg shadow-blue-500/10 text-center">
+        <svg class="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75c0-1.03.84-1.875 1.875-1.875h.75c1.036 0 1.875.845 1.875 1.875 0 .719-.397 1.336-.976 1.652-.605.331-1.024.958-1.024 1.696V13.5m0 3.75h.008v.008h-.008V17.25ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+        <p class="text-sm text-gray-500">Kategori aset tidak dikenali ({{ $code ?? 'null' }}), tidak ada detail tambahan untuk ditampilkan.</p>
+    </div>
+    @endif
+
+    {{-- MODAL PREVIEW DOKUMEN (script + tampilan ada di partial) --}}
+    @include('partials.doc-preview')
 </div>
 @endsection

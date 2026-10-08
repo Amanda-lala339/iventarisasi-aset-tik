@@ -1,162 +1,100 @@
-<!-- resources/views/master-data/form.blade.php -->
-@extends('layouts.app')
-@section('title', (isset($item) ? 'Edit ' : 'Tambah ') . $typeConfig['label'])
-@section('page', 'Master Data > ' . $typeConfig['label'] . ' > ' . (isset($item) ? 'Edit' : 'Tambah'))
+<nav x-data="{ open: false }" class="bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 border-l-4 border-l-blue-500 shadow-lg shadow-blue-500/10">
+    <!-- Primary Navigation Menu -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <!-- Logo -->
+                <div class="shrink-0 flex items-center">
+                    <a href="{{ route('dashboard') }}" class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 shadow-md shadow-blue-500/40 transition-transform duration-300 hover:scale-110 hover:rotate-6">
+                        <x-application-logo class="block h-6 w-auto fill-current text-white" />
+                    </a>
+                </div>
 
-@section('content')
-@php
-    $groupBadge = [
-        'Umum'      => 'bg-blue-50 text-blue-600',
-        'Aset'      => 'bg-emerald-50 text-emerald-600',
-        'Keamanan'  => 'bg-red-50 text-red-600',
-        'Teknologi' => 'bg-purple-50 text-purple-600',
-        'Kategori'  => 'bg-amber-50 text-amber-600',
-        'SDM'       => 'bg-cyan-50 text-cyan-600',
-        'Lainnya'   => 'bg-gray-100 text-gray-500',
-    ];
-    $currentGroup = $typeConfig['group'] ?? 'Lainnya';
-
-    // Kategori khusus OPD (Tanpa SDM)
-    $opdCategories = [
-        'DI' => 'Data & Informasi',
-        'PL' => 'Perangkat Lunak',
-        'PK' => 'Perangkat Keras',
-        'SP' => 'Sarana Pendukung',
-    ];
-
-    // Cek apakah halaman yang dibuka adalah OPD / Pemilik Aset
-    $isOpdType = in_array($type ?? '', ['opd', 'pemilik_aset', 'pemilik-aset', 'opd_owners']) 
-                 || str_contains(strtolower($typeConfig['label'] ?? ''), 'opd');
-@endphp
-
-<div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-200">
-    <div>
-        <a href="{{ route('master-data.index', $type) }}" class="px-4 py-2 border border-blue-500 rounded text-sm text-blue-800 hover:bg-blue-100 transition-colors">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Kembali ke {{ $typeConfig['label'] }}
-        </a>
-        <h1 class="text-2xl font-bold text-blue-600 tracking-tight flex items-center gap-2.5">
-            {{ $typeConfig['label'] }}<span class="text-gray-400 font-normal"> » </span><span class="text-lg font-semibold text-gray-500">{{ isset($item) ? 'Edit Data' : 'Tambah Data' }}</span>
-            <span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded {{ $groupBadge[$currentGroup] ?? $groupBadge['Lainnya'] }}">
-                {{ $currentGroup }}
-            </span>
-        </h1>
-    </div>
-</div>
-
-<div class="max-w-2xl mx-auto">
-    <div class="bg-white rounded-xl border border-gray-100 shadow-md shadow-blue-500/10">
-        @if($errors->any())
-            <div class="mx-6 mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                <ul class="list-disc list-inside space-y-0.5">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form method="POST"
-              action="{{ isset($item) ? route('master-data.update', [$type, $item->id]) : route('master-data.store', $type) }}"
-              class="p-6">
-            @csrf
-            @if(isset($item))
-                @method('PUT')
-            @endif
-
-            <div class="space-y-4">
-                @foreach($typeConfig['fields'] as $field => $fieldConfig)
-                    {{-- SKIP field tersembunyi (kolom tetap ada di database) --}}
-                    @if(in_array($field, ['description', 'color', 'icon', 'order', 'code']))
-                        @continue
-                    @endif
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            {{ $fieldConfig['label'] }}
-                            @if(!empty($fieldConfig['required']))
-                                <span class="text-red-500">*</span>
-                            @endif
-                        </label>
-
-                        @php
-                            $value = old($field, isset($item) ? ($item->$field ?? $fieldConfig['default'] ?? '') : ($fieldConfig['default'] ?? ''));
-                        @endphp
-
-                        @if($fieldConfig['type'] === 'text' || $fieldConfig['type'] === 'email')
-                            <input type="{{ $fieldConfig['type'] }}" name="{{ $field }}"
-                                   value="{{ $value }}"
-                                   {{ !empty($fieldConfig['required']) ? 'required' : '' }}
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-
-                        @elseif($fieldConfig['type'] === 'number')
-                            <input type="number" name="{{ $field }}"
-                                   value="{{ $value }}"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-
-                        @elseif($fieldConfig['type'] === 'textarea')
-                            <textarea name="{{ $field }}" rows="3"
-                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ $value }}</textarea>
-
-                        @elseif($fieldConfig['type'] === 'select')
-                            <select name="{{ $field }}"
-                                    {{ !empty($fieldConfig['required']) ? 'required' : '' }}
-                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                @if(empty($fieldConfig['required']))
-                                    <option value="">- Pilih -</option>
-                                @endif
-
-                                @php
-                                    // Ambil opsi default dari config bawaan
-                                    $options = $fieldConfig['options'] ?? [];
-
-                                    // HANYA JIKA tipe menu adalah OPD / Pemilik Aset, hapus opsi SDM
-                                    if ($isOpdType) {
-                                        if (in_array($field, ['asset_category_code', 'asset_category', 'kategori_aset', 'category'])) {
-                                            $options = $opdCategories;
-                                        } else {
-                                            $options = array_filter($options, function($label, $key) {
-                                                return $key !== 'PS' && !str_contains(strtolower($label), 'sdm');
-                                            }, ARRAY_FILTER_USE_BOTH);
-                                        }
-                                    }
-                                @endphp
-
-                                @foreach($options as $optValue => $optLabel)
-                                    <option value="{{ $optValue }}" {{ $value == $optValue ? 'selected' : '' }}>
-                                        {{ $optLabel }}
-                                    </option>
-                                @endforeach
-                            </select>
-
-                        @elseif($fieldConfig['type'] === 'checkbox')
-                            @php
-                                $isChecked = isset($item) ? (bool) $item->$field : ($fieldConfig['default'] ?? false);
-                            @endphp
-                            <label class="flex items-center space-x-2 mt-1">
-                                <input type="checkbox" name="{{ $field }}" value="1"
-                                       {{ $isChecked ? 'checked' : '' }}
-                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700">Aktifkan</span>
-                            </label>
-                        @endif
-                    </div>
-                @endforeach
+                <!-- Navigation Links -->
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                        {{ __('Dashboard') }}
+                    </x-nav-link>
+                </div>
             </div>
 
-            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
-                <a href="{{ route('master-data.index', $type) }}"
-                   class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                    Batal
-                </a>
-                <button type="submit"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md transition-colors">
-                    {{ isset($item) ? 'Update Data' : 'Simpan Data' }}
+            <!-- Settings Dropdown -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <x-dropdown align="right" width="48">
+                    <x-slot name="trigger">
+                        <button class="inline-flex items-center px-3 py-2 bg-white border border-blue-200 text-sm leading-4 font-semibold rounded-lg text-blue-700 hover:bg-blue-50 hover:border-blue-300 shadow-sm focus:outline-none transition ease-in-out duration-150">
+                            <div>{{ Auth::user()->name }}</div>
+
+                            <div class="ms-1">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </button>
+                    </x-slot>
+
+                    <x-slot name="content">
+                        <x-dropdown-link :href="route('profile.edit')">
+                            {{ __('Profile') }}
+                        </x-dropdown-link>
+
+                        <!-- Authentication -->
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+
+                            <x-dropdown-link :href="route('logout')"
+                                    onclick="event.preventDefault();
+                                                this.closest('form').submit();">
+                                {{ __('Log Out') }}
+                            </x-dropdown-link>
+                        </form>
+                    </x-slot>
+                </x-dropdown>
+            </div>
+
+            <!-- Hamburger -->
+            <div class="-me-2 flex items-center sm:hidden">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-blue-500 hover:text-blue-700 hover:bg-blue-50 focus:outline-none focus:bg-blue-50 focus:text-blue-700 transition duration-150 ease-in-out">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
-        </form>
+        </div>
     </div>
-</div>
-@endsection
+
+    <!-- Responsive Navigation Menu -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+        </div>
+
+        <!-- Responsive Settings Options -->
+        <div class="pt-4 pb-1 border-t border-blue-100">
+            <div class="px-4">
+                <div class="font-semibold text-base text-blue-800">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+            </div>
+
+            <div class="mt-3 space-y-1">
+                <x-responsive-nav-link :href="route('profile.edit')">
+                    {{ __('Profile') }}
+                </x-responsive-nav-link>
+
+                <!-- Authentication -->
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+
+                    <x-responsive-nav-link :href="route('logout')"
+                            onclick="event.preventDefault();
+                                        this.closest('form').submit();">
+                        {{ __('Log Out') }}
+                    </x-responsive-nav-link>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>

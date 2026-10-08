@@ -78,6 +78,9 @@
         }
         .animate-fade-in{ animation: fadeIn 0.5s ease-out; }
         .animate-slide-in{ animation: slideIn 0.4s ease-out; }
+        @media (prefers-reduced-motion: reduce){
+            .animate-fade-in, .animate-slide-in{ animation: none; }
+        }
 
         /* ============================================
            Nav links
@@ -131,16 +134,16 @@
 <body class="bg-gray-50 min-h-screen">
 
     <!-- Navbar -->
-    <nav class="bg-white border-b border-blue-200 border-l-2 border-l-blue-400 px-6 py-4 shadow-sm animate-fade-in">
-        <div class="flex items-center justify-between">
+    <nav class="bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 border-l-4 border-l-blue-500 px-6 py-3.5 shadow-lg shadow-blue-500/10 animate-fade-in">
+        <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center space-x-2 text-sm text-gray-600">
-                <a href="{{ route('dashboard') }}" class="breadcrumb-link flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-medium">
-                    <svg class="w-4 h-4 transition-transform duration-200 hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{{ route('dashboard') }}" class="breadcrumb-link flex items-center space-x-1.5 text-blue-700 hover:text-blue-800 font-semibold bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                     </svg>
                     <span>Home</span>
                 </a>
-                <span class="text-gray-400 mx-1">›</span>
+                <span class="text-blue-300 mx-1">›</span>
                 <span class="text-gray-900 font-semibold">@yield('page', 'Dashboard')</span>
             </div>
             <div class="flex items-center space-x-6">
@@ -165,8 +168,8 @@
 
     <main class="p-6 animate-slide-in">
         @if(session('success'))
-            <div class="mb-4 bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded shadow-md animate-fade-in" x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 3000)">
-                <div class="flex items-center">
+            <div class="mb-4 bg-gradient-to-r from-emerald-50 to-white border border-emerald-100 border-l-4 border-l-emerald-500 text-emerald-700 px-4 py-3 rounded-xl shadow-lg shadow-emerald-500/10 animate-fade-in" x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 3000)">
+                <div class="flex items-center text-sm font-medium">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -176,8 +179,8 @@
         @endif
 
         @if(session('error'))
-            <div class="mb-4 bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded shadow-md animate-fade-in" x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)">
-                <div class="flex items-center">
+            <div class="mb-4 bg-gradient-to-r from-red-50 to-white border border-red-100 border-l-4 border-l-red-500 text-red-700 px-4 py-3 rounded-xl shadow-lg shadow-red-500/10 animate-fade-in" x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)">
+                <div class="flex items-center text-sm font-medium">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
