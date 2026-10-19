@@ -219,9 +219,9 @@
                             Kritikalitas Aset
                         </label>
                         <select name="criticality" class="criticality-select w-full border-2 border-blue-400 bg-blue-700/50 text-blue-50 rounded-lg px-4 py-3 text-base font-bold focus:ring-2 focus:ring-white/30 focus:border-white transition-all">
-                            <option value="" selected disabled>Pilih...</option>
+                            <option value="" selected disabled class="text-white">Pilih...</option>
                             @foreach($criticalityLevels['DI'] ?? [] as $opt)
-                                <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
+                                <option value="{{ $opt->name }}" class="text-white" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -327,10 +327,9 @@
                         </div>
                     </div>
 
-                    <!-- File Upload Modern (DIPERBAIKI: Ditambahkan ID wrapper & cursor-pointer) -->
+                    <!-- File Upload Modern -->
                     <div id="pl-upload-area" class="bg-gradient-to-br from-gray-50 to-white border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all group cursor-pointer">
                         <div class="flex flex-col items-center gap-3">
-                            <!-- Icon Upload -->
                             <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                                 <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -344,7 +343,6 @@
                                 <p class="text-xs text-gray-500 mt-1">Maks. 5MB per file. Format: PDF, Word, Excel, & Gambar</p>
                             </div>
 
-                            <!-- Tombol Choose Files Custom -->
                             <button type="button" 
                                     id="choose-files-btn"
                                     class="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30">
@@ -355,8 +353,6 @@
                             </button>
                             
                             <div id="pl-file-info" class="text-xs text-gray-500 hidden"></div>
-                            
-                            <!-- Input File Tersembunyi -->
                             <input type="file" id="pl-file-input" name="document_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                             
                             <div id="pl-file-error" class="text-red-600 text-xs mt-3 hidden font-medium bg-red-50 p-2 rounded w-full"></div>
@@ -371,9 +367,9 @@
                             Kritikalitas Aset
                         </label>
                         <select name="criticality" class="criticality-select w-full border-2 border-blue-400 bg-blue-700/50 text-blue-50 rounded-lg px-4 py-3 text-base font-bold focus:ring-2 focus:ring-white/30 focus:border-white transition-all">
-                            <option value="" selected disabled>Pilih...</option>
+                            <option value="" selected disabled class="text-white">Pilih...</option>
                             @foreach($criticalityLevels['PL'] ?? [] as $opt)
-                                <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
+                                <option value="{{ $opt->name }}" class="text-white" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -536,9 +532,9 @@
                             Kritikalitas Aset
                         </label>
                         <select name="criticality" class="criticality-select w-full border-2 border-blue-400 bg-blue-700/50 text-blue-50 rounded-lg px-4 py-3 text-base font-bold focus:ring-2 focus:ring-white/30 focus:border-white transition-all">
-                            <option value="" selected disabled>Pilih...</option>
+                            <option value="" selected disabled class="text-white">Pilih...</option>
                             @foreach($criticalityLevels['PK'] ?? [] as $opt)
-                                <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
+                                <option value="{{ $opt->name }}" class="text-white" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -634,9 +630,9 @@
                             Kritikalitas Aset
                         </label>
                         <select name="criticality" class="criticality-select w-full border-2 border-blue-400 bg-blue-700/50 text-blue-50 rounded-lg px-4 py-3 text-base font-bold focus:ring-2 focus:ring-white/30 focus:border-white transition-all">
-                            <option value="" selected disabled>Pilih...</option>
+                            <option value="" selected disabled class="text-white">Pilih...</option>
                             @foreach($criticalityLevels['SP'] ?? [] as $opt)
-                                <option value="{{ $opt->name }}" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
+                                <option value="{{ $opt->name }}" class="text-white" @selected(old('criticality') == $opt->name)>{{ $opt->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -845,7 +841,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (spType) spType.addEventListener('change', function () { setCategoryCriticality(this, 'SP'); });
 
     // ============================================================
-    // 4. FILE UPLOAD LOGIC (DIPERBAIKI & DILENGKAPI)
+    // 4. FILE UPLOAD LOGIC
     // ============================================================
     const plUploadArea = document.getElementById('pl-upload-area');
     const plChooseBtn = document.getElementById('choose-files-btn');
@@ -858,23 +854,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
     const maxSizeBytes = 5 * 1024 * 1024; // 5MB
     
-    // FUNGSI UTAMA: Membuka dialog file explorer
     function triggerFileInput() {
         if (plFileInput) plFileInput.click();
     }
 
-    // Event Listener 1: Klik pada tombol "Choose Files"
     if (plChooseBtn) {
         plChooseBtn.addEventListener('click', function(e) {
-            e.stopPropagation(); // Mencegah event bubble ke wrapper
+            e.stopPropagation();
             triggerFileInput();
         });
     }
 
-    // Event Listener 2: Klik di area mana saja pada kotak upload (UX lebih baik)
     if (plUploadArea) {
         plUploadArea.addEventListener('click', function(e) {
-            // Jangan trigger jika yang diklik adalah tombol "Hapus" di dalam list file
             if (e.target.closest('button')) return;
             triggerFileInput();
         });
@@ -902,7 +894,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 plFileError.classList.remove('hidden');
             }
             
-            this.value = ''; // Reset input agar bisa memilih file yang sama lagi jika dihapus
+            this.value = '';
             renderPlFiles();
         });
 
@@ -946,13 +938,11 @@ document.addEventListener('DOMContentLoaded', function () {
             plFileListContainer.appendChild(totalDiv);
         }
 
-        // Fungsi global agar bisa dipanggil dari onclick di HTML string di atas
         window.removePlFile = function (index) {
             plSelectedFiles.splice(index, 1);
             renderPlFiles();
         };
 
-        // Saat form disubmit, masukkan file yang dipilih ke dalam input file tersembunyi
         document.getElementById('assetForm').addEventListener('submit', function (e) {
             if (plSelectedFiles.length > 0) {
                 const dt = new DataTransfer();
