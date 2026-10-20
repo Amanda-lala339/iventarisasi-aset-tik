@@ -48,7 +48,7 @@
     }
 }" class="space-y-4">
     <!-- Header (banner biru) -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 px-6 py-6 mb-6 shadow-lg shadow-blue-600/30">
+    <div class="relative overflow-visible rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 px-6 py-6 mb-6 shadow-lg shadow-blue-600/30">
         <div class="absolute -right-10 -top-16 w-64 h-64 rounded-full bg-white/10"></div>
         <div class="absolute right-24 -bottom-24 w-56 h-56 rounded-full bg-white/10"></div>
         <div class="relative flex flex-wrap items-center justify-between gap-4">
@@ -77,14 +77,27 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
-                    <div x-show="userMenuOpen" x-transition x-cloak class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
+                    <!-- Dropdown Menu dengan z-index tinggi dan posisi absolute -->
+                    <div x-show="userMenuOpen" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-1"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 translate-y-1"
+                         x-cloak 
+                         class="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-2xl py-2 z-50"
+                         style="top: 100%;">
+                    
+                        
+                        <!-- Menu Logout -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" class="w-full flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                 </svg>
-                                <span>Keluar</span>
+                                <span class="font-medium">Keluar</span>
                             </button>
                         </form>
                     </div>

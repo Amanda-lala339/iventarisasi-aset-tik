@@ -285,30 +285,6 @@ return [
         ],
     ],
 
-    'ip_types' => [
-        'label' => 'Tipe IP',
-        'model' => \App\Models\IpType::class,
-        'icon' => 'fas fa-network-wired',
-        'group' => 'Teknologi',
-        'fields' => [
-            'name' => ['label' => 'Nama', 'type' => 'text', 'required' => true],
-            'asset_category_code' => [
-                'label' => 'Kategori Aset (opsional)',
-                'type' => 'select',
-                'options' => [
-                    '' => '- Semua Kategori -',
-                    'DI' => 'Data & Informasi',
-                    'PL' => 'Perangkat Lunak',
-                    'PK' => 'Perangkat Keras',
-                    'SP' => 'Sarana Pendukung',
-                    'PS' => 'SDM & Pihak Ketiga',
-                ],
-            ],
-            'description' => ['label' => 'Deskripsi', 'type' => 'textarea'],
-            'order' => ['label' => 'Urutan', 'type' => 'number', 'default' => 0],
-            'is_active' => ['label' => 'Aktif', 'type' => 'checkbox', 'default' => true],
-        ],
-    ],
 
     'se_categories' => [
         'label' => 'Kategori Sistem Elektronik',
