@@ -1,10 +1,9 @@
 @extends('layouts.app')
 @section('title', 'Kelola Aset - ' . $pageTitle)
 @section('page', $pageTitle)
-
 @section('content')
 <style>
-    [x-cloak]{ display:none !important; }
+    [x-cloak] { display: none !important; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .category-nav-item { transition: all 0.3s ease; }
@@ -16,7 +15,6 @@
     thead .sticky-col { background: #eef5ff; }
     tbody tr:hover .sticky-col { background: #f3f8ff; }
 </style>
-
 @php
     $assetCategories = [
         'DI' => ['label' => 'Data & Informasi', 'icon' => 'fas fa-database', 'route' => 'assets.category.di'],
@@ -35,13 +33,12 @@
         return false;
     };
 @endphp
-
 <div class="space-y-4">
     <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-100 hover:border-blue-300 transition-all shadow-sm">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         <span>Kembali ke Dashboard</span>
     </a>
-
+    
     {{-- ================= HEADER BANNER ================= --}}
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 px-6 py-6 shadow-lg shadow-blue-600/30">
         <div class="absolute -right-10 -top-16 w-64 h-64 rounded-full bg-white/10"></div>
@@ -58,7 +55,7 @@
             <div class="flex items-center space-x-2">
                 <a href="{{ route('assets.create', ['category' => 'PK']) }}" class="bg-white hover:bg-blue-50 text-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-semibold transition-colors shadow-md shadow-blue-900/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
                     <span>Tambah {{ $pageTitle }}</span>
                 </a>
@@ -93,9 +90,7 @@
         },
         resetFilters() { this.search = ''; }
     }">
-
         <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300">
-
             {{-- Panel header --}}
             <div class="flex flex-wrap items-center justify-between gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 rounded-t-xl">
                 <h2 class="text-xs font-bold text-blue-800 uppercase tracking-wider flex items-center gap-2">
@@ -133,6 +128,12 @@
                             <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Sub Klasifikasi</th>
                             <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Nama Aset</th>
                             <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Spesifikasi Aset</th>
+                            {{-- KOLOM BARU DITAMBAHKAN DI SINI --}}
+                            <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Prosessor</th>
+                            <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Core CPU</th>
+                            <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">RAM</th>
+                            <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Storage</th>
+                            {{-- AKHIR KOLOM BARU --}}
                             <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Tahun Pengadaan</th>
                             <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Lokasi Aset</th>
                             <th class="px-3 py-2.5 text-left font-semibold uppercase tracking-wide">Pemilik Aset</th>
@@ -152,6 +153,14 @@
                             <td class="px-3 py-2.5 text-gray-700">{{ $asset->sub_classification ?? '-' }}</td>
                             <td class="px-3 py-2.5 text-gray-900 font-medium">{{ $asset->name ?? '-' }}</td>
                             <td class="px-3 py-2.5 text-gray-600 max-w-xs truncate" title="{{ $asset->specification }}">{{ $asset->specification ?? '-' }}</td>
+                            
+                            {{-- DATA KOLOM BARU DI SINI --}}
+                            <td class="px-3 py-2.5 text-gray-600">{{ $asset->cpu_type ?? '-' }}</td>
+                            <td class="px-3 py-2.5 text-gray-600">{{ $asset->cpu_cores ? $asset->cpu_cores . ' Core' : '-' }}</td>
+                            <td class="px-3 py-2.5 text-gray-600">{{ $asset->ram_gb ? $asset->ram_gb . ' GB' : '-' }}</td>
+                            <td class="px-3 py-2.5 text-gray-600">{{ $asset->storage_gb ? $asset->storage_gb . ' GB' : '-' }}</td>
+                            {{-- AKHIR DATA KOLOM BARU --}}
+
                             <td class="px-3 py-2.5 text-gray-600">{{ $asset->year ?? '-' }}</td>
                             <td class="px-3 py-2.5 text-gray-600">{{ $asset->location ?? '-' }}</td>
                             <td class="px-3 py-2.5 text-gray-600">{{ $asset->owner ?? '-' }}</td>
@@ -174,20 +183,20 @@
                                 <div class="inline-flex items-center gap-1">
                                     <a href="{{ route('assets.show', $asset) }}" title="Detail" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:bg-blue-50 hover:text-blue-700 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </a>
                                     <a href="{{ route('assets.edit', $asset) }}" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-blue-600 hover:bg-blue-100 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </a>
                                     <form method="POST" action="{{ route('assets.destroy', $asset) }}" class="inline" onsubmit="return confirm('Yakin hapus aset ini?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" title="Hapus" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-red-600 hover:bg-red-50 transition-colors">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
                                     </form>
@@ -196,7 +205,8 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" class="px-4 py-8 text-center text-gray-400">
+                            {{-- COLSPAN DIUBAH DARI 11 MENJADI 15 SESUAI JUMLAH KOLOM BARU --}}
+                            <td colspan="15" class="px-4 py-8 text-center text-gray-400">
                                 Belum ada data {{ $pageTitle }}. <a href="{{ route('assets.create', ['category' => 'PK']) }}" class="text-blue-600 hover:text-blue-800 font-semibold hover:underline">Tambah sekarang</a>
                             </td>
                         </tr>
@@ -206,9 +216,10 @@
             </div>
 
             {{-- Footer / pagination --}}
-            <div class="p-4 border-t border-blue-100 bg-blue-50/30 rounded-b-xl">{{ $assets->appends(request()->query())->links() }}</div>
+            <div class="p-4 border-t border-blue-100 bg-blue-50/30 rounded-b-xl">
+                {{ $assets->appends(request()->query())->links() }}
+            </div>
         </div>
-
-    </div> {{-- Akhir Wrapper Alpine.js --}}
+    </div>  {{-- Akhir Wrapper Alpine.js --}}
 </div>
 @endsection
