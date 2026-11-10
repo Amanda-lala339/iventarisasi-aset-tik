@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Server extends Model
 {
     protected $fillable = [
-        'name', 'os', 'type', 'kind', 'os_version', 'status'
+        'name', 'os', 'type', 'kind', 'os_version', 'status', 'processor', 'cpu', 'memory', 'storage'
     ];
 
     public function ips()

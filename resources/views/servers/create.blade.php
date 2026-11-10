@@ -75,7 +75,7 @@
             <svg class="w-6 h-6 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
             Tambah Server Baru
         </h2>
-        <p class="text-blue-100 text-sm mt-1">Lengkapi data server dan alamat IP yang digunakan.</p>
+        <p class="text-blue-100 text-sm mt-1">Lengkapi data server, spesifikasi hardware, dan alamat IP yang digunakan.</p>
     </div>
 
     <form method="POST" action="{{ route('servers.store') }}" class="p-6 md:p-8">
@@ -124,6 +124,25 @@
                         <option value="Physical" {{ old('kind') == 'Physical' ? 'selected' : '' }}>Physical</option>
                         <option value="Virtual" {{ old('kind') == 'Virtual' ? 'selected' : '' }}>Virtual</option>
                     </select>
+                </div>
+
+                {{-- Spesifikasi Hardware --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">CPU</label>
+                    <input type="text" name="cpu" value="{{ old('cpu') }}" placeholder="Contoh: 4 Cores / Intel Xeon"
+                           class="w-full border border-gray-200 bg-gray-50/50 rounded-lg px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Memory (RAM)</label>
+                    <input type="text" name="memory" value="{{ old('memory') }}" placeholder="Contoh: 8 GB / 16 GB"
+                           class="w-full border border-gray-200 bg-gray-50/50 rounded-lg px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Storage</label>
+                    <input type="text" name="storage" value="{{ old('storage') }}" placeholder="Contoh: 500 GB SSD / 1 TB HDD"
+                           class="w-full border border-gray-200 bg-gray-50/50 rounded-lg px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                 </div>
 
                 <div class="md:col-span-2">

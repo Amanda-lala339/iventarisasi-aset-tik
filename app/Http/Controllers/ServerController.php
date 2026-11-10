@@ -78,6 +78,10 @@ class ServerController extends Controller
             'ips.*.ip_address'  => 'required|string|max:255',
             'ips.*.type'        => 'required|in:Publik,Internal,Lainnya',
             'ips.*.is_primary'  => 'nullable|boolean',
+            'processor' => 'nullable|string|max:255',
+            'cpu'       => 'nullable|string|max:255',
+            'memory'       => 'nullable|string|max:255',
+            'storage'   => 'nullable|string|max:255',
         ]);
 
         $ipAddresses = collect($validated['ips'])->pluck('ip_address')->toArray();
@@ -154,6 +158,10 @@ class ServerController extends Controller
             'ips.*.ip_address'  => 'required|string|max:255',
             'ips.*.type'        => 'required|in:Publik,Internal,Lainnya',
             'ips.*.is_primary'  => 'nullable|boolean',
+            'processor' => 'nullable|string|max:255',
+            'cpu'       => 'nullable|string|max:255',
+            'memory'       => 'nullable|string|max:255',
+            'storage'   => 'nullable|string|max:255',
         ]);
 
         $ipAddresses = collect($validated['ips'])->pluck('ip_address')->toArray();

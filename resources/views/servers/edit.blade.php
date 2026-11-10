@@ -86,11 +86,12 @@
             <svg class="w-6 h-6 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
             Edit Server: <span class="font-mono">{{ $server->name }}</span>
         </h2>
-        <p class="text-blue-100 text-sm mt-1">Perbarui data server dan alamat IP sesuai kondisi terbaru.</p>
+        <p class="text-blue-100 text-sm mt-1">Perbarui data server, spesifikasi hardware, dan alamat IP sesuai kondisi terbaru.</p>
     </div>
 
     <form method="POST" action="{{ route('servers.update', $server) }}" class="p-6 md:p-8">
-        @csrf @method('PUT')
+        @csrf 
+        @method('PUT')
         <div class="space-y-5">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Server</label>
@@ -132,6 +133,25 @@
                         <option value="Physical" {{ old('kind', $server->kind) == 'Physical' ? 'selected' : '' }}>Physical</option>
                         <option value="Virtual" {{ old('kind', $server->kind) == 'Virtual' ? 'selected' : '' }}>Virtual</option>
                     </select>
+                </div>
+
+                {{-- Spesifikasi Hardware --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">CPU</label>
+                    <input type="text" name="cpu" value="{{ old('cpu', $server->cpu) }}" placeholder="Contoh: 4 Cores / Intel Xeon"
+                           class="w-full border border-gray-200 bg-gray-50/50 rounded-lg px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Memory (RAM)</label>
+                    <input type="text" name="memory" value="{{ old('memory', $server->memory) }}" placeholder="Contoh: 8 GB / 16 GB"
+                           class="w-full border border-gray-200 bg-gray-50/50 rounded-lg px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Storage</label>
+                    <input type="text" name="storage" value="{{ old('storage', $server->storage) }}" placeholder="Contoh: 500 GB SSD / 1 TB HDD"
+                           class="w-full border border-gray-200 bg-gray-50/50 rounded-lg px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                 </div>
 
                 <div class="md:col-span-2">

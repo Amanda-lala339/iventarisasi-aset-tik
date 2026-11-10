@@ -8,6 +8,7 @@ use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AssetDocumentController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\IpManagementController;
 
 require __DIR__.'/auth.php';
 
@@ -23,6 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('servers', ServerController::class);
     Route::resource('subdomains', SubdomainController::class);
 
+    Route::get('/ip-management', [IpManagementController::class, 'index'])->name('ip.management');
     Route::get('assets/category/data-informasi', [AssetController::class, 'dataInformasi'])->name('assets.category.di');
     Route::get('assets/category/perangkat-lunak', [AssetController::class, 'perangkatLunak'])->name('assets.category.pl');
     Route::get('assets/category/perangkat-keras', [AssetController::class, 'perangkatKeras'])->name('assets.category.pk');
