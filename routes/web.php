@@ -9,12 +9,14 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AssetDocumentController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\IpManagementController;
+use App\Http\Controllers\AuditLogController;
 
 require __DIR__.'/auth.php';
 
 Route::middleware('auth')->group(function () {
     Route::post('/assets/credentials/{credentialId}/request-access', [AssetController::class, 'requestCredentialAccess'])
-    ->name('assets.credentials.request-access');
+        ->name('assets.credentials.request-access');
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -24,29 +26,30 @@ Route::middleware('auth')->group(function () {
     Route::resource('servers', ServerController::class);
     Route::resource('subdomains', SubdomainController::class);
 
+    Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
     Route::get('/ip-management', [IpManagementController::class, 'index'])->name('ip.management');
+    
     Route::get('assets/category/data-informasi', [AssetController::class, 'dataInformasi'])->name('assets.category.di');
     Route::get('assets/category/perangkat-lunak', [AssetController::class, 'perangkatLunak'])->name('assets.category.pl');
     Route::get('assets/category/perangkat-keras', [AssetController::class, 'perangkatKeras'])->name('assets.category.pk');
     Route::get('assets/category/sarana-pendukung', [AssetController::class, 'saranaPendukung'])->name('assets.category.sp');
     Route::get('assets/category/sdm-pihak-ketiga', [AssetController::class, 'sdmPihakKetiga'])->name('assets.category.ps');
+    
     Route::get('assets/credentials/{id}/reveal', [AssetController::class, 'revealCredential'])->name('assets.credentials.reveal');
     Route::resource('assets', AssetController::class);
     Route::get('assets/category/{category}', [AssetController::class, 'category'])->name('assets.category');
-       Route::post('/assets/documents/{documentId}/delete', [AssetController::class, 'deleteDocumentAjax'])->name('assets.documents.delete-ajax');
+    Route::post('/assets/documents/{documentId}/delete', [AssetController::class, 'deleteDocumentAjax'])->name('assets.documents.delete-ajax');
 
     // === MASTER DATA ROUTES ===
     Route::prefix('master-data')->name('master-data.')->group(function () {
         Route::get('/', [MasterDataController::class, 'dashboard'])->name('dashboard');
 
-        // ⚠️ Route Kategori HARUS sebelum /{type}
         Route::get('/categories/create', [MasterDataController::class, 'createCategory'])->name('categories.create');
         Route::post('/categories', [MasterDataController::class, 'storeCategory'])->name('categories.store');
         Route::get('/categories/{category}/edit', [MasterDataController::class, 'editCategory'])->name('categories.edit');
         Route::put('/categories/{category}', [MasterDataController::class, 'updateCategory'])->name('categories.update');
         Route::delete('/categories/{category}', [MasterDataController::class, 'destroyCategory'])->name('categories.destroy');
 
-        // Route Item Master Data
         Route::get('/{type}', [MasterDataController::class, 'index'])->name('index');
         Route::get('/{type}/create', [MasterDataController::class, 'create'])->name('create');
         Route::post('/{type}', [MasterDataController::class, 'store'])->name('store');
@@ -55,4 +58,4 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{type}/{id}', [MasterDataController::class, 'destroy'])->name('destroy');
         Route::post('/{type}/{id}/toggle', [MasterDataController::class, 'toggleActive'])->name('toggle');
     });
-});
+}); 

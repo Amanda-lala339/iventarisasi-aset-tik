@@ -1,9 +1,10 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
 @section('page', 'Dashboard')
+
 @section('content')
-<style>[x-cloak]{ display:none !important;}</style>
 <style>
+    [x-cloak] { display: none !important; }
     @keyframes iconFloat {
         0%, 100% { transform: translateY(0); }
         50%      { transform: translateY(-4px); }
@@ -17,6 +18,7 @@
         .icon-float { animation: none; }
     }
 </style>
+
 <div x-data="{
     serverExpanded: false,
     subdomainExpanded: false,
@@ -29,7 +31,7 @@
     subdomainSearch: '',
     subdomainDomainFilter: 'All domains',
     subdomainStatusFilter: 'All status',
-    
+
     matchesServer(name, ip, ips, os, type, kind){
         const q = this.serverSearch.trim().toLowerCase();
         const matchSearch = !q || name.toLowerCase().includes(q) || ip.toLowerCase().includes(q) || (ips && ips.some(i => i.toLowerCase().includes(q)));
@@ -38,7 +40,7 @@
         const matchKind = this.serverKindFilter === 'All kinds' || kind === this.serverKindFilter;
         return matchSearch && matchType && matchOs && matchKind;
     },
-    
+
     matchesSubdomain(sub, domain, status, ip, ips){
         const q = this.subdomainSearch.trim().toLowerCase();
         const matchSearch = !q || sub.toLowerCase().includes(q) || domain.toLowerCase().includes(q) || ip.toLowerCase().includes(q) || (ips && ips.some(i => i.toLowerCase().includes(q)));
@@ -47,6 +49,7 @@
         return matchSearch && matchDomain && matchStatus;
     }
 }" class="space-y-4">
+
     <!-- Header (banner biru) -->
     <div class="relative overflow-visible rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 px-6 py-6 mb-6 shadow-lg shadow-blue-600/30">
         <div class="absolute -right-10 -top-16 w-64 h-64 rounded-full bg-white/10"></div>
@@ -62,41 +65,20 @@
             </div>
             <div class="flex items-center space-x-2">
                 <a href="{{ route('assets.create') }}" class="bg-white hover:bg-blue-50 text-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-semibold transition-colors shadow-md shadow-blue-900/20">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                    </svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
                     <span>Tambah Data Aset</span>
                 </a>
                 <div class="relative" x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false">
                     <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-                        <svg class="w-4 h-4 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+                        <svg class="w-4 h-4 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                         <span>{{ auth()->user()->name ?? 'Akun' }}</span>
-                        <svg class="w-3.5 h-3.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
+                        <svg class="w-3.5 h-3.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                     </button>
-                    <!-- Dropdown Menu dengan z-index tinggi dan posisi absolute -->
-                    <div x-show="userMenuOpen" 
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 translate-y-1"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 translate-y-1"
-                         x-cloak 
-                         class="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-2xl py-2 z-50"
-                         style="top: 100%;">
-                    
-                        
-                        <!-- Menu Logout -->
+                    <div x-show="userMenuOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-1" x-cloak class="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-2xl py-2 z-50" style="top: 100%;">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="w-full flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                                 <span class="font-medium">Keluar</span>
                             </button>
                         </form>
@@ -106,102 +88,79 @@
         </div>
     </div>
 
-    <!-- Summary Cards (Baris 1 & 2) -->
+    <!-- Summary Cards (Baris 1) -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
-        {{-- Total assets (STATIS / TIDAK BERGERAK) --}}
         <div class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 overflow-hidden cursor-default">
             <div class="text-gray-500 text-xs font-medium mb-2">Total assets</div>
             <div class="text-2xl font-bold text-gray-900">{{ $totalAssets }}</div>
             <div class="text-xs text-gray-400 mt-0.5">all categories</div>
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center shadow-md shadow-gray-500/30">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                 </div>
             </div>
         </div>
-
-        {{-- Data & Informasi --}}
         <a href="{{ route('assets.category.di') }}" class="group relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
-            <div class="text-blue-600 text-xs font-medium mb-2">Data & Informasi</div>
+            <div class="text-blue-600 text-xs font-medium mb-2">Data &amp; Informasi</div>
             <div class="text-2xl font-bold text-gray-900">{{ $dataInfoCount }}</div>
             <div class="text-xs text-gray-400 mt-0.5">{{ $dataInfoPhysical }} physical · {{ $dataInfoVirtual }} virtual</div>
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/40 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                    </svg>
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
                 </div>
             </div>
         </a>
-
-        {{-- Perangkat Lunak --}}
         <a href="{{ route('assets.category.pl') }}" class="group relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">Perangkat Lunak</div>
             <div class="text-2xl font-bold text-gray-900">{{ $softwareCount }}</div>
             <div class="text-xs text-gray-400 mt-0.5">{{ $softwareExpiring }} expiring soon</div>
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/40 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
                 </div>
             </div>
         </a>
     </div>
+    <!-- Summary Cards (Baris 2) -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-        {{-- Perangkat Keras --}}
         <a href="{{ route('assets.category.pk') }}" class="group relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">Perangkat Keras</div>
             <div class="text-2xl font-bold text-gray-900">{{ $hardwareCount }}</div>
             <div class="text-xs text-gray-400 mt-0.5">across {{ $domains }} domains</div>
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/40 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                 </div>
             </div>
         </a>
-
-        {{-- Sarana Pendukung --}}
         <a href="{{ route('assets.category.sp') }}" class="group relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">Sarana Pendukung</div>
             <div class="text-2xl font-bold text-gray-900">{{ $supportCount }}</div>
-            <div class="text-xs text-gray-400 mt-0.5">facility & appliance</div>
+            <div class="text-xs text-gray-400 mt-0.5">facility &amp; appliance</div>
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/40 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 </div>
             </div>
         </a>
-
-        {{-- SDM & Pihak Ketiga --}}
         <a href="{{ route('assets.category.ps') }}" class="group relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
-            <div class="text-blue-600 text-xs font-medium mb-2">SDM & Pihak Ketiga</div>
+            <div class="text-blue-600 text-xs font-medium mb-2">SDM &amp; Pihak Ketiga</div>
             <div class="text-2xl font-bold text-gray-900">{{ $personnelCount }}</div>
-            <div class="text-xs text-gray-400 mt-0.5">personnel & third party</div>
+            <div class="text-xs text-gray-400 mt-0.5">personnel &amp; third party</div>
             <div class="absolute right-3 top-1/2 -translate-y-1/2">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/40 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                 </div>
             </div>
         </a>
     </div>
 
-    <!-- Charts Row (UPDATED: Tema Biru Konsisten) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Charts Row (3 Kolom: Server Type, OS, Rasio IP) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {{-- Server Type Panel --}}
         <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden">
             <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
-                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                 <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Server Type</h3>
             </div>
             <div class="p-5 space-y-4">
@@ -213,8 +172,7 @@
                             <span class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">{{ $count }}</span>
                         </div>
                         <div class="w-full bg-blue-50/60 rounded-full h-2.5 overflow-hidden">
-                            <div class="h-2.5 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-sm shadow-blue-500/30 transition-all duration-500 ease-out group-hover:from-blue-500 group-hover:to-blue-700" 
-                                 style="width:{{ ($count / $maxServerCount) * 100 }}%"></div>
+                            <div class="h-2.5 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-sm shadow-blue-500/30 transition-all duration-500 ease-out group-hover:from-blue-500 group-hover:to-blue-700" style="width:{{ ($count / $maxServerCount) * 100 }}%"></div>
                         </div>
                     </div>
                 @endforeach
@@ -224,23 +182,121 @@
         {{-- OS Distribution Panel --}}
         <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden">
             <div class="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
-                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                </svg>
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
                 <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">OS Distribution</h3>
             </div>
             <div class="p-6 flex items-center justify-center">
                 <canvas id="osChart" width="260" height="260" style="filter: drop-shadow(0 8px 16px rgba(30, 64, 175, 0.15));"></canvas>
             </div>
         </div>
+
+        {{-- ✅ Rasio Ketersediaan IP (header gaya OS Distribution + tombol Lihat Semua) --}}
+        <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden">
+            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                    <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Rasio Ketersediaan IP</h3>
+                </div>
+                <a href="{{ route('ip.management') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors">Lihat Semua →</a>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center justify-center">
+                    <canvas id="ipAvailabilityChart" width="260" height="260" style="cursor:pointer; filter: drop-shadow(0 8px 16px rgba(5, 150, 105, 0.15));"></canvas>
+                </div>
+                {{-- Legend Custom --}}
+                <div class="mt-5 space-y-2">
+                    <div class="flex items-center justify-between bg-emerald-50/60 border border-emerald-100 rounded-lg px-3 py-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                            <span class="text-xs font-medium text-slate-700">IP Kosong (Siap Pakai)</span>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-700">{{ number_format($ipAvailabilityData['empty'], 0, ',', '.') }} Unit</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-blue-50/60 border border-blue-100 rounded-lg px-3 py-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                            <span class="text-xs font-medium text-slate-700">IP Terpakai (Aktif)</span>
+                        </div>
+                        <span class="text-xs font-bold text-blue-700">{{ number_format($ipAvailabilityData['used'], 0, ',', '.') }} Unit</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- Server List & Subdomain List                  -->
-    <!-- ============================================= -->
+    <!-- 6 Riwayat Aktivitas Terbaru -->
+    <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden">
+        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Riwayat Aktivitas Terbaru</h3>
+            </div>
+            <a href="{{ route('audit-log.index') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors">Lihat Semua →</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead class="bg-blue-50/80 text-blue-800 border-b border-blue-100">
+                    <tr>
+                        <th class="px-3 py-2.5 text-left font-semibold">Waktu</th>
+                        <th class="px-3 py-2.5 text-left font-semibold">Pengguna</th>
+                        <th class="px-3 py-2.5 text-left font-semibold">Aktivitas</th>
+                        <th class="px-3 py-2.5 text-left font-semibold">Modul</th>
+                        <th class="px-3 py-2.5 text-left font-semibold">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($recentActivities as $activity)
+                        @php
+                            $badgeClass = match($activity->event) {
+                                'created' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                'updated' => 'bg-amber-50 text-amber-700 border-amber-200',
+                                'deleted' => 'bg-rose-50 text-rose-700 border-rose-200',
+                                default => 'bg-slate-50 text-slate-700 border-slate-200'
+                            };
+                            $eventName = match($activity->event) {
+                                'created' => 'Tambah',
+                                'updated' => 'Ubah',
+                                'deleted' => 'Hapus',
+                                default => ucfirst($activity->event)
+                            };
+                            $rawLogName = strtolower($activity->log_name ?? '');
+                            $moduleName = str_contains($rawLogName, 'server') ? 'Server' : (str_contains($rawLogName, 'subdomain') ? 'Subdomain' : 'Aset TIK');
+                        @endphp
+                        <tr class="hover:bg-blue-50/40 transition-colors cursor-pointer" onclick="window.location.href='{{ route('audit-log.index') }}'">
+                            <td class="px-3 py-2.5 whitespace-nowrap">
+                                <div class="font-medium text-gray-900">{{ $activity->created_at->format('d-m-Y') }}</div>
+                                <div class="text-[10px] text-gray-500 font-mono">{{ $activity->created_at->format('H:i:s') }} WITA</div>
+                            </td>
+                            <td class="px-3 py-2.5">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px]">
+                                        {{ strtoupper(substr($activity->causer->name ?? 'S', 0, 1)) }}
+                                    </div>
+                                    <span class="text-gray-700">{{ $activity->causer->name ?? 'Sistem' }}</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-2.5">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $badgeClass }}">
+                                    {{ $eventName }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2.5 text-gray-600 font-medium">{{ $moduleName }}</td>
+                            <td class="px-3 py-2.5 text-gray-600 max-w-xs truncate" title="{{ $activity->description }}">
+                                {{ $activity->description }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-3 py-8 text-center text-gray-400">Belum ada riwayat aktivitas.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Server List & Subdomain List -->
     <div class="grid gap-4" :class="{ 'grid-cols-1 lg:grid-cols-2': !serverExpanded && !subdomainExpanded, 'grid-cols-1': serverExpanded || subdomainExpanded }">
-        
         {{-- ================= SERVER LIST PANEL ================= --}}
         <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300" x-show="!subdomainExpanded || serverExpanded" x-transition>
             <div class="flex flex-wrap items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 gap-2 rounded-t-xl">
@@ -291,18 +347,9 @@
                                 $ipText    = $primaryIp ? $primaryIp->ip_address : '';
                                 $ipList    = $otherIps->pluck('ip_address')->toArray();
                             @endphp
-                            
                             <tr class="hover:bg-blue-50/40 transition-colors"
-                                x-data="{{ json_encode([
-                                    'name' => $server->name,
-                                    'ip' => $ipText,
-                                    'ips' => $ipList,
-                                    'os' => $server->os,
-                                    'type' => $server->type,
-                                    'kind' => $server->kind
-                                ]) }}"
+                                x-data="{{ json_encode(['name' => $server->name, 'ip' => $ipText, 'ips' => $ipList, 'os' => $server->os, 'type' => $server->type, 'kind' => $server->kind]) }}"
                                 x-show="matchesServer(name, ip, ips, os, type, kind)">
-                                
                                 <td class="px-3 py-2.5">
                                     <div class="flex items-center space-x-1.5">
                                         <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" /></svg>
@@ -360,9 +407,7 @@
         <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300" x-show="!serverExpanded || subdomainExpanded" x-transition>
             <div class="flex flex-wrap items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 gap-2 rounded-t-xl">
                 <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider flex items-center gap-2">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                     Subdomain List
                 </h3>
                 <div class="flex flex-wrap items-center gap-2">
@@ -380,15 +425,11 @@
                         <option>Expired</option>
                     </select>
                     <button @click="subdomainFilterOpen = !subdomainFilterOpen" class="flex items-center space-x-1 text-xs px-2.5 py-1.5 border rounded-md transition-all duration-200" :class="subdomainFilterOpen ? 'text-blue-700 border-blue-300 bg-blue-100/60 shadow-sm' : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600'">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 8h12M10 12h4M12 16v4" />
-                        </svg>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 8h12M10 12h4M12 16v4" /></svg>
                         <span>Filter</span>
                     </button>
                     <button @click="subdomainExpanded = !subdomainExpanded; if(subdomainExpanded) serverExpanded = false" class="flex items-center space-x-1 text-xs px-2.5 py-1.5 border border-gray-200 rounded-md text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all duration-200">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
                         <span x-text="subdomainExpanded ? 'Collapse' : 'Expand'"></span>
                     </button>
                 </div>
@@ -410,25 +451,15 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse($subdomains as $subdomain)
                             @php
-                                $subIpText = $subdomain->ips->isNotEmpty()
-                                    ? $subdomain->ips->first()->ip_address
-                                    : '';
+                                $subIpText = $subdomain->ips->isNotEmpty() ? $subdomain->ips->first()->ip_address : '';
                                 $subIpList = $subdomain->ips->pluck('ip_address')->toArray();
                             @endphp
                             <tr class="hover:bg-blue-50/40 transition-colors"
-                                x-data="{{ json_encode([
-                                    'sub'    => $subdomain->subdomain,
-                                    'domain' => $subdomain->domain,
-                                    'status' => $subdomain->status,
-                                    'ip'     => $subIpText,
-                                    'ips'    => $subIpList
-                                ]) }}"
+                                x-data="{{ json_encode(['sub' => $subdomain->subdomain, 'domain' => $subdomain->domain, 'status' => $subdomain->status, 'ip' => $subIpText, 'ips' => $subIpList]) }}"
                                 x-show="matchesSubdomain(sub, domain, status, ip, ips)">
                                 <td class="px-3 py-2.5">
                                     <div class="flex items-center space-x-1.5">
-                                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                        </svg>
+                                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                                         <span class="font-mono text-gray-900 font-medium">{{ $subdomain->subdomain }}</span>
                                     </div>
                                 </td>
@@ -437,15 +468,11 @@
                                         {{ $subdomain->status }}
                                     </span>
                                 </td>
-                                <td class="px-3 py-2.5 text-gray-600">
-                                    {{ $subdomain->domain }}
-                                </td>
+                                <td class="px-3 py-2.5 text-gray-600">{{ $subdomain->domain }}</td>
                                 <td class="px-3 py-2.5 text-gray-700 font-medium" x-show="subdomainExpanded">
                                     @if($subdomain->server)
                                         <div class="flex items-center space-x-1.5">
-                                            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" />
-                                            </svg>
+                                            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" /></svg>
                                             <span class="font-mono">{{ $subdomain->server->name }}</span>
                                         </div>
                                     @else
@@ -458,35 +485,23 @@
                                     @else
                                         <div class="flex flex-wrap gap-1">
                                             @foreach($subdomain->ips as $ip)
-                                                <span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-md {{ $ip->type === 'Publik' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-gray-50 text-gray-600 border border-gray-100' }}" title="{{ $ip->type }}">
-                                                    {{ $ip->ip_address }}
-                                                </span>
+                                                <span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-md {{ $ip->type === 'Publik' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-gray-50 text-gray-600 border border-gray-100' }}" title="{{ $ip->type }}">{{ $ip->ip_address }}</span>
                                             @endforeach
                                         </div>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">
-                                    {{ $subdomain->opd_pengelola ?? '-' }}
-                                </td>
-                                <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">
-                                    {{ $subdomain->kontak ?? '-' }}
-                                </td>
-                                <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">
-                                    {{ $subdomain->ssl_expiry ? \Carbon\Carbon::parse($subdomain->ssl_expiry)->format('Y-m-d') : '-' }}
-                                </td>
+                                <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">{{ $subdomain->opd_pengelola ?? '-' }}</td>
+                                <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">{{ $subdomain->kontak ?? '-' }}</td>
+                                <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">{{ $subdomain->ssl_expiry ? \Carbon\Carbon::parse($subdomain->ssl_expiry)->format('Y-m-d') : '-' }}</td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="8" class="px-3 py-8 text-center text-gray-400">Belum ada data subdomain.</td>
-                            </tr>
+                            <tr><td colspan="8" class="px-3 py-8 text-center text-gray-400">Belum ada data subdomain.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
             <div class="flex items-center justify-between p-3 border-t border-blue-100 bg-blue-50/30 rounded-b-xl">
-                <span class="text-xs text-blue-700/70 font-medium">
-                    Showing {{ $subdomains->count() }} of {{ $subdomainCount }} subdomains
-                </span>
+                <span class="text-xs text-blue-700/70 font-medium">Showing {{ $subdomains->count() }} of {{ $subdomainCount }} subdomains</span>
                 @if($subdomainCount > $subdomains->count())
                     <a href="{{ route('subdomains.index') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors">Lihat semua →</a>
                 @endif
@@ -494,25 +509,24 @@
         </div>
     </div>
 
-    <!-- Chart.js Script (WARNA TIDAK DIUBAH SESUAI PERMINTAAN) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Scripts (versi di-pin agar minAngle bekerja) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
     <script>
+        // 1. OS Distribution Chart
         const osCtx = document.getElementById('osChart').getContext('2d');
         const osData = @json($osDistribution);
         const osLabels = Object.keys(osData);
         const osValues = Object.values(osData);
-        
-        // Warna asli dipertahankan 100%
         const osBaseColors = { 'Ubuntu': '#2F80ED', 'CentOS': '#EC1E79', 'Debian': '#F5A623', 'Win Server': '#27AE60' };
         const osColorKeys = osLabels.map(os => osBaseColors[os] || '#6B7280');
-        
+
         function hexToRgb(hex) {
             const bigint = parseInt(hex.replace('#', ''), 16);
             return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
         }
         function mixWithWhite(hex, amount) {
             const { r, g, b } = hexToRgb(hex);
-            return `rgb(${Math.round(r + (255 - r) * amount)},${Math.round(g + (255 - g) * amount)},${Math.round(b + (255 - b) * amount)})`;
+            return `rgb(${Math.round(r + (255 - r) * amount)}, ${Math.round(g + (255 - g) * amount)}, ${Math.round(b + (255 - b) * amount)})`;
         }
         function createLayeredGradient(ctx, chartArea, hex, steps = 22) {
             if (!chartArea) return hex;
@@ -547,7 +561,7 @@
                 ctx.restore();
             }
         };
-        const osChartInstance = new Chart(osCtx, {
+        new Chart(osCtx, {
             type: 'pie',
             data: {
                 labels: osLabels,
@@ -566,8 +580,7 @@
                 plugins: {
                     legend: {
                         display: true, position: 'bottom',
-                        labels: {
-                            padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 11, weight: '600' }, boxWidth: 10,
+                        labels: { padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 11, weight: '600' }, boxWidth: 10,
                             generateLabels: function(chart) {
                                 return chart.data.labels.map((label, i) => {
                                     const value = chart.data.datasets[0].data[i];
@@ -604,6 +617,80 @@
                 animation: { animateRotate: true, animateScale: true, duration: 600, easing: 'easeOutQuart' }
             },
             plugins: [shadowPlugin]
+        });
+
+        // 2. Rasio Ketersediaan IP (Doughnut + Center Text + minAngle 30 agar biru terlihat)
+        const ipCtx = document.getElementById('ipAvailabilityChart').getContext('2d');
+        const ipData = @json($ipAvailabilityData);
+
+        const centerTextPlugin = {
+            id: 'centerText',
+            afterDraw(chart) {
+                if (chart.canvas.id !== 'ipAvailabilityChart') return;
+                const { ctx, chartArea } = chart;
+                const meta = chart.getDatasetMeta(0);
+                if (!meta.data.length) return;
+                const cx = (chartArea.left + chartArea.right) / 2;
+                const cy = (chartArea.top + chartArea.bottom) / 2;
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#059669';
+                ctx.font = '700 10px Inter, sans-serif';
+                ctx.fillText('IP KOSONG', cx, cy - 24);
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '800 28px Inter, sans-serif';
+                ctx.fillText(ipData.empty.toLocaleString('id-ID'), cx, cy + 2);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '500 11px Inter, sans-serif';
+                ctx.fillText(ipData.percentAvailable + '% Tersedia', cx, cy + 24);
+                ctx.restore();
+            }
+        };
+
+        new Chart(ipCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['IP Kosong (Siap Pakai)', 'IP Terpakai (Aktif)'],
+                datasets: [{
+                    data: [ipData.empty, ipData.used],
+                    backgroundColor: ['#059669', '#2563EB'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    spacing: 0,
+                    hoverOffset: 6,
+                    minAngle: 30
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: true,
+                cutout: '72%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1E293B',
+                        padding: 10,
+                        cornerRadius: 8,
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 11 },
+                        callbacks: {
+                            label: function(context) {
+                                const total = ipData.empty + ipData.used;
+                                const pct = total > 0 ? Math.round((context.parsed / total) * 100) : 0;
+                                return ` ${context.label}: ${context.parsed.toLocaleString('id-ID')} IP (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                onClick: function(e, elements) {
+                    if (elements.length > 0) {
+                        window.location.href = '{{ route('ip.management') }}';
+                    }
+                },
+                animation: { animateRotate: true, duration: 900, easing: 'easeOutQuart' }
+            },
+            plugins: [centerTextPlugin]
         });
     </script>
 @endsection

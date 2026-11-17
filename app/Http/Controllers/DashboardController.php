@@ -1,9 +1,13 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Asset;
-use App\Models\AssetCategory;
 use App\Models\Server;
 use App\Models\Subdomain;
+use App\Models\Subnet;
+use App\Models\ServerIp;
+use Spatie\Activitylog\Models\Activity;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -50,13 +54,43 @@ class DashboardController extends Controller
             ? array_map(fn ($count) => round(($count / $totalOs) * 100), $osDistribution)
             : [];
 
-        // PERBAIKAN: Urutkan berdasarkan 'created_at' desc agar data terbaru selalu muncul di dashboard
         $servers = Server::with('ips')->orderBy('created_at', 'desc')->take(8)->get();
         $serverCount = Server::count();
 
-        // PERBAIKAN: Urutkan berdasarkan 'created_at' desc agar data terbaru selalu muncul di dashboard
         $subdomains = Subdomain::with(['server', 'ips'])->orderBy('created_at', 'desc')->take(8)->get();
         $subdomainCount = Subdomain::count();
+
+        // ==========================================
+        // 1. Data 6 Riwayat Aktivitas Terbaru
+        // ==========================================
+        $recentActivities = Activity::with('causer')->latest()->take(6)->get();
+
+        // ==========================================
+        // ✅ 2. Rasio Ketersediaan IP GLOBAL (AMAN dari memory overflow)
+        //    Tidak men-generate daftar IP, hanya aritmatika per subnet
+        // ==========================================
+        $totalCapacity = 0;
+        $totalUsed = 0;
+
+        foreach (Subnet::all() as $subnet) {
+            $start = ip2long($subnet->start_ip);
+            $end = ip2long($subnet->end_ip);
+            if ($start !== false && $end !== false && $end >= $start) {
+                $totalCapacity += ($end - $start) + 1;
+            }
+            $totalUsed += ServerIp::where('subnet_id', $subnet->id)->count();
+        }
+
+        $totalEmpty = max($totalCapacity - $totalUsed, 0);
+        $percentAvailable = $totalCapacity > 0
+            ? round(($totalEmpty / $totalCapacity) * 100, 1)
+            : 0;
+
+        $ipAvailabilityData = [
+            'empty'            => $totalEmpty,
+            'used'             => $totalUsed,
+            'percentAvailable' => $percentAvailable,
+        ];
 
         return view('dashboard', compact(
             'totalAssets',
@@ -66,7 +100,9 @@ class DashboardController extends Controller
             'supportCount', 'personnelCount',
             'serverTypes', 'osDistribution', 'osPercentages',
             'servers', 'serverCount',
-            'subdomains', 'subdomainCount'
+            'subdomains', 'subdomainCount',
+            'recentActivities',
+            'ipAvailabilityData'
         ));
     }
 }

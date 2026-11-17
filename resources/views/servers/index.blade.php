@@ -30,11 +30,6 @@
             
             {{-- TOMBOL AKSI (Manajemen IP & Tambah Server) --}}
             <div class="flex items-center gap-3 shrink-0">
-                <a href="{{ route('ip.management') }}" class="bg-blue-800/30 hover:bg-blue-800/50 border border-blue-400/50 text-white px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-semibold transition-all backdrop-blur-sm shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-                    <span>Manajemen IP</span>
-                </a>
-                
                 <a href="{{ route('servers.create') }}" class="bg-white hover:bg-blue-50 text-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-semibold transition-colors shadow-md shadow-blue-900/20 flex-shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                     <span>Tambah Server</span>

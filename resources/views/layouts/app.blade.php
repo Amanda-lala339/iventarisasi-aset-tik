@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name') }} - @yield('title', 'Dashboard')</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -161,6 +161,16 @@
                 <a href="{{ route('master-data.dashboard') }}"
                    class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('master-data.*') ? 'active' : '' }}">
                     Master Data
+                </a>
+
+                <!-- ✅ BARU: Manajemen IP -->
+                <a href="{{ route('ip.management') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('ip.management') ? 'active' : '' }}">
+                    Manajemen IP
+                </a>
+
+                <!-- Riwayat Aktivitas -->
+                <a href="{{ route('audit-log.index') }}" class="nav-link text-sm text-gray-600 hover:text-blue-600 font-medium {{ request()->routeIs('audit-log.*') ? 'active' : '' }}">
+                    Riwayat Aktivitas
                 </a>
             </div>
         </div>

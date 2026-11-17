@@ -9,8 +9,15 @@ use App\Models\ConfidentialityLevel;
 use App\Models\IntegrityLevel;
 use App\Models\AvailabilityLevel;
 
+// ✨ TAMBAHKAN 2 IMPORT INI UNTUK ACTIVITY LOG ✨
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class Asset extends Model
 {
+    // ✨ TAMBAHKAN TRAIT INI ✨
+    use LogsActivity;
+
     protected $fillable = [
         'asset_category_id',
         'asset_code',
@@ -63,20 +70,30 @@ class Asset extends Model
         'year' => 'integer',
     ];
 
+    // ✨ KONFIGURASI ACTIVITY LOG ✨ (DIPERBAIKI)
+    public function getActivitylogOptions(): LogOptions
+    {
+        $options = LogOptions::defaults()
+            ->logOnly(['*']) 
+            ->logOnlyDirty() 
+            ->dontLogIfAttributesChangedOnly(['updated_at']) 
+            ->setDescriptionForEvent(fn(string $eventName) => "Aset '{$this->name}' (Kode: {$this->asset_code}) telah di-{$eventName}");
+        $options->logName = 'audit_aset';
+
+        return $options;
+    }
+
     // ✨ OPSI A: KALKULASI KRITIKALITAS OTOMATIS (CIA TRIAD) ✨
     protected static function booted()
     {
         static::saving(function (Asset $asset) {
-            // Hanya hitung jika ketiga aspek diisi
             if ($asset->confidentiality && $asset->integrity && $asset->availability) {
-                // Ambil nilai 'order' (skor 1, 2, atau 3) dari tabel master data
                 $cScore = ConfidentialityLevel::where('name', $asset->confidentiality)->value('order') ?? 1;
                 $iScore = IntegrityLevel::where('name', $asset->integrity)->value('order') ?? 1;
                 $aScore = AvailabilityLevel::where('name', $asset->availability)->value('order') ?? 1;
 
                 $total = $cScore + $iScore + $aScore;
 
-                // Logika sesuai Excel: 7-9=Tinggi, 4-6=Sedang, 1-3=Rendah
                 if ($total >= 7) {
                     $asset->criticality = 'Tinggi';
                 } elseif ($total >= 4) {
@@ -88,7 +105,6 @@ class Asset extends Model
         });
     }
     
-
     public function category(): BelongsTo
     {
         return $this->belongsTo(AssetCategory::class, 'asset_category_id');
@@ -103,7 +119,6 @@ class Asset extends Model
     {
         return $this->hasMany(AssetDocument::class);
     }
-
     
     public function childAssets()
     {
@@ -120,8 +135,7 @@ class Asset extends Model
     }
    
     public function credentials()
-{
-    return $this->hasMany(AssetCredential::class);
-}
-
+    {
+        return $this->hasMany(AssetCredential::class);
+    }
 }
