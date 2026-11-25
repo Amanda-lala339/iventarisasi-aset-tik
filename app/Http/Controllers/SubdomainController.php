@@ -9,29 +9,39 @@ use Illuminate\Http\Request;
 class SubdomainController extends Controller
 {
     public function index(Request $request)
-{
-    // Eager load relasi server + ips-nya subdomain untuk performa lebih baik
-    $query = Subdomain::with(['server', 'ips']);
-    
-    if ($request->filled('search')) {
-        $query->where('subdomain', 'like', "%{$request->search}%");
-    }
-    if ($request->filled('domain') && $request->domain !== 'All domains') {
-        $query->where('domain', $request->domain);
-    }
-    if ($request->filled('status') && $request->status !== 'All status') {
-        $query->where('status', $request->status);
-    }
+    {
+        $query = Subdomain::with(['server', 'ips']);
 
-    // ✨ TAMBAHKAN BARIS INI agar data terbaru muncul di atas ✨
-    $query->latest();
+        if ($request->filled('search')) {
+            $query->where('subdomain', 'like', "%{$request->search}%");
+        }
+        if ($request->filled('domain') && $request->domain !== 'All domains') {
+            $query->where('domain', $request->domain);
+        }
+        if ($request->filled('status') && $request->status !== 'All status') {
+            // ✨ DIPERBAIKI: pakai scope status (dihitung dari tanggal), bukan kolom mentah
+            $query->status($request->status);
+        }
 
-    $subdomains = $query->paginate($request->get('per_page', 20));
-    $domains = Subdomain::select('domain')->distinct()->pluck('domain');
-    $statuses = Subdomain::select('status')->distinct()->pluck('status');
-    
-    return view('subdomains.index', compact('subdomains', 'domains', 'statuses'));
-}
+        $query->latest();
+
+        $subdomains = $query->paginate($request->get('per_page', 20));
+        $domains = Subdomain::select('domain')->distinct()->pluck('domain');
+
+        // ✨ DIPERBAIKI: opsi dropdown tetap 3 kategori baku (kolom mentah tidak relevan lagi)
+        $statuses = collect(['Active', 'Expiring', 'Expired']);
+
+        // ✨ DIPERBAIKI: kartu statistik dihitung dari tanggal aktual, bukan kolom status lama
+        $totalAll      = Subdomain::count();
+        $totalActive   = Subdomain::status('Active')->count();
+        $totalExpiring = Subdomain::status('Expiring')->count();
+        $totalExpired  = Subdomain::status('Expired')->count();
+
+        return view('subdomains.index', compact(
+            'subdomains', 'domains', 'statuses',
+            'totalAll', 'totalActive', 'totalExpiring', 'totalExpired'
+        ));
+    }
 
     public function create()
     {
@@ -59,11 +69,11 @@ class SubdomainController extends Controller
         return redirect()->route('subdomains.index')->with('success', 'Subdomain berhasil ditambahkan.');
     }
 
-       public function show(Subdomain $subdomain)
-   {
-       $subdomain->load(['server', 'ips']);
-       return view('subdomains.show', compact('subdomain'));
-   }
+    public function show(Subdomain $subdomain)
+    {
+        $subdomain->load(['server', 'ips']);
+        return view('subdomains.show', compact('subdomain'));
+    }
 
     public function edit(Subdomain $subdomain)
     {

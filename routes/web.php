@@ -10,6 +10,7 @@ use App\Http\Controllers\AssetDocumentController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\IpManagementController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\NotificationController;
 
 require __DIR__.'/auth.php';
 
@@ -25,6 +26,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('servers', ServerController::class);
     Route::resource('subdomains', SubdomainController::class);
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
     Route::get('/ip-management', [IpManagementController::class, 'index'])->name('ip.management');

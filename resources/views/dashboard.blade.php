@@ -51,10 +51,10 @@
 }" class="space-y-4">
 
     <!-- Header (banner biru) -->
-    <div class="relative overflow-visible rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 px-6 py-6 mb-6 shadow-lg shadow-blue-600/30">
+    <div class="relative overflow-visible rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 px-4 sm:px-6 py-6 mb-6 shadow-lg shadow-blue-600/30">
         <div class="absolute -right-10 -top-16 w-64 h-64 rounded-full bg-white/10"></div>
         <div class="absolute right-24 -bottom-24 w-56 h-56 rounded-full bg-white/10"></div>
-        <div class="relative flex flex-wrap items-center justify-between gap-4">
+        <div class="relative flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4">
             <div>
                 <div class="flex items-center space-x-2 text-[10px] font-semibold tracking-widest text-blue-100 uppercase">
                     <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
@@ -63,13 +63,13 @@
                 <h1 class="mt-1 text-2xl md:text-3xl font-bold text-white tracking-tight">Inventarisasi Aset</h1>
                 <p class="mt-1 text-xs text-blue-100">Sistem inventarisasi infrastruktur digital, server &amp; layanan terintegrasi</p>
             </div>
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('assets.create') }}" class="bg-white hover:bg-blue-50 text-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-semibold transition-colors shadow-md shadow-blue-900/20">
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <a href="{{ route('assets.create') }}" class="flex-1 sm:flex-none bg-white hover:bg-blue-50 text-blue-700 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 text-sm font-semibold transition-colors shadow-md shadow-blue-900/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
                     <span>Tambah Data Aset</span>
                 </a>
-                <div class="relative" x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false">
-                    <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                <div class="relative flex-1 sm:flex-none" x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false">
+                    <button @click="userMenuOpen = !userMenuOpen" class="w-full flex items-center justify-center sm:justify-start space-x-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                         <svg class="w-4 h-4 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                         <span>{{ auth()->user()->name ?? 'Akun' }}</span>
                         <svg class="w-3.5 h-3.5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -89,7 +89,7 @@
     </div>
 
     <!-- Summary Cards (Baris 1) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
         <div class="relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 overflow-hidden cursor-default">
             <div class="text-gray-500 text-xs font-medium mb-2">Total assets</div>
             <div class="text-2xl font-bold text-gray-900">{{ $totalAssets }}</div>
@@ -121,8 +121,9 @@
             </div>
         </a>
     </div>
+    
     <!-- Summary Cards (Baris 2) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
         <a href="{{ route('assets.category.pk') }}" class="group relative block bg-white rounded-xl border border-gray-100 p-4 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
             <div class="text-blue-600 text-xs font-medium mb-2">Perangkat Keras</div>
             <div class="text-2xl font-bold text-gray-900">{{ $hardwareCount }}</div>
@@ -185,39 +186,43 @@
                 <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
                 <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">OS Distribution</h3>
             </div>
-            <div class="p-6 flex items-center justify-center">
-                <canvas id="osChart" width="260" height="260" style="filter: drop-shadow(0 8px 16px rgba(30, 64, 175, 0.15));"></canvas>
+            <div class="p-6 flex items-center justify-center w-full">
+                <div class="w-full max-w-[260px]">
+                    <canvas id="osChart" width="260" height="260" style="filter: drop-shadow(0 8px 16px rgba(30, 64, 175, 0.15));"></canvas>
+                </div>
             </div>
         </div>
 
-        {{-- ✅ Rasio Ketersediaan IP (header gaya OS Distribution + tombol Lihat Semua) --}}
+        {{-- Rasio Ketersediaan IP --}}
         <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden">
             <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100">
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
                     <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Rasio Ketersediaan IP</h3>
                 </div>
-                <a href="{{ route('ip.management') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors">Lihat Semua →</a>
+                <a href="{{ route('ip.management') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors whitespace-nowrap">Lihat Semua →</a>
             </div>
             <div class="p-6">
-                <div class="flex items-center justify-center">
-                    <canvas id="ipAvailabilityChart" width="260" height="260" style="cursor:pointer; filter: drop-shadow(0 8px 16px rgba(5, 150, 105, 0.15));"></canvas>
+                <div class="flex items-center justify-center w-full">
+                    <div class="w-full max-w-[260px]">
+                        <canvas id="ipAvailabilityChart" width="260" height="260" style="cursor:pointer; filter: drop-shadow(0 8px 16px rgba(5, 150, 105, 0.15));"></canvas>
+                    </div>
                 </div>
                 {{-- Legend Custom --}}
                 <div class="mt-5 space-y-2">
                     <div class="flex items-center justify-between bg-emerald-50/60 border border-emerald-100 rounded-lg px-3 py-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                            <span class="text-xs font-medium text-slate-700">IP Kosong (Siap Pakai)</span>
+                            <span class="text-xs font-medium text-slate-700">IP Kosong</span>
                         </div>
-                        <span class="text-xs font-bold text-emerald-700">{{ number_format($ipAvailabilityData['empty'], 0, ',', '.') }} Unit</span>
+                        <span class="text-xs font-bold text-emerald-700">{{ number_format($ipAvailabilityData['empty'], 0, ',', '.') }}</span>
                     </div>
                     <div class="flex items-center justify-between bg-blue-50/60 border border-blue-100 rounded-lg px-3 py-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                            <span class="text-xs font-medium text-slate-700">IP Terpakai (Aktif)</span>
+                            <span class="text-xs font-medium text-slate-700">IP Terpakai</span>
                         </div>
-                        <span class="text-xs font-bold text-blue-700">{{ number_format($ipAvailabilityData['used'], 0, ',', '.') }} Unit</span>
+                        <span class="text-xs font-bold text-blue-700">{{ number_format($ipAvailabilityData['used'], 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>
@@ -231,10 +236,10 @@
                 <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Riwayat Aktivitas Terbaru</h3>
             </div>
-            <a href="{{ route('audit-log.index') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors">Lihat Semua →</a>
+            <a href="{{ route('audit-log.index') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors whitespace-nowrap">Lihat Semua →</a>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-xs">
+            <table class="w-full text-xs min-w-[600px]">
                 <thead class="bg-blue-50/80 text-blue-800 border-b border-blue-100">
                     <tr>
                         <th class="px-3 py-2.5 text-left font-semibold">Waktu</th>
@@ -269,18 +274,18 @@
                             </td>
                             <td class="px-3 py-2.5">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px]">
+                                    <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px] shrink-0">
                                         {{ strtoupper(substr($activity->causer->name ?? 'S', 0, 1)) }}
                                     </div>
-                                    <span class="text-gray-700">{{ $activity->causer->name ?? 'Sistem' }}</span>
+                                    <span class="text-gray-700 truncate">{{ $activity->causer->name ?? 'Sistem' }}</span>
                                 </div>
                             </td>
-                            <td class="px-3 py-2.5">
+                            <td class="px-3 py-2.5 whitespace-nowrap">
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $badgeClass }}">
                                     {{ $eventName }}
                                 </span>
                             </td>
-                            <td class="px-3 py-2.5 text-gray-600 font-medium">{{ $moduleName }}</td>
+                            <td class="px-3 py-2.5 text-gray-600 font-medium whitespace-nowrap">{{ $moduleName }}</td>
                             <td class="px-3 py-2.5 text-gray-600 max-w-xs truncate" title="{{ $activity->description }}">
                                 {{ $activity->description }}
                             </td>
@@ -299,34 +304,34 @@
     <div class="grid gap-4" :class="{ 'grid-cols-1 lg:grid-cols-2': !serverExpanded && !subdomainExpanded, 'grid-cols-1': serverExpanded || subdomainExpanded }">
         {{-- ================= SERVER LIST PANEL ================= --}}
         <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300" x-show="!subdomainExpanded || serverExpanded" x-transition>
-            <div class="flex flex-wrap items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 gap-2 rounded-t-xl">
+            <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 gap-3 rounded-t-xl">
                 <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider flex items-center gap-2">
                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" /></svg>
                     Server List
                 </h3>
-                <div class="flex flex-wrap items-center gap-2">
-                    <input type="text" x-model="serverSearch" x-show="serverFilterOpen" x-cloak placeholder="Search..." class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-32 transition-all">
-                    <select x-model="serverTypeFilter" x-show="serverFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <input type="text" x-model="serverSearch" x-show="serverFilterOpen" x-cloak placeholder="Cari..." class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-32 transition-all">
+                    <select x-model="serverTypeFilter" x-show="serverFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-all">
                         <option>All types</option><option>Web server</option><option>Database server</option><option>App server</option><option>File/ storage</option><option>Backup</option>
                     </select>
-                    <select x-model="serverOsFilter" x-show="serverFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    <select x-model="serverOsFilter" x-show="serverFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-all">
                         <option>All OS</option><option>Ubuntu</option><option>CentOS</option><option>Debian</option><option>Win Server</option>
                     </select>
-                    <select x-model="serverKindFilter" x-show="serverFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    <select x-model="serverKindFilter" x-show="serverFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-all">
                         <option>All kinds</option><option>Physical</option><option>Virtual</option>
                     </select>
-                    <button @click="serverFilterOpen = !serverFilterOpen" class="flex items-center space-x-1 text-xs px-2.5 py-1.5 border rounded-md transition-all duration-200" :class="serverFilterOpen ? 'text-blue-700 border-blue-300 bg-blue-100/60 shadow-sm' : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600'">
+                    <button @click="serverFilterOpen = !serverFilterOpen" class="flex-1 sm:flex-none flex items-center justify-center space-x-1 text-xs px-2.5 py-1.5 border rounded-md transition-all duration-200" :class="serverFilterOpen ? 'text-blue-700 border-blue-300 bg-blue-100/60 shadow-sm' : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600'">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 8h12M10 12h4M12 16v4" /></svg>
                         <span>Filter</span>
                     </button>
-                    <button @click="serverExpanded = !serverExpanded; if(serverExpanded) subdomainExpanded = false" class="flex items-center space-x-1 text-xs px-2.5 py-1.5 border border-gray-200 rounded-md text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all duration-200">
+                    <button @click="serverExpanded = !serverExpanded; if(serverExpanded) subdomainExpanded = false" class="flex-1 sm:flex-none flex items-center justify-center space-x-1 text-xs px-2.5 py-1.5 border border-gray-200 rounded-md text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all duration-200">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
                         <span x-text="serverExpanded ? 'Collapse' : 'Expand'"></span>
                     </button>
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-xs">
+                <table class="w-full text-xs min-w-[600px]">
                     <thead class="bg-blue-50/80 text-blue-800 border-b border-blue-100">
                         <tr>
                             <th class="px-3 py-2.5 text-left font-semibold">Server name</th>
@@ -352,7 +357,7 @@
                                 x-show="matchesServer(name, ip, ips, os, type, kind)">
                                 <td class="px-3 py-2.5">
                                     <div class="flex items-center space-x-1.5">
-                                        <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" /></svg>
+                                        <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" /></svg>
                                         <span class="font-mono text-gray-900 font-medium">{{ $server->name }}</span>
                                     </div>
                                 </td>
@@ -376,7 +381,7 @@
                                 </td>
                                 <td class="px-3 py-2.5">
                                     <div class="flex items-center space-x-1.5">
-                                        <span class="w-2 h-2 rounded-full {{ $server->os === 'Ubuntu' ? 'bg-orange-500' : ($server->os === 'CentOS' ? 'bg-green-600' : ($server->os === 'Debian' ? 'bg-red-500' : 'bg-blue-500')) }}"></span>
+                                        <span class="w-2 h-2 rounded-full shrink-0 {{ $server->os === 'Ubuntu' ? 'bg-orange-500' : ($server->os === 'CentOS' ? 'bg-green-600' : ($server->os === 'Debian' ? 'bg-red-500' : 'bg-blue-500')) }}"></span>
                                         <span class="text-gray-700">{{ $server->os }}</span>
                                     </div>
                                 </td>
@@ -405,37 +410,37 @@
 
         {{-- ================= SUBDOMAIN LIST PANEL ================= --}}
         <div class="bg-white rounded-xl border border-blue-100 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300" x-show="!serverExpanded || subdomainExpanded" x-transition>
-            <div class="flex flex-wrap items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 gap-2 rounded-t-xl">
+            <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between p-4 bg-gradient-to-r from-blue-50 via-white to-white border-b border-blue-100 gap-3 rounded-t-xl">
                 <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider flex items-center gap-2">
                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                     Subdomain List
                 </h3>
-                <div class="flex flex-wrap items-center gap-2">
-                    <input type="text" x-model="subdomainSearch" x-show="subdomainFilterOpen" x-cloak placeholder="Search..." class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-32 transition-all">
-                    <select x-model="subdomainDomainFilter" x-show="subdomainFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <input type="text" x-model="subdomainSearch" x-show="subdomainFilterOpen" x-cloak placeholder="Cari..." class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-32 transition-all">
+                    <select x-model="subdomainDomainFilter" x-show="subdomainFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-all">
                         <option>All domains</option>
                         @foreach($subdomains->pluck('domain')->unique() as $d)
                             <option>{{ $d }}</option>
                         @endforeach
                     </select>
-                    <select x-model="subdomainStatusFilter" x-show="subdomainFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    <select x-model="subdomainStatusFilter" x-show="subdomainFilterOpen" x-cloak class="border border-blue-200 rounded-md px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-all">
                         <option>All status</option>
                         <option>Active</option>
                         <option>Expiring</option>
                         <option>Expired</option>
                     </select>
-                    <button @click="subdomainFilterOpen = !subdomainFilterOpen" class="flex items-center space-x-1 text-xs px-2.5 py-1.5 border rounded-md transition-all duration-200" :class="subdomainFilterOpen ? 'text-blue-700 border-blue-300 bg-blue-100/60 shadow-sm' : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600'">
+                    <button @click="subdomainFilterOpen = !subdomainFilterOpen" class="flex-1 sm:flex-none flex items-center justify-center space-x-1 text-xs px-2.5 py-1.5 border rounded-md transition-all duration-200" :class="subdomainFilterOpen ? 'text-blue-700 border-blue-300 bg-blue-100/60 shadow-sm' : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600'">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 8h12M10 12h4M12 16v4" /></svg>
                         <span>Filter</span>
                     </button>
-                    <button @click="subdomainExpanded = !subdomainExpanded; if(subdomainExpanded) serverExpanded = false" class="flex items-center space-x-1 text-xs px-2.5 py-1.5 border border-gray-200 rounded-md text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all duration-200">
+                    <button @click="subdomainExpanded = !subdomainExpanded; if(subdomainExpanded) serverExpanded = false" class="flex-1 sm:flex-none flex items-center justify-center space-x-1 text-xs px-2.5 py-1.5 border border-gray-200 rounded-md text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all duration-200">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
                         <span x-text="subdomainExpanded ? 'Collapse' : 'Expand'"></span>
                     </button>
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-xs">
+                <table class="w-full text-xs min-w-[600px]">
                     <thead class="bg-blue-50/80 text-blue-800 border-b border-blue-100">
                         <tr>
                             <th class="px-3 py-2.5 text-left font-semibold">Subdomain</th>
@@ -459,11 +464,11 @@
                                 x-show="matchesSubdomain(sub, domain, status, ip, ips)">
                                 <td class="px-3 py-2.5">
                                     <div class="flex items-center space-x-1.5">
-                                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                                        <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                                         <span class="font-mono text-gray-900 font-medium">{{ $subdomain->subdomain }}</span>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2.5">
+                                <td class="px-3 py-2.5 whitespace-nowrap">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium {{ $subdomain->status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : ($subdomain->status === 'Expiring' ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'bg-red-50 text-red-700 border border-red-100') }}">
                                         {{ $subdomain->status }}
                                     </span>
@@ -472,7 +477,7 @@
                                 <td class="px-3 py-2.5 text-gray-700 font-medium" x-show="subdomainExpanded">
                                     @if($subdomain->server)
                                         <div class="flex items-center space-x-1.5">
-                                            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" /></svg>
+                                            <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" /></svg>
                                             <span class="font-mono">{{ $subdomain->server->name }}</span>
                                         </div>
                                     @else
@@ -492,7 +497,7 @@
                                 </td>
                                 <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">{{ $subdomain->opd_pengelola ?? '-' }}</td>
                                 <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">{{ $subdomain->kontak ?? '-' }}</td>
-                                <td class="px-3 py-2.5 text-gray-600" x-show="subdomainExpanded">{{ $subdomain->ssl_expiry ? \Carbon\Carbon::parse($subdomain->ssl_expiry)->format('Y-m-d') : '-' }}</td>
+                                <td class="px-3 py-2.5 text-gray-600 whitespace-nowrap" x-show="subdomainExpanded">{{ $subdomain->ssl_expiry ? \Carbon\Carbon::parse($subdomain->ssl_expiry)->format('Y-m-d') : '-' }}</td>
                             </tr>
                         @empty
                             <tr><td colspan="8" class="px-3 py-8 text-center text-gray-400">Belum ada data subdomain.</td></tr>
@@ -509,7 +514,7 @@
         </div>
     </div>
 
-    <!-- Chart.js Scripts (versi di-pin agar minAngle bekerja) -->
+    <!-- Chart.js Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
     <script>
         // 1. OS Distribution Chart
@@ -619,7 +624,7 @@
             plugins: [shadowPlugin]
         });
 
-        // 2. Rasio Ketersediaan IP (Doughnut + Center Text + minAngle 30 agar biru terlihat)
+        // 2. Rasio Ketersediaan IP
         const ipCtx = document.getElementById('ipAvailabilityChart').getContext('2d');
         const ipData = @json($ipAvailabilityData);
 
