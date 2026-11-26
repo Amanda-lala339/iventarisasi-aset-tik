@@ -26,7 +26,12 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('servers', ServerController::class);
     Route::resource('subdomains', SubdomainController::class);
-    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    
+    // ✨ ROUTE NOTIFIKASI (DITAMBAHKAN LENGKAP) ✨
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.markAsRead');
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.markAllAsRead');
 
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
     Route::get('/ip-management', [IpManagementController::class, 'index'])->name('ip.management');
@@ -60,4 +65,4 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{type}/{id}', [MasterDataController::class, 'destroy'])->name('destroy');
         Route::post('/{type}/{id}/toggle', [MasterDataController::class, 'toggleActive'])->name('toggle');
     });
-}); 
+});

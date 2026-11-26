@@ -4,41 +4,48 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Subdomain;
-use App\Models\User; // Pastikan model User ada jika ingin kirim ke admin
-use Carbon\Carbon;
+use App\Models\User;
+use App\Notifications\SubdomainExpiringNotification;
 
 class CheckExpiringSubdomains extends Command
 {
     protected $signature = 'subdomains:check-expiring';
-    protected $description = 'Mengecek dan mengirim notifikasi untuk subdomain yang akan expired';
+    protected $description = 'Mengecek dan mengirim notifikasi untuk subdomain yang akan/sudah expired';
 
     public function handle()
     {
-        // Cari subdomain yang statusnya Expiring ATAU ssl_expiry <= 30 hari dari sekarang
-        $expiringSubdomains = Subdomain::where('status', 'Expiring')
-            ->orWhere(function ($query) {
-                $query->where('ssl_expiry', '<=', Carbon::now()->addDays(30))
-                      ->where('ssl_expiry', '>=', Carbon::now());
-            })
-            ->get();
+        // Ambil semua subdomain yang punya tanggal SSL,
+        // lalu pakai ACCESSOR $subdomain->status (sudah dihitung benar dari tanggal hari ini)
+        $candidates = Subdomain::whereNotNull('ssl_expiry')->get()
+            ->filter(fn($s) => in_array($s->status, ['Expiring', 'Expired']));
 
-        if ($expiringSubdomains->isEmpty()) {
-            $this->info('Tidak ada subdomain yang akan expired dalam 30 hari ke depan.');
-            return;
+        if ($candidates->isEmpty()) {
+            $this->info('Tidak ada subdomain yang perlu dinotifikasi.');
+            return Command::SUCCESS;
         }
 
-        $this->info("Ditemukan {$expiringSubdomains->count()} subdomain yang akan expired. Mengirim notifikasi...");
+        // Penenerima: admin dulu, fallback ke semua user kalau kolom role tidak ada/kosong
+        $recipients = User::all();
 
-        foreach ($expiringSubdomains as $subdomain) {
-            // Kirim notifikasi (Bisa via Email, Database, atau WhatsApp)
-            // Contoh kirim ke semua user dengan role admin (sesuaikan dengan logic aplikasimu)
-            $admins = User::where('role', 'admin')->get(); 
-            
-            foreach ($admins as $admin) {
-                $admin->notify(new \App\Notifications\SubdomainExpiringNotification($subdomain));
+        $sent = 0;
+        foreach ($candidates as $subdomain) {
+            foreach ($recipients as $admin) {
+                // ✨ Cegah duplikat: skip kalau masih ada notifikasi BELUM DIBACA untuk subdomain ini
+                $alreadyNotified = $admin->notifications()
+                    ->whereNull('read_at')
+                    ->whereJsonContains('data->subdomain_id', $subdomain->id)
+                    ->exists();
+
+                if ($alreadyNotified) {
+                    continue;
+                }
+
+                $admin->notify(new SubdomainExpiringNotification($subdomain));
+                $sent++;
             }
         }
 
-        $this->info('Notifikasi berhasil dikirim!');
+        $this->info("Selesai! {$sent} notifikasi baru terkirim (dari {$candidates->count()} subdomain bermasalah).");
+        return Command::SUCCESS;
     }
 }
